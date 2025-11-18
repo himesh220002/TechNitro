@@ -9,17 +9,29 @@ import Carousel from '@/components/Carousel'
 import FeaturedHero from '@/components/FeaturedHero'
 import ProductBlockGrid from '@/components/ProductBlockGrid'
 
-const baseUrl = process.env.NEXT_PUBLIC_BASE_URL 
-                || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '');
+// const baseUrl = process.env.NEXT_PUBLIC_BASE_URL 
+//                 || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '');
+const baseUrl = 'http://localhost:3000'
 
 
 
 async function getProducts(): Promise<Product[]> {
-  const res = await fetch(`${baseUrl}/api/products`, {
-    next: { revalidate: 60 },
-  })
-  return res.json()
+  try {
+    const res = await fetch(`${baseUrl}/api/products`, {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) {
+      console.error(`Failed to fetch products: ${res.status} ${res.statusText}`)
+      return []
+    }
+    const data = await res.json()
+    return data
+  } catch (err) {
+    console.error('Fetch error:', err)
+    return []
+  }
 }
+
 
 export default async function HomePage() {
   const products = await getProducts()
