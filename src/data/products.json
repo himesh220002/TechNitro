@@ -1,0 +1,102 @@
+[
+  {
+    "id": "p1",
+    "name": "Wireless Mouse",
+    "slug": "wireless-mouse",
+    "description": "Ergonomic mouse with 2.4GHz wireless",
+    "price": 1299,
+    "category": "Accessories",
+    "inventory": 42,
+    "lastUpdated": "2025-10-30T18:00:00.000Z"
+  },
+  {
+    "id": "p2",
+    "name": "Mechanical Keyboard",
+    "slug": "mechanical-keyboard",
+    "description": "RGB backlit mechanical keyboard",
+    "price": 4999,
+    "category": "Accessories",
+    "inventory": 15,
+    "lastUpdated": "2025-10-28T12:30:00.000Z"
+  },
+  {
+    "id": "p3",
+    "name": "HD Monitor",
+    "slug": "hd-monitor",
+    "description": "24-inch Full HD monitor with HDMI",
+    "price": 1099,
+    "category": "Monitors",
+    "inventory": 8,
+    "lastUpdated": "2025-10-25T09:15:00.000Z"
+  },
+  {
+    "id": "p4",
+    "name": "HD Monitor1",
+    "slug": "hd-monitor1",
+    "description": "24-inch Full HD monitor with HDMI",
+    "price": 109991,
+    "category": "Monitors",
+    "inventory": 8,
+    "lastUpdated": "2025-10-25T09:15:00.000Z"
+  },
+  {
+    "name": "Bluetooth Speaker",
+    "slug": "bluetooth-speaker",
+    "description": "Compact speaker with deep bass",
+    "price": 2499,
+    "category": "Audio",
+    "inventory": 50,
+    "lastUpdated": "2025-10-30T17:11:34.671Z",
+    "id": "Y-Vgp3Qc0QQrHcDRSqXzq"
+  },
+  {
+    "name": "Acer Nitro 5",
+    "slug": "acer-nitro-5",
+    "description": "laptop i5 12gen 16gb ram rtx3050 4gb",
+    "price": 65000,
+    "category": "Laptop",
+    "inventory": 5,
+    "lastUpdated": "2025-10-30T17:50:53.867Z",
+    "id": "uj9brxk05lo"
+  },
+  {
+    "name": "new",
+    "slug": "new",
+    "description": "new",
+    "price": 11,
+    "category": "new",
+    "inventory": 11,
+    "lastUpdated": "2025-10-30T18:03:52.191Z",
+    "id": "xokhkxvv88"
+  },
+  {
+    "name": "new2",
+    "slug": "new2",
+    "description": "new2",
+    "price": 2,
+    "category": "new2",
+    "inventory": 2,
+    "lastUpdated": "2025-10-30T18:10:14.354Z",
+    "id": "zhlyso9xd2p"
+  },
+  {
+    "name": "new3",
+    "slug": "new3",
+    "description": "new3",
+    "price": 3,
+    "category": "new3",
+    "inventory": 3,
+    "lastUpdated": "2025-10-30T18:11:13.144Z",
+    "id": "0et63us6o0fh"
+  },
+  {
+    "name": "new4",
+    "slug": "new4",
+    "description": "new4",
+    "price": 4,
+    "category": "new4",
+    "inventory": 4,
+    "lastUpdated": "2025-10-31T05:03:32.322Z",
+    "id": "nimbyMdwJnVQbA5dmo9"
+  }
+]

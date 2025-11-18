@@ -1,0 +1,146 @@
+{
+  "project_name": "E-commerce Catalog",
+  "architecture": {
+    "frontend": {
+      "framework": "Next.js 13+",
+      "styling": "Tailwind CSS",
+      "key_features": ["Server Components", "Client Components", "App Router"]
+    },
+    "backend": {
+      "framework": "Next.js API Routes",
+      "database": "PostgreSQL (via Prisma ORM)",
+      "auth": "Supabase Auth"
+    }
+  },
+  "core_functionalities": {
+    "authentication": {
+      "provider": "Supabase",
+      "features": [
+        "User registration/login",
+        "Role-based access (admin/customer)",
+        "Session management",
+        "Protected routes"
+      ],
+      "implementation": "createClientComponentClient() from @supabase/auth-helpers-nextjs"
+    },
+    "product_management": {
+      "features": [
+        "Product listing",
+        "Category filtering",
+        "Search functionality",
+        "Product details view",
+        "Dynamic stock management",
+        "Real-time inventory updates"
+      ],
+      "data_model": {
+        "product": {
+          "fields": [
+            "id", "name", "slug", "price",
+            "category", "imageUrl", "inventory",
+            "description", "created_at", "lastUpdated"
+          ]
+        }
+      }
+    },
+    "order_system": {
+      "features": [
+        "Shopping cart management",
+        "Checkout process",
+        "Order history",
+        "Payment integration",
+        "Stock validation"
+      ],
+      "transaction_handling": {
+        "approach": "Prisma transactions",
+        "operations": [
+          "Create order",
+          "Decrement inventory",
+          "Update payment status"
+        ]
+      }
+    },
+    "delivery_management": {
+      "route_optimization": {
+        "algorithm": "Dijkstra's Algorithm",
+        "optimization_criteria": [
+          "Cost effectiveness",
+          "Time efficiency",
+          "Hybrid approach"
+        ],
+        "factors_considered": [
+          "Distance",
+          "Transport mode (truck/train/flight)",
+          "Package weight",
+          "Cost per km",
+          "Time constraints"
+        ]
+      },
+      "shipping_tracking": {
+        "features": [
+          "Real-time status updates",
+          "Multiple checkpoints",
+          "Event-based tracking",
+          "Location updates"
+        ],
+        "event_types": [
+          "Order Placed",
+          "Order Confirmed",
+          "Packed",
+          "Shipped",
+          "Out for Delivery",
+          "Delivered"
+        ]
+      }
+    },
+    "admin_dashboard": {
+      "capabilities": {
+        "order_management": [
+          "View all orders",
+          "Update order status",
+          "Add shipping events",
+          "Filter and search orders"
+        ],
+        "inventory_control": [
+          "Stock level monitoring",
+          "Automatic updates on sales",
+          "Low stock alerts"
+        ],
+        "shipping_management": [
+          "Route planning",
+          "Cost calculation",
+          "Transport mode selection",
+          "Delivery optimization"
+        ]
+      }
+    }
+  },
+  "database_schema": {
+    "tables": {
+      "products": "Product catalog with inventory management",
+      "orders": "Customer orders with payment and shipping info",
+      "users": "User accounts and roles (via Supabase)",
+      "shipping_events": "Delivery tracking checkpoints"
+    },
+    "relationships": [
+      "User has many Orders",
+      "Order has many Products",
+      "Order has many ShippingEvents"
+    ]
+  },
+  "api_structure": {
+    "endpoints": {
+      "/api/products": "Product CRUD operations",
+      "/api/orders": "Order creation and management",
+      "/api/admin/orders": "Admin-only order operations",
+      "/api/update-order-status": "Order status updates",
+      "/api/update-shipping-events": "Shipping event management",
+      "/api/recommendations": "Product recommendations"
+    }
+  },
+  "security_measures": {
+    "authentication": "Supabase JWT tokens",
+    "authorization": "Role-based access control",
+    "api_protection": "Server-side validation",
+    "client_side": "Protected routes with redirects"
+  }
+}

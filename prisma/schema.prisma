@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  schemas  = ["public"]
+}
+
+model Product {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  description String
+  price       Int
+  category    String
+  inventory   Int
+  lastUpdated DateTime  @default(now())
+  imageUrl    String?
+  images      Json?
+  rating      Int?
+  specs       Json?
+  created_at  DateTime? @default(now()) @db.Timestamptz(6)
+
+  @@schema("public")
+}
+
+model Order {
+  id             String   @id @default(uuid())
+  userId         String   @db.Uuid
+  accountName    String
+  accountNumber  String
+  phone          String
+  address        String
+  pin            String
+  paymentMethod  String
+  payment        Float
+  paymentStatus  String   @default("Order Placed")
+  paymentResult  String?  // ✅ New column for Razorpay outcome
+  createdAt      DateTime @default(now())
+  products       Json
+  shippingEvents Json?
+
+  @@schema("public")
+}
