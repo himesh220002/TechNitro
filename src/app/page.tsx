@@ -9,8 +9,11 @@ import Carousel from '@/components/Carousel'
 import FeaturedHero from '@/components/FeaturedHero'
 import ProductBlockGrid from '@/components/ProductBlockGrid'
 
+const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+
+
 async function getProducts(): Promise<Product[]> {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/products`, {
+  const res = await fetch(`${baseUrl} /api/products`, {
     next: { revalidate: 60 },
   })
   return res.json()
