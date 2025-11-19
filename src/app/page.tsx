@@ -8,16 +8,18 @@ import { GradientHeading } from '@/components/ui/LoadingStates'
 import Carousel from '@/components/Carousel'
 import FeaturedHero from '@/components/FeaturedHero'
 import ProductBlockGrid from '@/components/ProductBlockGrid'
+// import TestProductPage from './test-product/page'
 
-// const baseUrl = process.env.NEXT_PUBLIC_BASE_URL 
-//                 || (process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : '');
+// const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||  'http://localhost:3000';
 const baseUrl = 'http://localhost:3000'
+// const baseUrl = ''
 
 
 
 async function getProducts(): Promise<Product[]> {
   try {
     const res = await fetch(`${baseUrl}/api/products`, {
+    // const res = await fetch('/api/products', {
       next: { revalidate: 60 },
     })
     if (!res.ok) {
@@ -52,6 +54,9 @@ export default async function HomePage() {
         <section className='relative max-w-[1600px] mx-auto'>
           <FeaturedHero />
         </section>
+        {/* <section>
+          <TestProductPage />
+        </section> */}
 
         <section >
           <ProductBlockGrid />

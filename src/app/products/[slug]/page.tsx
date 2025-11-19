@@ -13,6 +13,7 @@ import ProductGallery from '@/components/ProductGallery'
 
 // const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 const baseUrl = 'http://localhost:3000';
+// const baseUrl = '';
 
 async function getProducts(): Promise<Product[]> {
   const res = await fetch(`${baseUrl}/api/products`, {
