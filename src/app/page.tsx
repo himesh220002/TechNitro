@@ -1,3 +1,5 @@
+//src/app/page.tsx
+
 import Footer from '@/components/Footer'
 import Navbar from '@/components/Navbar'
 import ProductFilter from '@/components/ProductFilter'
@@ -21,7 +23,8 @@ async function getProducts(): Promise<Product[]> {
   try {
     const res = await fetch(`${baseUrl}/api/products`, {
     // const res = await fetch('/api/products', {
-      next: { revalidate: 60 },
+      // next: { revalidate: 60 },
+      cache: "no-store",
     })
     if (!res.ok) {
       console.error(`Failed to fetch products: ${res.status} ${res.statusText}`)

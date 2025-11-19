@@ -23,13 +23,14 @@ async function getProducts(): Promise<Product[]> {
   return res.json()
 }
 
-export async function generateStaticParams() {
-  const products = await getProducts()
-  return products.map((product) => ({ slug: product.slug }))
-}
+// export async function generateStaticParams() {
+//   const products = await getProducts()
+//   return products.map((product) => ({ slug: product.slug }))
+// }
 
-export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params
+export default async function ProductPage({ params }: { params: { slug: string } }) {
+  const { slug } = params
+
   const products = await getProducts()
   const product = products.find((p) => p.slug === slug)
 
