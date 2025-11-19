@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic'
 
 async function getRecommendedProducts(): Promise<Product[]> {
   const res = await fetch(`${baseUrl}/api/recommendations`, {
-  next: { revalidate: 60 },
+  cache: "no-store",
 })
 
   return res.json()

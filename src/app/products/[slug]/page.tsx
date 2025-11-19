@@ -18,7 +18,7 @@ import { baseUrl } from '@/lib/baseUrl'
 
 async function getProducts(): Promise<Product[]> {
   const res = await fetch(`${baseUrl}/api/products`, {
-    next: { revalidate: 60 },
+    cache: "no-store",
   })
   return res.json()
 }
