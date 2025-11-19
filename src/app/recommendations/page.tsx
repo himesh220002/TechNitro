@@ -5,11 +5,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Footer from '@/components/Footer'
 import { MdRecommend } from "react-icons/md";
+import { baseUrl } from '@/lib/baseUrl'
 
 export const dynamic = 'force-dynamic'
 
 // const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-const baseUrl = "http://localhost:3000"
+// const baseUrl = "http://localhost:3000"
 
 
 async function getRecommendedProducts(): Promise<Product[]> {

@@ -10,9 +10,10 @@ import OfferBadge from '@/components/OfferBadge'
 import Highlights from '@/components/Highlights'
 import Description from '@/components/Description'
 import ProductGallery from '@/components/ProductGallery'
+import { baseUrl } from '@/lib/baseUrl'
 
 // const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
-const baseUrl = 'http://localhost:3000';
+// const baseUrl = 'http://localhost:3000';
 // const baseUrl = '';
 
 async function getProducts(): Promise<Product[]> {

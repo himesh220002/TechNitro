@@ -8,10 +8,11 @@ import { GradientHeading } from '@/components/ui/LoadingStates'
 import Carousel from '@/components/Carousel'
 import FeaturedHero from '@/components/FeaturedHero'
 import ProductBlockGrid from '@/components/ProductBlockGrid'
+import { baseUrl } from '@/lib/baseUrl'
 // import TestProductPage from './test-product/page'
 
 // const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||  'http://localhost:3000';
-const baseUrl = 'http://localhost:3000'
+// const baseUrl = 'http://localhost:3000'
 // const baseUrl = ''
 
 
