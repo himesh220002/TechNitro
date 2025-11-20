@@ -5,21 +5,22 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Footer from '@/components/Footer'
 import { MdRecommend } from "react-icons/md";
-import { baseUrl } from '@/lib/baseUrl'
+// import { baseUrl } from '@/lib/baseUrl'
 
 export const dynamic = 'force-dynamic'
 
-
 async function getRecommendedProducts(): Promise<Product[]> {
-  const res = await fetch(`${baseUrl}/api/recommendations`, {
-  cache: "no-store",
-})
+  // const res = await fetch(`${baseUrl}/api/recommendations`, {
+  const res = await fetch(`http://localhost:3000/api/recommendations`, {
+    cache: "no-store",
+  })
 
   return res.json()
 }
 
 export default async function RecommendationsPage() {
-  const products = await getRecommendedProducts()
+  const result = await getRecommendedProducts()
+  const products = Array.isArray(result) ? result : []
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
@@ -31,6 +32,7 @@ export default async function RecommendationsPage() {
             Recommended for You
           </h1>
         </div>
+
         <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {products.map((product) => (
             <Link
@@ -55,6 +57,7 @@ export default async function RecommendationsPage() {
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
+
               <div className="p-4">
                 <h2 className="text-lg font-semibold text-gray-100 group-hover:text-purple-400 transition-colors line-clamp-1">
                   {product.name}
@@ -62,6 +65,7 @@ export default async function RecommendationsPage() {
                 <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
                   ₹{product.price.toLocaleString('en-IN')}
                 </p>
+
                 {product.inventory > 0 ? (
                   <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-green-500" />

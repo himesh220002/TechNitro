@@ -1,24 +1,32 @@
 // src/app/api/orders/update-payment.ts
-import { prisma } from '@/lib/prisma'
-import { NextApiRequest, NextApiResponse } from 'next'
+import { NextResponse } from "next/server";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') return res.status(405).end()
+export async function POST(req: Request) {
+  const supabase = createRouteHandlerClient({ cookies });
 
-  const { orderId, paymentResult } = req.body
+  const { orderId, paymentResult } = await req.json();
 
   if (!orderId || !paymentResult) {
-    return res.status(400).json({ error: 'Missing orderId or paymentResult' })
+    return NextResponse.json(
+      { error: "Missing orderId or paymentResult" },
+      { status: 400 }
+    );
   }
 
-  try {
-    await prisma.order.updateMany({
-      where: { id: orderId },
-      data: { paymentResult },
-    })
-    res.status(200).json({ success: true })
-  } catch (err) {
-    console.error('Failed to update paymentResult', err)
-    res.status(500).json({ error: 'Failed to update payment status' })
+  const { error } = await supabase
+    .from("Order")
+    .update({ paymentResult })
+    .eq("id", orderId);
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Failed to update payment status" },
+      { status: 500 }
+    );
   }
+
+  return NextResponse.json({ success: true });
 }
+

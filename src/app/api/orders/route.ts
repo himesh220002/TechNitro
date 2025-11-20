@@ -1,114 +1,93 @@
 //src/app/api/orders/route.ts
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
+import { NextResponse } from "next/server";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
 type ProductInOrder = {
-  id: string
-  quantity: number
-}
-
+  id: string;
+  quantity: number;
+};
 
 export async function POST(req: Request) {
   try {
-  const cookieStore = await cookies() // server-side RequestCookies (await to satisfy types)
-
-    // Provide a cookies adapter that matches the shape expected by Supabase
-    // helpers. The helper may call cookies.get(name) internally, so expose
-    // both get and getAll, as well as set and setAll.
-    const cookiesAdapter = {
-      get(name: string) {
-        const c = cookieStore.get(name)
-        if (!c) return undefined
-        return { name: c.name, value: c.value }
-      },
-      getAll() {
-        return cookieStore.getAll().map((cookie: { name: string; value: string }) => ({ name: cookie.name, value: cookie.value }))
-      },
-      set(name: string, value: string, options?: Record<string, unknown>) {
-        // cookieStore.set accepts (name, value, options)
-  cookieStore.set(name, value, options)
-      },
-      setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
-        cookiesToSet.forEach((cookie) => {
-          cookieStore.set(cookie.name, cookie.value, cookie.options)
-        })
-      },
-    }
-
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: cookiesAdapter,
-      }
-    )
+    const supabase = createRouteHandlerClient({ cookies });
 
     const {
       data: { session },
-    } = await supabase.auth.getSession()
+    } = await supabase.auth.getSession();
 
-    // Read the request body early so we can accept a client-provided fallback
-    const body = await req.json()
+    const body = await req.json();
 
-    // Prefer server session user, but allow client to provide userId as a fallback
-    // (useful in development when the server doesn't receive Supabase cookies).
-    const user = session?.user
-    let userId = user?.id ?? body.userId
-    console.log('Order POST: sessionUserId=', user?.id, ' body.userId=', body.userId)
+    let userId = session?.user?.id ?? body.userId;
 
-    // If userId still missing, validate Authorization Bearer token with Supabase
+    // Fallback: Bearer auth
     if (!userId) {
-      const authHeader = req.headers.get('authorization') || ''
-      const token = authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader
+      const authHeader = req.headers.get("authorization") || "";
+      const token = authHeader.startsWith("Bearer ")
+        ? authHeader.split(" ")[1]
+        : authHeader;
+
       if (token) {
-        try {
-          const userRes = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`, {
+        const userRes = await fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/user`,
+          {
             headers: {
               Authorization: `Bearer ${token}`,
-              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
             },
-          })
-          if (userRes.ok) {
-            const userJson = await userRes.json()
-            userId = userJson?.id
-            console.log('Order POST: validated user from token', userId)
-          } else {
-            console.warn('Order POST: token validation failed', await userRes.text())
           }
-        } catch (err) {
-          console.error('Order POST: token validation error', err)
+        );
+
+        if (userRes.ok) {
+          const userJson = await userRes.json();
+          userId = userJson.id;
         }
       }
     }
 
     if (!userId) {
-      console.warn('Unauthorized order attempt: no userId')
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
+      return NextResponse.json(
+        { error: "Not authenticated" },
+        { status: 401 }
+      );
     }
 
-    // Validate product availability before creating the order
-    const items: Array<{ id: string; quantity: number }> = Array.isArray(body.products)
-      ? (body.products).map((p: ProductInOrder) => ({ id: p.id, quantity: Number(p.quantity) }))
-      : []
+    // Validate products
+    const items: ProductInOrder[] = Array.isArray(body.products)
+      ? body.products.map((p: ProductInOrder) => ({
+          id: p.id,
+          quantity: Number(p.quantity),
+        }))
+      : [];
 
     for (const item of items) {
-      const prod = await prisma.product.findUnique({ where: { id: item.id } })
-      if (!prod) {
-        return NextResponse.json({ error: `Product not found: ${item.id}` }, { status: 400 })
+      const { data: prod, error } = await supabase
+        .from("Product")
+        .select("inventory,name")
+        .eq("id", item.id)
+        .single();
+
+      if (error || !prod) {
+        return NextResponse.json(
+          { error: `Product not found: ${item.id}` },
+          { status: 400 }
+        );
       }
+
       if (prod.inventory < item.quantity) {
-        return NextResponse.json({ error: `Insufficient stock for ${prod.name}` }, { status: 400 })
+        return NextResponse.json(
+          { error: `Insufficient stock for ${prod.name}` },
+          { status: 400 }
+        );
       }
     }
 
-    // Create order and decrement inventory in a single transaction so we don't end up with
-    // inconsistent state if one of the updates fails.
-    const createOp = prisma.order.create({
-      data: {
+    // Create order
+    const { data: order, error: createError } = await supabase
+      .from("Order")
+      .insert({
         id: body.id,
-        userId: userId,
+        userId,
         accountName: body.accountName,
         accountNumber: body.accountNumber,
         phone: body.phone,
@@ -118,19 +97,34 @@ export async function POST(req: Request) {
         payment: body.payment,
         products: body.products,
         shippingEvents: [],
-      },
-    })
+      })
+      .select()
+      .single();
 
-    const updateOps = items.map((item) =>
-      prisma.product.update({ where: { id: item.id }, data: { inventory: { decrement: item.quantity } } })
-    )
+    if (createError) {
+      return NextResponse.json(
+        { error: "Order creation failed", details: createError.message },
+        { status: 500 }
+      );
+    }
 
-    const [order] = await prisma.$transaction([createOp, ...updateOps])
+    // Update inventory
+    for (const item of items) {
+      await supabase
+        .from("Product")
+        .update({
+          inventory: supabase.rpc("decrement_inventory", {
+            product_id: item.id,
+            qty: item.quantity,
+          }),
+        })
+        .eq("id", item.id);
+    }
 
-    return NextResponse.json(order)
+    return NextResponse.json(order);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error('❌ Order creation failed:', message)
-    return NextResponse.json({ error: message }, { status: 500 })
+    const message =
+      error instanceof Error ? error.message : "Unknown error occurred";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

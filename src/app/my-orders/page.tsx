@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Navbar from '@/components/Navbar'
 import type { Order, ProductInOrder } from '@/types/order'
@@ -14,14 +14,23 @@ import { toast } from 'react-hot-toast'
 
 
 export default function MyOrdersPage() {
-  const supabase = createClientComponentClient()
+  const supabase = useMemo(() => createClientComponentClient(), [])
   const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
 
   const cancelOrder = async (id: string) => {
-  const confirmed = confirm('Are you sure you want to cancel this order?')
+  const confirmed = await new Promise<boolean>((resolve) =>
+    toast((t) => (
+      <div className="space-y-2">
+        <p>Cancel this order?</p>
+        <button onClick={() => { toast.dismiss(t.id); resolve(true) }}>Yes</button>
+        <button onClick={() => { toast.dismiss(t.id); resolve(false) }}>No</button>
+      </div>
+    ))
+  )
+
   if (!confirmed) return
 
   const res = await fetch('/api/update-order-status', {
@@ -56,7 +65,7 @@ export default function MyOrdersPage() {
           } : undefined
         })
         const data = await res.json()
-        if (Array.isArray(data)) {
+        if (Array.isArray(data)? data : []) {
           setOrders(data)
           console.log('Fetched orders:', data)
         } else {

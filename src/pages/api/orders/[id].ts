@@ -1,18 +1,24 @@
 // src/pages/api/orders/[id].ts
-import { prisma } from '@/lib/prisma'
-import { NextApiRequest, NextApiResponse } from 'next'
+import { NextResponse } from "next/server";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query
-  if (req.method !== 'GET') return res.status(405).end()
-  if (typeof id !== 'string') return res.status(400).json({ error: 'Invalid order ID' })
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  const supabase = createRouteHandlerClient({ cookies });
 
-  try {
-    const order = await prisma.order.findUnique({ where: { id } })
-    if (!order) return res.status(404).json({ error: 'Order not found' })
-    res.status(200).json(order)
-  } catch (err) {
-    console.error('Failed to fetch order:', err)
-    res.status(500).json({ error: 'Failed to fetch order' })
+  const { data: order, error } = await supabase
+    .from("Order") // MUST match your working table name
+    .select("*")
+    .eq("id", params.id)
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 404 });
   }
+
+  return NextResponse.json(order);
 }
+
