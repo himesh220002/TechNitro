@@ -9,9 +9,6 @@ import { baseUrl } from '@/lib/baseUrl'
 
 export const dynamic = 'force-dynamic'
 
-// const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
-// const baseUrl = "http://localhost:3000"
-
 
 async function getRecommendedProducts(): Promise<Product[]> {
   const res = await fetch(`${baseUrl}/api/recommendations`, {
