@@ -1,24 +1,22 @@
-// src/pages/api/orders/[id].ts
-import { NextResponse } from "next/server";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+// src/pages/api/orders/[id].ts=
+import type { NextApiRequest, NextApiResponse } from "next"
+import { supabaseAdmin } from "@/lib/admin-supabase-server"
 
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  const supabase = createRouteHandlerClient({ cookies });
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const { id } = req.query
 
-  const { data: order, error } = await supabase
-    .from("orders") // MUST match your working table name
-    .select("*")
-    .eq("id", params.id)
-    .single();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 404 });
+  if (req.method !== "GET") {
+    return res.status(405).json({ error: "Method not allowed" })
   }
 
-  return NextResponse.json(order);
+  const { data, error } = await supabaseAdmin
+    .from("orders")
+    .select("*")
+    .eq("id", id)
+    .single()
+
+  if (error) return res.status(404).json({ error: error.message })
+
+  return res.status(200).json(data)
 }
 

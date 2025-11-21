@@ -110,13 +110,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const payload = {
         id: nanoid(),
-        name: body.name,
-        slug: body.slug,
+        name: body.name ?? '',
+        slug: body.slug ?? '',
         description: body.description || "",
         category: body.category || "general",
 
-        price: Number(body.price),
-        inventory: Number(body.inventory),
+        price: Number(body.price ?? 0),
+        inventory: Number(body.inventory ?? 0),
         rating: body.rating ? Number(body.rating) : null,
 
         specs: safeSpecs,
