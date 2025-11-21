@@ -16,7 +16,7 @@ export async function POST(req: Request) {
   }
 
   const { error } = await supabase
-    .from("Order")
+    .from("orders")
     .update({ paymentResult })
     .eq("id", orderId);
 

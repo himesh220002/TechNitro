@@ -1,3 +1,4 @@
+//src/app/my-orders/page.tsx
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
@@ -150,7 +151,7 @@ export default function MyOrdersPage() {
               >
                 <h2 className="text-sm sm:text-xl font-semibold text-green-600"><span className='text-gray-300'>Order #</span>{order.id}</h2>
                 <p className="text-sm text-gray-300">
-                  Placed on {new Date(order.createdAt).toLocaleString()}
+                  Placed on {new Date(order.created_at).toLocaleString()}
                 </p>
                 <div className='flex justify-between items-end'>
                 <p className="text-sm text-yellow-400"><span className='text-gray-300'>Status:</span> {order.paymentStatus}</p>

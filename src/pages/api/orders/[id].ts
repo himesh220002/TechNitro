@@ -10,7 +10,7 @@ export async function GET(
   const supabase = createRouteHandlerClient({ cookies });
 
   const { data: order, error } = await supabase
-    .from("Order") // MUST match your working table name
+    .from("orders") // MUST match your working table name
     .select("*")
     .eq("id", params.id)
     .single();

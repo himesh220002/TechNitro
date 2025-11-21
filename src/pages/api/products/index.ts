@@ -66,14 +66,15 @@
 
 // src/pages/api/products/index.ts
 import type { NextApiRequest, NextApiResponse } from 'next'
-import supabaseServer from '@/lib/supabase-server'   // service-role client (backend only)
+import { supabaseAdmin } from '@/lib/admin-supabase-server'   // service-role client (backend only)
+import { nanoid } from 'nanoid'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   // ---------------------------------------------------------------
   // GET  → Fetch all products
   // ---------------------------------------------------------------
   if (req.method === 'GET') {
-    const { data, error } = await supabaseServer
+    const { data, error } = await supabaseAdmin
       .from('Product')
       .select('*')
 
@@ -87,54 +88,65 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(200).json(data)
   }
 
-  // ---------------------------------------------------------------
-  // POST  → Create new product
-  // ---------------------------------------------------------------
-  if (req.method === 'POST') {
-    const body = req.body
+  // POST FIXED ⚡
+   if (req.method === 'POST') {
+    try {
+      const body = req.body
 
-    // normalize values
-    const images = Array.isArray(body.images)
-      ? body.images
-      : body.images
-      ? [body.images]
-      : []
+      // normalize images
+      const images = Array.isArray(body.images)
+        ? body.images
+        : body.images
+        ? [body.images]
+        : []
 
-    const imageUrl = body.imageUrl || (images.length ? images[0] : null)
+      const imageUrl = body.imageUrl || images[0] || null
 
-    const payload = {
-      name: body.name,
-      slug: body.slug,
-      price: Number(body.price),
-      inventory: Number(body.inventory),
-      rating: body.rating ? Number(body.rating) : null,
-      specs: body.specs || {},
-      images: images ?? [],
-      imageUrl: imageUrl ?? null,
-      lastUpdated: new Date().toISOString(),
-    }
+      // 🔥 FIX specs parsing (avoids 500)
+      const safeSpecs =
+        typeof body.specs === "string"
+          ? JSON.parse(body.specs || "{}")
+          : body.specs || {}
 
-    const { data, error } = await supabaseServer
-      .from('Product')
-      .insert([payload])
-      .select('*')
-      .single()
+      const payload = {
+        id: nanoid(),
+        name: body.name,
+        slug: body.slug,
+        description: body.description || "",
+        category: body.category || "general",
 
-    if (error) {
-      return res.status(500).json({
-        error: 'Failed to create product',
-        details: error.message,
+        price: Number(body.price),
+        inventory: Number(body.inventory),
+        rating: body.rating ? Number(body.rating) : null,
+
+        specs: safeSpecs,
+        images,
+        imageUrl,
+
+        lastUpdated: new Date().toISOString(),
+      };
+
+
+      const { data, error } = await supabaseAdmin
+        .from("Product")
+        .insert([payload])
+        .select("*")
+        .single()
+
+      if (error) {
+        console.error("Insert failed", error)
+        return res.status(500).json({ error: "Insert failed", details: error.message })
+      }
+
+      return res.status(201).json({
+        message: "Product added successfully",
+        product: data,
       })
+    } catch (err) {
+      console.error("POST /api/products error:", err)
+      return res.status(500).json({ error: "Internal error" })
     }
-
-    return res.status(201).json({
-      message: 'Product added successfully',
-      product: data,
-    })
   }
 
-  // ---------------------------------------------------------------
-  // NOT ALLOWED
-  // ---------------------------------------------------------------
-  return res.status(405).json({ error: 'Method not allowed' })
+  res.status(405).json({ error: "Method not allowed" })
 }

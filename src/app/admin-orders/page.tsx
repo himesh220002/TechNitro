@@ -32,6 +32,7 @@ type ProductInOrder = {
 
 type Order = {
   id: string
+  user_id: string
   accountName: string
   accountNumber: string
   phone: string
@@ -40,7 +41,7 @@ type Order = {
   paymentMethod: string
   payment: number
   paymentStatus: string
-  createdAt: string
+  created_at: string
   products: ProductInOrder[]
   shippingEvents?: ShippingEvent[]
 }
@@ -112,32 +113,45 @@ export default function AdminOrdersPage() {
 
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true)
-      try {
-        const session = await supabase.auth.getSession()
-        const token = session?.data?.session?.access_token
+  const fetchOrders = async () => {
+    setLoading(true)
 
-        const res = await fetch('/api/admin/orders', {
-          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-        })
-        const data = await res.json()
-        if (Array.isArray(data)) {
-          setOrders(data)
-        } else {
-          console.error('Unexpected /api/admin/orders response:', data)
-          setOrders([])
-        }
-      } catch (err) {
-        console.error('Failed to fetch admin orders:', err)
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.access_token) {
+        console.warn("❌ No access token")
         setOrders([])
-      } finally {
-        setLoading(false)
+        return
       }
-    }
 
-    fetchOrders()
-  }, [supabase.auth])
+      const res = await fetch("/api/admin/orders", {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      })
+
+      const data = await res.json()
+
+      if (Array.isArray(data)) {
+        setOrders(data)
+      } else {
+        console.error("Unexpected response:", data)
+        setOrders([])
+      }
+    } catch (err) {
+      console.error("Failed to fetch admin orders:", err)
+      setOrders([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  fetchOrders()
+}, [supabase.auth])
+
 
   const updateStatus = async (id: string, status: string) => {
     const res = await fetch('/api/update-order-status', {
@@ -160,7 +174,7 @@ export default function AdminOrdersPage() {
 
   const filteredOrders = orders
     .filter((order) => {
-      const created = new Date(order.createdAt)
+      const created = new Date(order.created_at)
       const inDateRange = created >= startDate && created <= endDate
       const matchesStatus = statusFilter ? order.paymentStatus === statusFilter : true
       const matchesSearch = searchQuery.trim()
@@ -168,11 +182,12 @@ export default function AdminOrdersPage() {
           order.phone.includes(searchQuery) ||
           order.products.some((p) =>
             p.name.toLowerCase().includes(searchQuery.toLowerCase())
-          )
+          ) ||
+          order.user_id.toLowerCase().includes(searchQuery.toLowerCase()) 
         : true
       return inDateRange && matchesStatus && matchesSearch
     })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
     function SkeletonOrderCard() {
       return (
@@ -519,7 +534,8 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
                   <div className=" flex gap-2 text-xl font-semibold text-white">
                     <span className="text-green-500">Order#</span><span>{order.id}</span>
                   </div>
-                  <p className="text-sm text-gray-300">Placed on {new Date(order.createdAt).toLocaleString()}</p>
+                  <p className="text-sm text-gray-300">Placed on {new Date(order.created_at).toLocaleString()}</p>
+                  <p className="text-sm text-indigo-100"><span className="text-blue-400">User Id: </span>{(order.user_id).slice(0,8)}</p>
                   <p className="text-sm text-indigo-300"><span className="text-green-500">Buyer: </span>{order.accountName}</p>
                   <p className="text-sm text-indigo-300"><span className="text-green-500">Phone: </span>{order.phone}</p>
                   <p className="text-sm text-indigo-300"><span className="text-green-500">Address: </span>{order.address}</p>

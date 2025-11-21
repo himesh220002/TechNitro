@@ -56,7 +56,7 @@ const subtotal = order.payment - gstAmount - 200 // assuming ₹200 delivery
 
       <div className="text-sm text-gray-700 space-y-1">
         <p><span className="font-bold">Order ID:</span> <span className="font-mono">{order.id}</span></p>
-        <p><span className="font-bold">Placed on:</span> {new Date(order.createdAt).toLocaleString()}</p>
+        <p><span className="font-bold">Placed on:</span> {new Date(order.created_at).toLocaleString()}</p>
         <p><span className="font-bold">Payment Method:</span> {order.paymentMethod}</p>
         <p><span className="font-bold">Payment Status:</span> {order.paymentStatus}</p>
         <p><span className="font-bold">Payment Result:</span> {order.paymentResult}</p>
@@ -188,7 +188,7 @@ const subtotal = order.payment - gstAmount - 200 // assuming ₹200 delivery
                         <div style="display: flex; gap: 2rem; ">
                         <div style= "border: 1px solid black; padding:10px;">
                         <p><strong>Order ID:</strong> ${order.id}</p>
-                        <p><strong>Placed on:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
+                        <p><strong>Placed on:</strong> ${new Date(order.created_at).toLocaleString()}</p>
                         <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
                         <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
                         </div>

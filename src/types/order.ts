@@ -10,7 +10,7 @@ export type Order = {
   payment: number
   paymentStatus: string
   paymentResult: string | null
-  createdAt: string
+  created_at: string
   products: {
     id: string
     name: string
