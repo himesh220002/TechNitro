@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@fortawesome/react-fontawesome": "^3.1.0",
+    "@headlessui/react": "^2.2.9",
     "@prisma/client": "^6.19.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/ssr": "^0.7.0",

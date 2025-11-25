@@ -10,6 +10,7 @@ import Footer from '@/components/Footer'
 import { useRouter } from 'next/navigation'
 import ShippingTimeline from '@/components/ShippingTimeline'
 import { toast } from 'react-hot-toast'
+
 // import ShippingTimeline from '@/components/ShippingTimeline'
 
 
@@ -20,19 +21,11 @@ export default function MyOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([])
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
+  const [openCancelId, setOpenCancelId] = useState<string | null>(null);
+
 
   const cancelOrder = async (id: string) => {
-  const confirmed = await new Promise<boolean>((resolve) =>
-    toast((t) => (
-      <div className="space-y-2">
-        <p>Cancel this order?</p>
-        <button onClick={() => { toast.dismiss(t.id); resolve(true) }}>Yes</button>
-        <button onClick={() => { toast.dismiss(t.id); resolve(false) }}>No</button>
-      </div>
-    ))
-  )
-
-  if (!confirmed) return
+  
 
   const res = await fetch('/api/update-order-status', {
     method: 'POST',
@@ -170,9 +163,9 @@ export default function MyOrdersPage() {
                       <button
                         onClick={() => {
                           if (['Order Placed', 'Order Confirmed', 'Packed'].includes(order.paymentStatus)) {
-                            cancelOrder(order.id)
+                            setOpenCancelId(order.id)
                           }
-                          setOpenDropdown(null)
+                          // setOpenDropdown(null)
                         }}
                         disabled={!['Order Placed', 'Order Confirmed', 'Packed'].includes(order.paymentStatus)}
                         title={
@@ -188,6 +181,32 @@ export default function MyOrdersPage() {
                       >
                         Cancel Order
                       </button>
+                    {openCancelId === order.id && (
+                      <div className="mt-2 p-4 bg-gray-800 rounded-lg border border-gray-600 space-y-3">
+                        <p className="text-gray-200">Cancel this order?</p>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={() => {
+                              cancelOrder(order.id);
+                              setOpenCancelId(null);
+                              setOpenDropdown(null)
+                            }}
+                            className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-500"
+                          >
+                            Yes, Cancel
+                          </button>
+                          <button
+                            onClick={() => {setOpenCancelId(null)
+                              setOpenDropdown(null)
+                            }}
+                            className="px-4 py-2 rounded bg-gray-600 text-gray-200 hover:bg-gray-500"
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
 
                         <button
                           onClick={() => {
@@ -255,10 +274,14 @@ export default function MyOrdersPage() {
                     </div>
                   </div>
                 )}
-
+                <div className="flex justify-between">
+                <p className="mt-4 text-sm text-gray-300">
+                  delivery: ₹{order.deliveryCharge.toLocaleString('en-IN')}
+                </p>
                 <p className="mt-4 text-right font-bold text-indigo-300">
                   Total: ₹{order.payment.toLocaleString('en-IN')}
                 </p>
+                </div>
               </div>
             ))}
           </div>

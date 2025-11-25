@@ -1,80 +1,80 @@
 // src/app/api/update-order-status/route.ts
-import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { NextResponse } from "next/server";
+import { supabaseAdmin } from "@/lib/admin-supabase-server";
 
 type ProductInOrder = {
-  id: string
-  name: string
-  slug: string
-  price: number
-  category: string
-  imageUrl: string
-  quantity: number
-  inventory: number
-  created_at: string
-  description: string
-  lastUpdated: string
-}
-
+  id: string;
+  quantity: number;
+};
 
 export async function POST(req: Request) {
   try {
-    const { id, status } = await req.json()
+    const { id, status } = await req.json();
 
-    const order = await prisma.order.findUnique({
-      where: { id },
-    })
+    // 1️⃣ Fetch order
+    const { data: order, error: fetchErr } = await supabaseAdmin
+      .from("orders")
+      .select("*")
+      .eq("id", id)
+      .single();
 
-    if (!order) {
-      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
+    if (fetchErr || !order) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    const previousStatus = order.paymentStatus
-    const products: ProductInOrder[] =
-    Array.isArray(order.products) && typeof order.products[0] === 'object'
-    ? (order.products as ProductInOrder[])
-    : []
+    const previousStatus = order.paymentStatus;
+    const products: ProductInOrder[] = order.products ?? [];
 
+    // ❗ IMPORTANT FIX: correct property names:
+    // order.paymentStatus  (NOT payment_status)
+    // order.shippingEvents (NOT shipping_events)
 
-    // 🔄 Restore stock if cancelling before shipment
+    // 2️⃣ Restore inventory on cancellation (before shipped)
     if (
-      status === 'Cancelled' &&
-      ['Order Placed', 'Order Confirmed', 'Packed'].includes(previousStatus)
+      status === "Cancelled" &&
+      ["Order Placed", "Order Confirmed", "Packed"].includes(previousStatus)
     ) {
       for (const item of products) {
-        await prisma.product.update({
-          where: { id: item.id },
-          data: {
-            inventory: { increment: item.quantity },
-          },
-        })
+        await supabaseAdmin.rpc("increment_inventory", {
+          product_id: item.id,
+          qty: item.quantity,
+        });
       }
     }
 
-    // 🟢 Deduct stock if placing or confirming order
+    // 3️⃣ Deduct inventory on "Order Placed" only once
     if (
-      status === 'Order Placed' &&
-      !['Cancelled', 'Returned'].includes(previousStatus)
+      status === "Order Placed" &&
+      !["Cancelled", "Returned"].includes(previousStatus)
     ) {
       for (const item of products) {
-        await prisma.product.update({
-          where: { id: item.id },
-          data: {
-            inventory: { decrement: item.quantity },
-          },
-        })
+        await supabaseAdmin.rpc("decrement_inventory", {
+          product_id: item.id,
+          qty: item.quantity,
+        });
       }
     }
 
-    const updated = await prisma.order.update({
-      where: { id },
-      data: { paymentStatus: status },
-    })
+    // 4️⃣ Update order status
+    const { data: updated, error: updateErr } = await supabaseAdmin
+      .from("orders")
+      .update({ paymentStatus: status })
+      .eq("id", id)
+      .select()
+      .single();
 
-    return NextResponse.json(updated)
-  } catch (error) {
-    console.error('❌ Failed to update order:', error instanceof Error ? error.message : error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    if (updateErr) {
+      return NextResponse.json(
+        { error: "Failed to update order", details: updateErr.message },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json(updated);
+  } catch (err) {
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Internal error" },
+      { status: 500 }
+    );
   }
 }
-

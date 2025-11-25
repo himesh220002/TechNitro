@@ -101,20 +101,23 @@ export default function CheckoutClient() {
     }
   }
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const gstRate = 0.18
-  const gstAmount = Math.round(total - total / (1 + gstRate))
-  const rawAmountWithoutGst = total- gstAmount
-
-  console.log("raw amount: " ,rawAmountWithoutGst)
+  // const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  // const gstRate = 0.18
+  
 
 
  // NEW dynamic delivery charge (mean)
 const deliveryCharge = calculateConsolidatedDeliveryCharge(items);
 
-const subtotal = total;
+const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 const totalPaid = subtotal + deliveryCharge;
 
+
+// const gstAmount = Math.round(total - total / (1 + gstRate))
+//   const rawAmountWithoutGst = total- gstAmount
+
+//   console.log("raw amount: " ,rawAmountWithoutGst)
+//   console.log("total amount: " ,total)
 
 
 
@@ -157,6 +160,7 @@ const totalPaid = subtotal + deliveryCharge;
       pin: form.pin,
       products: items,
       paymentMethod: form.paymentMethod,
+      deliveryCharge,
       payment: totalPaid,
       paymentStatus: 'Order Placed',
       paymentResult: 'pending',
@@ -176,7 +180,7 @@ const totalPaid = subtotal + deliveryCharge;
 
     const options = {
       key: razorpayKey,
-      amount: total * 100,
+      amount: totalPaid * 100,
       currency: 'INR',
       name: 'Ecommerce Catalog',
       description: 'Order Payment',

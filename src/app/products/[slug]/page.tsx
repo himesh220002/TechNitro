@@ -18,7 +18,8 @@ import { baseUrl } from '@/lib/baseUrl'
 
 async function getProducts(): Promise<Product[]> {
   const res = await fetch(`${baseUrl}/api/products`, {
-    cache: "no-store",
+     cache: "force-cache",   // ✅ cache results for ISR
+    next: { revalidate: 60 } // ✅ revalidate every 60s
   })
   return res.json()
 }
@@ -103,5 +104,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
   )
 }
 
-export const dynamic = 'force-dynamic'
+// export const dynamic = 'force-dynamic'
+// ✅ ISR enabled
+export const revalidate = 60
 

@@ -1,6 +1,7 @@
 // src/types/order.ts
 export type Order = {
   id: string
+  user_id: string
   accountName: string
   accountNumber: string
   phone: string
@@ -8,6 +9,7 @@ export type Order = {
   pin: string
   paymentMethod: string
   payment: number
+  deliveryCharge: number
   paymentStatus: string
   paymentResult: string | null
   created_at: string

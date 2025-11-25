@@ -40,6 +40,7 @@ type Order = {
   pin: string
   paymentMethod: string
   payment: number
+  deliveryCharge:number
   paymentStatus: string
   created_at: string
   products: ProductInOrder[]
@@ -559,8 +560,8 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
                         </div>
                       </div>
                     ))}
-                    <p className=" text-indigo-400">subtotal: ₹{order.payment.toLocaleString('en-IN')} + delivery: ₹200</p>
-                    <p className="font-bold text-indigo-300">Total: ₹{(order.payment + 200).toLocaleString('en-IN')}</p>
+                    <p className=" text-indigo-400">subtotal: ₹{(order.payment - order.deliveryCharge).toLocaleString('en-IN')} + delivery: ₹{order.deliveryCharge}</p>
+                    <p className="font-bold text-indigo-300">Total: ₹{(order.payment).toLocaleString('en-IN')}</p>
                   </div>
                   </div>
 
