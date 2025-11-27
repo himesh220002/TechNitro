@@ -149,7 +149,7 @@ export default function FeaturedHero() {
   }, [])
 
   return (
-    <section id="torch-section1" className="relative bg-gradient-to-b from-black/40 via-purple-900 to-indigo-100/20 text-black rounded-xl p-10 mb-10 shadow-lg overflow-hidden min-h-[520px] flex flex-col sm:flex-row justify-around gap-5 items-center" key={currentSlide}>
+    <section id="torch-section1" className="relative bg-gradient-to-b from-black/40 via-purple-900 to-indigo-100/20 text-black rounded sm:rounded-xl p-3 pt-15 sm:p-10 mb-5 sm:mb-10 shadow-lg overflow-hidden min-h-[520px] flex flex-col sm:flex-row justify-around gap-5 items-center" key={currentSlide}>
       
       <div
         id="torch-overlay1"
@@ -158,26 +158,26 @@ export default function FeaturedHero() {
       />
       
       
-      <div className="relative z-30 space-y-4">
-        <h1 className="text-4xl text-gray-500 text-center font-extrabold">Welcome to TechNitro</h1>
+      <div className="relative z-30 space-y-4">        
+        <h1 className="text-xl sm:text-3xl md:text-4xl bg-clip-text text-transparent bg-gradient-to-br from-pink-500 via-blue-300 to-green-400 text-center font-extrabold">Welcome to TechNitro</h1>
         
 
         {/* Tagline */}
-        <p className="italic text-white/80 text-md mt-2">
+        <p className="italic text-white/80 text-xs sm:text-md mt-2">
           “Tech that inspires. Prices that empower.”
         </p>
 
         {/* Feature Highlights */}
         <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 mt-6 text-sm text-white/90">
-          <div className="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+          <div className="bg-white/10 p-1 sm:p-2 rounded-lg backdrop-blur-sm">
             <h3 className="font-semibold mb-1">🚀 Performance</h3>
             <p>Top-tier processors and blazing-fast SSDs.</p>
           </div>
-          <div className="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+          <div className="bg-white/10 p-1 sm:p-2 rounded-lg backdrop-blur-sm">
             <h3 className="font-semibold mb-1">💸 Value</h3>
             <p>Curated picks that balance price and power.</p>
           </div>
-          <div className="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+          <div className="bg-white/10 p-1 sm:p-2 rounded-lg backdrop-blur-sm">
             <h3 className="font-semibold mb-1">🎨 Design</h3>
             <p>Modern aesthetics with premium build quality.</p>
           </div>
@@ -187,36 +187,36 @@ export default function FeaturedHero() {
 
       </div>
       <div className='flex flex-col sm:flex-row gap-2 items-center'>
-      {/* Left: Product Highlights */}
-      <div className="z-20 max-w-xl space-y-4" >
-        <h1 className="text-4xl text-gray-400 font-extrabold animate-slide-in">{current.name}</h1>
-        <ul className="space-y-1 text-gray-300  text-lg">
-          {current.features.map((f, i) => (
-            <li key={i} className="before:content-['✔'] before:mr-2 before:text-green-400 animate-slide-up">
-              {f}
-            </li>
-          ))}
-        </ul>
-        <div className="mt-4 text-yellow-400 font-semibold text-xl animate-zoom-in">{current.discount}% Discount — Limited Time!</div>
-        <button
-        onClick={() => router.push(current.link)}
-        className='inline-block mt-4 bg-yellow-400 text-gray-900 font-semibold px-6 py-3 rounded-full hover:bg-yellow-300 transition animate-zoom-in'
-        >
-            Buy Now
-        </button>
-        
-      </div>
+        {/* Left: Product Highlights */}
+        <div className="z-20 max-w-xl text-center space-y-4" >
+          <h1 className=" text-xl md:text-3xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-red-300 font-extrabold animate-slide-in">{current.name}</h1>
+          <ul className="space-y-1 text-gray-300  text-lg">
+            {current.features.map((f, i) => (
+              <li key={i} className="text-sm sm:text-lg animate-slide-up">
+                {f}
+              </li>
+            ))}
+          </ul>
+          <div className="mt-2 sm:mt-4 text-yellow-400 font-semibold text-md sm:text-xl animate-zoom-in">{current.discount}% Discount — Limited Time!</div>
+          <button
+          onClick={() => router.push(current.link)}
+          className='inline-block mt-1 sm:mt-4 bg-yellow-400 text-gray-900 text-md sm:text-xl font-semibold px-3 sm:px-6 py-1 sm:py-3 rounded-full hover:bg-yellow-300 transition animate-zoom-in'
+          >
+              Buy Now
+          </button>
+          
+        </div>
 
-      {/* Right: Product Image */}
-      <div className="z-10 w-[400px] h-[400px] animate-image-slide">
-        <Image
-          src={current.image}
-          alt="Headphone"
-          height={400}
-          width={400}
-          className="object-contain h-[400px] transition-opacity duration-700 ease-in-out"
-        />
-      </div>
+        {/* Right: Product Image */}
+        <div className="z-10 w-[300px] sm:w-[400px] h-[200px] sm:h-[400px] animate-image-slide">
+          <Image
+            src={current.image}
+            alt="Headphone"
+            height={400}
+            width={400}
+            className="object-contain h-[200px] sm:h-[400px] transition-opacity duration-700 ease-in-out"
+          />
+        </div>
       </div>
 
       {/* Bottom: Bullet Navigation */}

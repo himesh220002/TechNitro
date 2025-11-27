@@ -28,7 +28,7 @@ export default function Footer() {
             Subscribe
           </button>
         </form>
-        <label className="text-xs text-gray-400 flex items-center justify-center gap-2">
+        <label className="text-xs text-gray-400 flex items-start justify-center gap-2">
           <input type="checkbox" className="accent-red-600" />
           I would like to receive information about new releases and offers.
         </label>

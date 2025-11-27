@@ -44,53 +44,55 @@ export default async function ProductPage({ params }: { params: { slug: string }
       <Navbar />
 
       <main className="min-h-screen p-6 max-w-[1600px] mx-auto">
-      <div className='flex gap-5'>
+      <div className='flex gap-0 sm:gap-5'>
         <div className="grid gap-10 items-start justify-between mt-6 grid-cols-1 2xl:grid-cols-2">
-          {/* Image Section */}
-          <div className=''>
-          <div className=" relative w-full lg:w-[600px] xl:w-[600px] rounded-xl overflow-hidden">
-            {product.images && product.images.length > 0 ? (
-              <ProductGallery images={product.images}/>  
-            ) : product.imageUrl ? (
-              <Image
-                src={product.imageUrl}
-                alt={product.name}
-                fill
-                className="object-cover "
-                sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                priority
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
-                No image available
+            {/* Image Section */}
+            <div className=''>
+            <div className=" relative w-full lg:w-[600px] xl:w-[600px] rounded-xl overflow-hidden">
+              {product.images && product.images.length > 0 ? (
+                <ProductGallery images={product.images}/>  
+              ) : product.imageUrl ? (
+                <Image
+                  src={product.imageUrl}
+                  alt={product.name}
+                  fill
+                  className="object-cover "
+                  sizes="(max-width: 640px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  priority
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+                  No image available
+                </div>
+              )}
+              <OfferBadge />
+            </div>
+            <div>
+              
+            </div>
+            </div>
+
+            {/* Details Section */}
+            <div className=" space-y-2 sm:space-y-6">
+              <h1 className=" text-xl sm:text-4xl font-bold text-white">{product.name}</h1>
+              <p className="text-sm uppercase tracking-wide text-indigo-400">{product.category}</p>
+              <Ratings rating={product.rating ?? 6} />
+              <Highlights product={product} />
+              <div className='flex justify-between'>
+                <div className="pt-2 space-y-1">
+                  
+                  <p className="text-xl sm:text-4xl font-extrabold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">₹{product.price.toLocaleString('en-IN')}</p>
+                  <p className="text-sm text-gray-400">Stock: {product.inventory}</p>
+                </div>
+                <div className="mt-4 md:hidden">
+                  <ProductActions product={product} />
+                </div>
               </div>
-            )}
-            <OfferBadge />
-          </div>
-          <div>
-             
-          </div>
-          </div>
+              <Description text={product.description} />
+              <DeliveryInfo />
 
-          {/* Details Section */}
-          <div className=" space-y-6">
-            <h1 className="text-4xl font-bold text-white">{product.name}</h1>
-            <p className="text-sm uppercase tracking-wide text-indigo-400">{product.category}</p>
-            <Ratings rating={product.rating ?? 6} />
-            <Highlights product={product} />
-
-            <div className="pt-2 space-y-1">
-              <p className="text-4xl font-extrabold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">₹{product.price.toLocaleString('en-IN')}</p>
-              <p className="text-sm text-gray-400">Stock: {product.inventory}</p>
+              
             </div>
-
-            <Description text={product.description} />
-            <DeliveryInfo />
-
-            <div className="mt-4 md:hidden">
-              <ProductActions product={product} />
-            </div>
-          </div>
           </div>
             <div className='col-span-1 mt-5'>
           {/* Sticky buy panel */}

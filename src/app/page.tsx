@@ -13,18 +13,14 @@ import ProductBlockGrid from '@/components/ProductBlockGrid'
 import { baseUrl } from '@/lib/baseUrl'
 // import TestProductPage from './test-product/page'
 
-// const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ||  'http://localhost:3000';
-// const baseUrl = 'http://localhost:3000'
-// const baseUrl = ''
-
-
 
 async function getProducts(): Promise<Product[]> {
   try {
     const res = await fetch(`${baseUrl}/api/products`, {
     // const res = await fetch('/api/products', {
-      // next: { revalidate: 60 },
-      cache: "no-store",
+      cache: "force-cache",
+      next: { revalidate: 60 },
+      
     })
     if (!res.ok) {
       console.error(`Failed to fetch products: ${res.status} ${res.statusText}`)
@@ -54,8 +50,8 @@ export default async function HomePage() {
   return (
     <GradientBackground>
       <Navbar />
-      <main className="min-h-screen">
-        <section className='relative max-w-[1600px] mx-auto'>
+      <main className="min-h-screen ">
+        <section className='relative max-w-[1600px]  mx-auto'>
           <FeaturedHero />
         </section>
         {/* <section>
@@ -73,7 +69,7 @@ export default async function HomePage() {
         </section> */}
 
         {/* Featured Categories */}
-        <section className="max-w-[1600px] mx-auto px-6 py-16 space-y-16">
+        <section className="max-w-[1600px] mx-auto px-6 py-5 text-center sm:text-start md:py-16 space-y-16">
           <GradientHeading>Featured Categories</GradientHeading>
           
           {/* Category Sections */}
@@ -86,7 +82,7 @@ export default async function HomePage() {
         </section>
 
         {/* All Products with Filter */}
-        <section className="max-w-[1600px] mx-auto px-6 py-16">
+        <section className="max-w-[1600px] mx-auto px-6 my-5 md:py-16">
           <div className="mb-8">
             <GradientHeading>All Products</GradientHeading>
             <p className="mt-2 text-gray-400">Find the perfect item from our collection</p>

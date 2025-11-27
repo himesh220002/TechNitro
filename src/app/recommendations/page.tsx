@@ -12,7 +12,8 @@ export const dynamic = 'force-dynamic'
 async function getRecommendedProducts(): Promise<Product[]> {
   // const res = await fetch(`${baseUrl}/api/recommendations`, {
   const res = await fetch(`http://localhost:3000/api/recommendations`, {
-    cache: "no-store",
+    cache: "force-cache",   // ✅ cache results for ISR
+    next: { revalidate: 60 } // ✅ revalidate every 60s
   })
 
   return res.json()
@@ -28,7 +29,7 @@ export default async function RecommendationsPage() {
       <main className="px-6 py-12 max-w-7xl mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <MdRecommend className="text-4xl text-purple-500" />
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+          <h1 className="text-xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
             Recommended for You
           </h1>
         </div>
@@ -86,3 +87,6 @@ export default async function RecommendationsPage() {
     </div>
   )
 }
+
+
+export const revalidate = 60

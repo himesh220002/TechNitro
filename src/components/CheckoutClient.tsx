@@ -8,6 +8,7 @@ import type { Product } from '@/types/product'
 import ContactForm from './ContactForm'
 import PaymentForm from './PaymentForm'
 import { MdRemoveCircle } from 'react-icons/md'
+import LoadingBars from './ui/LoadingBar'
 
 const supabase = createClientComponentClient()
 
@@ -26,6 +27,9 @@ export default function CheckoutClient() {
     pin: '',
     paymentMethod: 'Bank',
   })
+
+  const [isPayLoading, setIsPayLoading] = useState(false)
+
 
 
 
@@ -101,31 +105,20 @@ export default function CheckoutClient() {
     }
   }
 
-  // const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  // const gstRate = 0.18
-  
-
-
- // NEW dynamic delivery charge (mean)
 const deliveryCharge = calculateConsolidatedDeliveryCharge(items);
 
 const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 const totalPaid = subtotal + deliveryCharge;
 
 
-// const gstAmount = Math.round(total - total / (1 + gstRate))
-//   const rawAmountWithoutGst = total- gstAmount
-
-//   console.log("raw amount: " ,rawAmountWithoutGst)
-//   console.log("total amount: " ,total)
-
-
-
   const handlePayment = async () => {
+    setIsPayLoading(true); 
+    try{
     const session = await supabase.auth.getSession()
     const accessToken = session?.data?.session?.access_token
     const userId = ((currentUser as Record<string, unknown> | null)?.['id'] as string | undefined) ?? session?.data?.session?.user?.id
     if (!userId) {
+      setIsPayLoading(false)
       alert('Please sign in before placing an order')
       router.push('/login')
       return
@@ -222,7 +215,14 @@ const totalPaid = subtotal + deliveryCharge;
     }
 
     const rzp = new window.Razorpay(options)
+    setIsPayLoading(false)
     rzp.open()
+    
+
+    } catch (err) {
+    setIsPayLoading(false)
+    console.error(err)
+    }
   }
 
 
@@ -349,6 +349,9 @@ function calculateConsolidatedDeliveryCharge(items: { category: string; quantity
 
 
             <div className="text-right max-w-6xl m-auto mt-6">
+              {isPayLoading ? (
+                  <LoadingBars />   // 🔥 Loader visible until razorpay shows up
+                ) : (
               <button
                 onClick={handlePayment}
                 disabled={!formIsValid}
@@ -360,6 +363,7 @@ function calculateConsolidatedDeliveryCharge(items: { category: string; quantity
               >
                 Pay Now
               </button>
+            )}
             </div>
           </>
         )}

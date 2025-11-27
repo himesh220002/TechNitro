@@ -13,7 +13,7 @@ export default function Highlights({ product }: { product: Product }) {
       {Object.entries(specs).reverse().map(([key, value]) => (
         <div
           key={key}
-          className="p-2 border border-gray-400/10 rounded text-sm text-white/80 bg-gray-400/40"
+          className="p-1 sm:p-2 border border-gray-400/10 rounded text-sm sm:text-md text-white/80 bg-gradient-to-b from-gray-400/40 via-gray-400/30 to-gray-800/40"
         >
           <span className="font-medium capitalize">{key}:</span> {value}
         </div>

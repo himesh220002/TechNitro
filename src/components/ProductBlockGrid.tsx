@@ -21,7 +21,7 @@ const blocks = [
     discount: 15,
   },
   {
-    title: 'Shop the <strong>Hottest</strong><br>Products',
+    title: 'Shop the <br><strong>Hottest</strong><br>Products',
     imageUrl: '/recordcaset.png',
     link: '/dashboard',
     discount: 50,
@@ -30,7 +30,7 @@ const blocks = [
 
 export default function ProductBlockGrid() {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 max-w-[1600px] m-auto mb-10">
+    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-4 max-w-[1600px] mx-2 sm:m-auto mb-5 sm:mb-10">
       {blocks.map((block, i) => (
         <ProductBlock key={i} {...block} />
       ))}

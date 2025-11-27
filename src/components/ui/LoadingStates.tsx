@@ -56,7 +56,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
 
 export function GradientHeading({ children }: { children: React.ReactNode }) {
   return (
-    <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+    <h1 className=" text-2xl sm:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
       {children}
     </h1>
   )

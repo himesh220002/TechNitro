@@ -48,12 +48,12 @@ export default function Navbar() {
   }
 
   return (
-    <header className="bg-gradient-to-br from-white via-white to-indigo-200 shadow-lg sticky top-0 z-50 mb-10">
-      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+    <header className="bg-gradient-to-br from-white via-white to-indigo-200 shadow-lg sticky top-0 z-50 mb-0 md:mb-10">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-12 sm:h-16">
         {/* Logo */}
         <Link href="/" 
             className="">
-            <Image src="/LogoTechNitroFlat.png" alt="TechNest Logo" width={80} height={40} className="h-10 w-20"/>
+            <Image src="/LogoTechNitroFlat.png" alt="TechNest Logo" width={80} height={40} className="h-10 w-20 "/>
         </Link>
 
         {/* Desktop Nav */}
@@ -166,7 +166,7 @@ export default function Navbar() {
                 </button>
 
                 {showDropdown && (
-                  <div className="absolute right-0 mt-2 w-48 bg-gray-800 border border-gray-700 rounded shadow-lg z-50">
+                  <div className="absolute top-10 mt-2 w-48 bg-gray-800 border border-gray-700 rounded shadow-lg z-50">
                     <div className="px-4 py-2 text-sm text-gray-300">
                       {user.email}
                     </div>
@@ -180,8 +180,7 @@ export default function Navbar() {
                 )}
               </div>
             ) : (
-              // While we're still resolving the session, render an empty placeholder to avoid
-              // briefly showing the "Login" button during hydration. After resolution, user
+              // render an empty placeholder to avoid briefly showing the "Login" button during hydration. After resolution, user
               // will be either null (show Login) or a User object.
               (user === undefined) ? (
                 <div className="w-[110px] h-10 rounded-full bg-indigo-900/30" />

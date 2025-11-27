@@ -93,9 +93,9 @@ export default function CartPage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
       <Navbar />
       <main className="max-w-4xl mx-auto px-6 py-12">
-        <div className="flex items-center gap-3 mb-8">
-          <span className="text-3xl">🛒</span>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
+        <div className="flex items-center justify-center sm:justify-start gap-3 mb-8">
+          <span className="text-2xl sm:text-3xl">🛒</span>
+          <h1 className="text-xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">
             Your Cart
           </h1>
         </div>
@@ -121,16 +121,16 @@ export default function CartPage() {
           </div>
         ) : (
           <div>
-            <div className="space-y-6 mb-8">
+            <div className="space-y-2 sm:space-y-6 mb-8">
               {cart.map((item) => (
                 <div
                   key={item.id}
                   className="group rounded-xl overflow-hidden bg-gradient-to-br from-gray-800/50 to-gray-900/50 
                          backdrop-blur-lg border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300"
                 >
-                  <div className="p-6">
+                  <div className="p-3 sm:p-6">
                     <div className="flex gap-6">
-                      <div className="relative w-24 h-24">
+                      <div className="relative w-24 h-24 hidden sm:block">
                         {item.imageUrl ? (
                           <Image
                             src={item.imageUrl}
@@ -147,7 +147,7 @@ export default function CartPage() {
                       </div>
                       <div className="flex-1">
                         <h2 className="text-lg font-semibold text-gray-200">{item.name}</h2>
-                        <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 
+                        <p className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 
                                   bg-clip-text text-transparent mt-1">
                           ₹{item.price.toLocaleString('en-IN')}
                         </p>

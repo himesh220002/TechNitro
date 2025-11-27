@@ -60,18 +60,18 @@ export default function ProductsPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4"
+          className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-2 sm:gap-4"
         >
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
+          <h1 className="text-xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-600">
             🛍️ Explore Products
           </h1>
-          <div className='flex gap-10'>
-            <div className="flex items-center gap-4">
-                <label className="text-gray-400 text-sm">Filter by:</label>
+          <div className='flex gap-3 sm:gap-10'>
+            <div className="flex items-center  gap-1 sm:gap-4">
+                <label className="text-gray-400 text-xs sm:text-sm">Filter by:</label>
                 <select
                 value={filterBy}
                 onChange={(e) => setFilterBy(e.target.value as typeof filterBy)}
-                className="px-4 py-2 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="px-2 py-1 sm:px-4 sm:py-2 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none"
               >
                 <option className='bg-gray-900' value="all">All</option>
                 <option className='bg-gray-900' value="accessories">Accessories</option>
@@ -81,12 +81,12 @@ export default function ProductsPage() {
               </select>
             </div>
 
-            <div className="flex items-center gap-4">
-              <label className="text-gray-400 text-sm">Sort by:</label>
+            <div className="flex items-center gap-1 sm:gap-4">
+              <label className="text-gray-400 text-xs sm:text-sm">Sort by:</label>
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="px-4 py-2 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                className="px-2 py-1 sm:px-4 sm:py-2 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none"
               >
                 <option className='bg-gray-900' value="name">Name</option>
                 <option className='bg-gray-900' value="price">Price</option>

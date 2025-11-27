@@ -11,7 +11,7 @@ interface Props {
 
 export default function ProductFilter({ products }: Props) {
   const [query, setQuery] = useState('')
-  const [visibleCount, setVisibleCount] = useState(10)
+  const [visibleCount, setVisibleCount] = useState(9)
 
   const sorted = [...products].sort(
     (a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
@@ -30,7 +30,7 @@ export default function ProductFilter({ products }: Props) {
 
   const handleLoadMore = () => {
     const remaining = filtered.length - visibleCount
-    const nextBatch = remaining >= 5 ? 5 : remaining
+    const nextBatch = remaining >= 6 ? 6 : remaining
     setVisibleCount(visibleCount + nextBatch)
   }
 
@@ -43,13 +43,13 @@ export default function ProductFilter({ products }: Props) {
           value={query}
           onChange={(e) => {
             setQuery(e.target.value)
-            setVisibleCount(10) // reset count on new search
+            setVisibleCount(9) // reset count on new search
           }}
-          className="mb-4 flex-1 px-4 py-3 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none w-full max-w-xl"
+          className="mb-4 flex-1 px-4 py-1 sm:py-3 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none w-full max-w-xl"
         />
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-3 sm:grid-cols-2 md:grid-cols-5 gap-2 sm:gap-6">
         {visibleProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

@@ -105,11 +105,11 @@ export default function MyOrdersPage() {
   return (
     <>
       <Navbar />
-      <main className="max-w-6xl min-h-[500px] mx-auto p-6">
-        <div className='flex justify-between items-center'>
-        <h1 className="text-3xl font-bold mb-6">📦 My Orders</h1>
-        <div >
-          <label> Track Order</label>
+      <main className="max-w-6xl min-h-[500px] mx-auto p-3 sm:p-6">
+        <div className='flex flex-col sm:flex-row gap-1 justify-between items-center mb-6'>
+        <h1 className="text-xl sm:text-3xl font-bold ">📦 My Orders</h1>
+        <div className='flex gap-2 items-center'>
+          <label className='text-sm sm:text-lg'> Track Order</label>
           <input
             type="text"
             placeholder="Enter Order ID"
@@ -121,7 +121,7 @@ export default function MyOrdersPage() {
                 }
               }
             }}
-            className="ml-4 px-4 py-2 rounded bg-gray-800 text-white"
+            className=" sm:ml-4  px-2 py-1 sm:px-4 sm:py-2 rounded bg-gray-800 text-white"
           />
         </div>
         </div>

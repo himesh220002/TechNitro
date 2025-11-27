@@ -46,7 +46,7 @@ export default function Carousel({ products, className = '' }: CarouselProps) {
   return (
     <div className="relative group">
       <div className={`overflow-hidden ${className}`} ref={emblaRef}>
-        <div className="flex gap-6">
+        <div className="flex gap-2 sm:gap-6">
           {products.map((product) => (
             <motion.div
               key={product.id}
@@ -80,10 +80,10 @@ export default function Carousel({ products, className = '' }: CarouselProps) {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg font-semibold text-gray-100 group-hover:text-purple-400 transition-colors line-clamp-1">
+                  <h3 className="text-xm sm:text-lg font-semibold text-gray-100 group-hover:text-purple-400 transition-colors line-clamp-1">
                     {product.name}
                   </h3>
-                  <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
+                  <p className="text-md sm:text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
                     ₹{product.price.toLocaleString('en-IN')}
                   </p>
                   {product.inventory > 0 ? (

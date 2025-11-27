@@ -70,7 +70,7 @@ export default function DashboardPage() {
           className="max-w-[1600px] mx-auto px-6 py-16"
         >
           <GradientHeading>Inventory Overview</GradientHeading>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-6 mt-8">
             {[
               { label: 'Total Products', value: stockStatus.total, color: 'from-blue-400 to-blue-600' },
               { label: 'Low Stock', value: stockStatus.lowStock, color: 'from-yellow-400 to-orange-600' },
@@ -79,7 +79,7 @@ export default function DashboardPage() {
               <motion.div
                 key={stat.label}
                 whileHover={{ scale: 1.02 }}
-                className="p-6 rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-lg 
+                className="p-2 sm:p-6 flex flex-row justify-between items-center sm:flex-col rounded-xl bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-lg 
                          border border-gray-700/50 hover:border-purple-500/50 transition-all duration-300"
               >
                 <h3 className="text-gray-400 text-sm">{stat.label}</h3>
