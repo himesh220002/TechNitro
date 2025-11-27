@@ -95,7 +95,7 @@ export default function OrderConfirmationPage() {
 
       <div className="border-t border-gray-300 pt-4 text-right">
         <div className="text-right text-sm pt-4 text-gray-700 space-y-1">
-          <p>Subtotal: ₹{(subtotal- order.deliveryCharge - gstAmount).toLocaleString('en-IN')}</p>
+          <p>Subtotal: ₹{(subtotal - gstAmount).toLocaleString('en-IN')}</p>
           <p>Included GST (approx.): ₹{gstAmount.toLocaleString('en-IN')}</p>
           <p>Delivery Charges: ₹{deliveryCharge.toLocaleString('en-IN')}</p>
 
