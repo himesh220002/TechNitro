@@ -41,7 +41,7 @@ type Order = {
   paymentMethod: string
   payment: number
   paymentResult: string
-  deliveryCharge:number
+  deliveryCharge: number
   orderStatus: string
   created_at: string
   products: ProductInOrder[]
@@ -83,6 +83,7 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true)
 
   const [visibleCount, setVisibleCount] = useState(20)
+  const [activeTab, setActiveTab] = useState<'active' | 'archived' | 'hidden'>('active')
 
 
   useEffect(() => {
@@ -92,14 +93,14 @@ export default function AdminOrdersPage() {
         router.replace('/admin/login')
         return
       }
-      
+
       const role = session.user.user_metadata?.role
       if (role !== 'admin') {
         router.replace('/admin/login')
         return
       }
     }
-    
+
     checkAdminAccess()
   }, [router, supabase.auth])
 
@@ -108,57 +109,69 @@ export default function AdminOrdersPage() {
   const [sourceCity, setSourceCity] = useState('')
   const [destinationCity, setDestinationCity] = useState('')
   const [routePlan, setRoutePlan] = useState<RouteEdge[]>([])
-  const [selectedRouteType, setSelectedRouteType] = useState<'cost-effective' | 'time-effective' | 'hybrid'| null>(null)
+  const [selectedRouteType, setSelectedRouteType] = useState<'cost-effective' | 'time-effective' | 'hybrid' | null>(null)
 
   const [openNotesOrderId, setOpenNotesOrderId] = useState<string | null>(null)
 
 
- 
+
   const [weightKg, setWeightKg] = useState(1)
 
-  
+
 
 
 
   useEffect(() => {
-  const fetchOrders = async () => {
-    setLoading(true)
+    const fetchOrders = async () => {
+      setLoading(true)
 
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession()
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession()
 
-      if (!session?.access_token) {
-        console.warn("❌ No access token")
+        if (!session?.access_token) {
+          console.warn("❌ No access token")
+          setOrders([])
+          return
+        }
+
+        const queryParams = new URLSearchParams()
+        if (activeTab === 'archived') {
+          queryParams.append('archived', 'true')
+          queryParams.append('hidden', 'false')
+        } else if (activeTab === 'hidden') {
+          queryParams.append('hidden', 'true')
+          queryParams.append('archived', 'false')
+        } else {
+          queryParams.append('archived', 'false')
+          queryParams.append('hidden', 'false')
+        }
+
+        const res = await fetch(`/api/admin/orders?${queryParams.toString()}`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        })
+
+        const data = await res.json()
+
+        if (Array.isArray(data)) {
+          setOrders(data)
+        } else {
+          console.error("Unexpected response:", data)
+          setOrders([])
+        }
+      } catch (err) {
+        console.error("Failed to fetch admin orders:", err)
         setOrders([])
-        return
+      } finally {
+        setLoading(false)
       }
-
-      const res = await fetch("/api/admin/orders", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
-      })
-
-      const data = await res.json()
-
-      if (Array.isArray(data)) {
-        setOrders(data)
-      } else {
-        console.error("Unexpected response:", data)
-        setOrders([])
-      }
-    } catch (err) {
-      console.error("Failed to fetch admin orders:", err)
-      setOrders([])
-    } finally {
-      setLoading(false)
     }
-  }
 
-  fetchOrders()
-}, [supabase.auth])
+    fetchOrders()
+  }, [supabase.auth, activeTab])
 
 
   const updateStatus = async (id: string, status: string) => {
@@ -187,49 +200,49 @@ export default function AdminOrdersPage() {
       const matchesStatus = statusFilter ? order.orderStatus === statusFilter : true
       const matchesSearch = searchQuery.trim()
         ? order.accountName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.phone.includes(searchQuery) ||
-          order.products.some((p) =>
-            p.name.toLowerCase().includes(searchQuery.toLowerCase())
-          ) ||
-          order.user_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.paymentResult.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.orderStatus.toLowerCase().includes(searchQuery.toLowerCase()) 
+        order.phone.includes(searchQuery) ||
+        order.products.some((p) =>
+          p.name.toLowerCase().includes(searchQuery.toLowerCase())
+        ) ||
+        order.user_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.paymentResult.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        order.orderStatus.toLowerCase().includes(searchQuery.toLowerCase())
         : true
       return inDateRange && matchesStatus && matchesSearch
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
-    const visibleOrders = filteredOrders.slice(0, visibleCount)
+  const visibleOrders = filteredOrders.slice(0, visibleCount)
 
-    function SkeletonOrderCard() {
-      return (
-        <div className="border p-4 rounded bg-gradient-to-br from-gray-700/30 to-gray-900 shadow-sm animate-pulse space-y-4">
-          <div className="h-5 bg-gray-600 rounded w-1/3" />
-          <div className="h-4 bg-gray-700 rounded w-1/2" />
-          <div className="h-4 bg-gray-700 rounded w-2/3" />
-          <div className="space-y-2 mt-4">
-            {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="flex gap-4 items-center">
-                <div className="w-16 h-16 bg-gray-700 rounded" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-gray-600 rounded w-3/4" />
-                  <div className="h-4 bg-gray-700 rounded w-1/2" />
-                </div>
+  function SkeletonOrderCard() {
+    return (
+      <div className="border p-4 rounded bg-gradient-to-br from-gray-700/30 to-gray-900 shadow-sm animate-pulse space-y-4">
+        <div className="h-5 bg-gray-600 rounded w-1/3" />
+        <div className="h-4 bg-gray-700 rounded w-1/2" />
+        <div className="h-4 bg-gray-700 rounded w-2/3" />
+        <div className="space-y-2 mt-4">
+          {Array.from({ length: 2 }).map((_, i) => (
+            <div key={i} className="flex gap-4 items-center">
+              <div className="w-16 h-16 bg-gray-700 rounded" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 bg-gray-600 rounded w-3/4" />
+                <div className="h-4 bg-gray-700 rounded w-1/2" />
               </div>
-            ))}
-          </div>
-          <div className="flex justify-between items-center mt-4">
-            <div className="h-4 bg-gray-600 rounded w-1/4" />
-            <div className="h-10 bg-gray-700 rounded w-1/3" />
-          </div>
+            </div>
+          ))}
         </div>
-      )
-    }
+        <div className="flex justify-between items-center mt-4">
+          <div className="h-4 bg-gray-600 rounded w-1/4" />
+          <div className="h-10 bg-gray-700 rounded w-1/3" />
+        </div>
+      </div>
+    )
+  }
 
   const handleAddLocationWithMode = async (
-  orderId: string,
-  location: string,
-  mode: 'train' | 'flight' | 'truck'
+    orderId: string,
+    location: string,
+    mode: 'train' | 'flight' | 'truck'
   ) => {
     const newEvent = {
       location,
@@ -257,6 +270,29 @@ export default function AdminOrdersPage() {
     }
   }
 
+  const handleOrderAction = async (orderId: string, action: 'archive' | 'unarchive' | 'hide' | 'unhide') => {
+    if (!confirm(`Are you sure you want to ${action} this order?`)) return
+
+    try {
+      const res = await fetch(`/api/admin/orders/${action}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId }),
+      })
+
+      if (res.ok) {
+        // Remove the order from the current list since it no longer belongs to the active tab
+        setOrders((prev) => prev.filter((o) => o.id !== orderId))
+      } else {
+        const data = await res.json()
+        alert(`❌ Failed to ${action}: ${data.error}`)
+      }
+    } catch (error) {
+      console.error(`Error ${action}ing order:`, error)
+      alert(`❌ Error ${action}ing order`)
+    }
+  }
+
 
   const normalizedGraph = bidirectionalGraph.map((edge) => ({
     ...edge,
@@ -265,73 +301,73 @@ export default function AdminOrdersPage() {
   }))
 
   const validCities = Array.from(
-  new Set(bidirectionalGraph.flatMap(edge => [edge.from, edge.to]))
-).sort()
+    new Set(bidirectionalGraph.flatMap(edge => [edge.from, edge.to]))
+  ).sort()
 
 
   function chooseOptimalRoute(graph: RouteEdge[],
-  source: string,
-  destination: string,
-  weightKg: number): { type: 'cost-effective' | 'time-effective' | 'hybrid'; route: RouteEdge[] } {
-  const timeEfficientRoute = findBestRoute(graph, source, destination, 'timeHr')
-  const costEfficientRoute = findBestRoute(graph, source, destination, 'costPerKm')
+    source: string,
+    destination: string,
+    weightKg: number): { type: 'cost-effective' | 'time-effective' | 'hybrid'; route: RouteEdge[] } {
+    const timeEfficientRoute = findBestRoute(graph, source, destination, 'timeHr')
+    const costEfficientRoute = findBestRoute(graph, source, destination, 'costPerKm')
 
-  const highCost = timeEfficientRoute.reduce((sum, leg) => sum + getLegCost(leg, weightKg), 0)
-  const lowCost = costEfficientRoute.reduce((sum, leg) => sum + getLegCost(leg, weightKg), 0)
+    const highCost = timeEfficientRoute.reduce((sum, leg) => sum + getLegCost(leg, weightKg), 0)
+    const lowCost = costEfficientRoute.reduce((sum, leg) => sum + getLegCost(leg, weightKg), 0)
 
-  const fastTime = timeEfficientRoute.reduce((sum, leg) => sum + leg.timeHr, 0)
-  const slowTime = costEfficientRoute.reduce((sum, leg) => sum + leg.timeHr, 0)
+    const fastTime = timeEfficientRoute.reduce((sum, leg) => sum + leg.timeHr, 0)
+    const slowTime = costEfficientRoute.reduce((sum, leg) => sum + leg.timeHr, 0)
 
-  const costDiff = highCost - lowCost
-  const savingsPercent = (costDiff / highCost) * 100
-  const hoursPer100Rs = (slowTime - fastTime) / (costDiff / 100)
+    const costDiff = highCost - lowCost
+    const savingsPercent = (costDiff / highCost) * 100
+    const hoursPer100Rs = (slowTime - fastTime) / (costDiff / 100)
 
-  // Tier 1: High-cost routes
-  if (highCost > 5000) {
-    if (savingsPercent >= 5 && hoursPer100Rs <= 3.5) {
-      return { type: 'cost-effective', route: costEfficientRoute }
-    } else if (savingsPercent >= 5 && hoursPer100Rs > 3.5) {
-      return { type: 'hybrid', route: timeEfficientRoute }
-    } else {
-      return { type: 'time-effective', route: timeEfficientRoute }
+    // Tier 1: High-cost routes
+    if (highCost > 5000) {
+      if (savingsPercent >= 5 && hoursPer100Rs <= 3.5) {
+        return { type: 'cost-effective', route: costEfficientRoute }
+      } else if (savingsPercent >= 5 && hoursPer100Rs > 3.5) {
+        return { type: 'hybrid', route: timeEfficientRoute }
+      } else {
+        return { type: 'time-effective', route: timeEfficientRoute }
+      }
     }
+
+    // Tier 2: Mid-cost routes
+    if (highCost > 3000) {
+      if (savingsPercent >= 10 && hoursPer100Rs <= 2.5) {
+        return { type: 'cost-effective', route: costEfficientRoute }
+      } else {
+        return { type: 'time-effective', route: timeEfficientRoute }
+      }
+    }
+
+    // Tier 3: Low-cost routes
+    return { type: 'time-effective', route: timeEfficientRoute }
   }
 
-  // Tier 2: Mid-cost routes
-  if (highCost > 3000) {
-    if (savingsPercent >= 10 && hoursPer100Rs <= 2.5) {
-      return { type: 'cost-effective', route: costEfficientRoute }
-    } else {
-      return { type: 'time-effective', route: timeEfficientRoute }
-    }
+
+  const getLegCost = (leg: RouteEdge, weightKg: number) => {
+    if (weightKg <= 0) return 0
+
+    // Courier & semi-flat logic
+    if (weightKg <= 20) return leg.distanceKm * 0.5 * (weightKg / 10)
+    if (weightKg <= 100) return leg.distanceKm * leg.costPerKm * (weightKg / 10)
+
+    // Full cargo logic — override costPerKm based on mode
+    let ratePerKgKm = leg.costPerKm // fallback to original
+
+    if (leg.mode === 'truck') ratePerKgKm = 4   // realistic 2025 truck cargo rate
+    else if (leg.mode === 'train') ratePerKgKm = 3 // rail cargo rate
+    else if (leg.mode === 'flight') ratePerKgKm = 8 // air cargo rate
+
+    return leg.distanceKm * ratePerKgKm * weightKg
   }
 
-  // Tier 3: Low-cost routes
-  return { type: 'time-effective', route: timeEfficientRoute }
-}
 
 
-const getLegCost = (leg: RouteEdge, weightKg: number) => {
-  if (weightKg <= 0) return 0
-
-  // Courier & semi-flat logic
-  if (weightKg <= 20) return leg.distanceKm * 0.5 * (weightKg / 10)
-  if (weightKg <= 100) return leg.distanceKm * leg.costPerKm * (weightKg / 10)
-
-  // Full cargo logic — override costPerKm based on mode
-  let ratePerKgKm = leg.costPerKm // fallback to original
-
-  if (leg.mode === 'truck') ratePerKgKm = 4   // realistic 2025 truck cargo rate
-  else if (leg.mode === 'train') ratePerKgKm = 3 // rail cargo rate
-  else if (leg.mode === 'flight') ratePerKgKm = 8 // air cargo rate
-
-  return leg.distanceKm * ratePerKgKm * weightKg
-}
-
-
-
-const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
-  route.reduce((sum, leg) => sum + getLegCost(leg, weightKg), 0)
+  const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
+    route.reduce((sum, leg) => sum + getLegCost(leg, weightKg), 0)
 
 
 
@@ -339,9 +375,25 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
     <>
       <Navbar />
       <main className="max-w-7xl mx-auto p-6">
-        
+
         <div className="w-full flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6 border border-gray-800 p-4 rounded-xl">
-          <h1 className="text-3xl font-bold mb-5">🛠 Admin Orders</h1>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-3xl font-bold">🛠 Admin Orders</h1>
+            <div className="flex gap-2">
+              {(['active', 'archived', 'hidden'] as const).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-3 py-1 rounded text-sm capitalize ${activeTab === tab
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                    }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex gap-4 items-center flex-wrap">
             <div className="flex flex-col gap-2">
               <div className="flex gap-2 items-center">
@@ -370,50 +422,50 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
               </div>
             </div>
 
-            <div className='flex flex-col gap-4'>  
-            <div>
-              <label className="text-sm text-white mr-2">Filter by Status</label>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
+            <div className='flex flex-col gap-4'>
+              <div>
+                <label className="text-sm text-white mr-2">Filter by Status</label>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
+                >
+                  <option value="">All</option>
+                  {statusOptions.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm text-white mr-2">Search</label>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buyer, phone, product..."
+                  className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
+                />
+              </div>
+            </div>
+            <div className='flex flex-col gap-2'>
+              <button
+                onClick={() => {
+                  setShowRouteModal(true)
+                }}
+                className="bg-purple-800 text-white px-3 py-2 rounded hover:bg-indigo-700"
               >
-                <option value="">All</option>
-                {statusOptions.map((status) => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-            </div>
+                Show Suggested Route
+              </button>
 
-            <div>
-              <label className="text-sm text-white mr-2">Search</label>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buyer, phone, product..."
-                className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
-              />
-            </div>
-            </div> 
-                <div className='flex flex-col gap-2'>
-            <button
-            onClick={() => {
-              setShowRouteModal(true)
-            }}
-            className="bg-purple-800 text-white px-3 py-2 rounded hover:bg-indigo-700"
-          >
-            Show Suggested Route
-          </button>   
-
-            <button
-              onClick={() => router.push('/admin')}
-              className="bg-gray-800 text-gray-100 px-4 py-2 rounded hover:bg-indigo-700 cursor-pointer"
-            >
-              Back to Dashboard
-            </button>
+              <button
+                onClick={() => router.push('/admin')}
+                className="bg-gray-800 text-gray-100 px-4 py-2 rounded hover:bg-indigo-700 cursor-pointer"
+              >
+                Back to Dashboard
+              </button>
             </div>
           </div>
         </div>
@@ -533,96 +585,131 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
               <SkeletonOrderCard key={i} />
             ))}
           </div>
-          ) :filteredOrders.length === 0 ? (
-            <p className="text-gray-500">No orders found.</p>
-          ) : (
+        ) : filteredOrders.length === 0 ? (
+          <p className="text-gray-500">No orders found.</p>
+        ) : (
           <div className="space-y-6 max-w-6xl m-auto">
             {visibleOrders.map((order) => {
 
-              
-              
+
+
 
               return (
-                
+
                 <div key={order.id} className="flex flex-col sm:flex-row gap-5 justify-between  items-start border border-gray-500 p-4 rounded bg-gradient-to-br from-cyan-500/40 via-black/30 to-black/50 shadow-sm">
                   <div>
-                  <div className=" flex gap-2 text-xl font-semibold text-white">
-                    <span className="text-green-500">Order#</span><span>{order.id}</span>
-                  </div>
-                  <p className="text-sm text-gray-300">Placed on {new Date(order.created_at).toLocaleString()}</p>
-                  <p className="text-sm text-indigo-100"><span className="text-blue-400">User Id: </span>{(order.user_id).slice(0,8)}</p>
-                  <p className="text-sm text-indigo-300"><span className="text-green-500">Buyer: </span>{order.accountName}</p>
-                  <p className="text-sm text-indigo-300"><span className="text-green-500">Phone: </span>{order.phone}</p>
-                  <p className="text-sm text-indigo-300"><span className="text-green-500">Address: </span>{order.address}</p>
-                  <p className="text-sm text-indigo-300"><span className="text-green-500">Pin: </span>{order.pin}</p>
-                  <p
-                  className={`text-sm ${
-                    order.paymentResult === "pending"
-                      ? "text-yellow-400"
-                      : order.paymentResult === "success"
-                      ? "text-green-400"
-                      : order.paymentResult === "cancelled"
-                      ?"text-red-400"
-                      : "text-gray-200"
-                  }`}
-                >
-                  <span className="text-gray-300">Payment Result:</span> {order.paymentResult}
-                </p>
-                  <p
-                  className={`text-sm ${
-                  order.orderStatus === "Order Placed"
-                    ? "text-yellow-400"
-                    : order.orderStatus === "Order Confirmed"
-                    ? "text-blue-400"
-                    : order.orderStatus === "Packed"
-                    ? "text-blue-300 bg-green-700/40 w-fit pr-2"
-                    : order.orderStatus === "Shipped"
-                    ? "text-pink-400"
-                    : order.orderStatus === "Out for Delivery"
-                    ? "text-yellow-700 bg-purple-700/40 w-fit p-2 rounded-xl"
-                    : order.orderStatus === "Cancelled"
-                    ? "text-red-100 bg-red-700/40 w-fit pr-2"
-                    : order.orderStatus === "Returned"
-                    ? "text-gray-400 bg-gray-700/40 w-fit px-2 py-1"
-                    : order.orderStatus === "Refund Initiated"
-                    ? "text-gray-600"
-                    : "text-white"
-                }`}
-                >
-                  <span className='text-gray-300' >Order Status:</span> {order.orderStatus}
-                </p>
-                
-                  <button className='px-2 py-1 my-2 shadow rounded-md bg-indigo-800 hover:bg-blue-700'
-                    onClick={()=>{
-                      router.push(`/orders/${order.id}/confirmation`)
-                    }}
-                  >
-                    View Invoice
-                  </button>
+                    <div className=" flex gap-2 text-xl font-semibold text-white">
+                      <span className="text-green-500">Order#</span><span>{order.id}</span>
+                    </div>
+                    <p className="text-sm text-gray-300">Placed on {new Date(order.created_at).toLocaleString()}</p>
+                    <p className="text-sm text-indigo-100"><span className="text-blue-400">User Id: </span>{(order.user_id).slice(0, 8)}</p>
+                    <p className="text-sm text-indigo-300"><span className="text-green-500">Buyer: </span>{order.accountName}</p>
+                    <p className="text-sm text-indigo-300"><span className="text-green-500">Phone: </span>{order.phone}</p>
+                    <p className="text-sm text-indigo-300"><span className="text-green-500">Address: </span>{order.address}</p>
+                    <p className="text-sm text-indigo-300"><span className="text-green-500">Pin: </span>{order.pin}</p>
+                    <p
+                      className={`text-sm ${order.paymentResult === "pending"
+                          ? "text-yellow-400"
+                          : order.paymentResult === "success"
+                            ? "text-green-400"
+                            : order.paymentResult === "cancelled"
+                              ? "text-red-400"
+                              : "text-gray-200"
+                        }`}
+                    >
+                      <span className="text-gray-300">Payment Result:</span> {order.paymentResult}
+                    </p>
+                    <p
+                      className={`text-sm ${order.orderStatus === "Order Placed"
+                          ? "text-yellow-400"
+                          : order.orderStatus === "Order Confirmed"
+                            ? "text-blue-400"
+                            : order.orderStatus === "Packed"
+                              ? "text-blue-300 bg-green-700/40 w-fit pr-2"
+                              : order.orderStatus === "Shipped"
+                                ? "text-pink-400"
+                                : order.orderStatus === "Out for Delivery"
+                                  ? "text-yellow-700 bg-purple-700/40 w-fit p-2 rounded-xl"
+                                  : order.orderStatus === "Cancelled"
+                                    ? "text-red-100 bg-red-700/40 w-fit pr-2"
+                                    : order.orderStatus === "Returned"
+                                      ? "text-gray-400 bg-gray-700/40 w-fit px-2 py-1"
+                                      : order.orderStatus === "Refund Initiated"
+                                        ? "text-gray-600"
+                                        : "text-white"
+                        }`}
+                    >
+                      <span className='text-gray-300' >Order Status:</span> {order.orderStatus}
+                    </p>
 
-                  <div className="mt-4 space-y-2">
-                    {order.products.map((product) => (
-                      <div key={product.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                        <Image src={product.imageUrl} alt={product.name} width={64} height={64} className="rounded object-cover" />
-                        <div>
-                          <p className="font-semibold text-white">{product.name}</p>
-                          <p className="text-sm text-gray-400">Qty: {product.quantity}</p>
-                          <p className="text-sm text-green-300">₹{(product.price * product.quantity).toLocaleString('en-IN')}</p>
+                    <div className="flex gap-2 my-2">
+                      <button className='px-2 py-1 shadow rounded-md bg-indigo-800 hover:bg-blue-700'
+                        onClick={() => {
+                          router.push(`/orders/${order.id}/confirmation`)
+                        }}
+                      >
+                        View Invoice
+                      </button>
+
+                      {activeTab === 'active' && (
+                        <>
+                          <button
+                            onClick={() => handleOrderAction(order.id, 'archive')}
+                            className="px-2 py-1 shadow rounded-md bg-yellow-700 hover:bg-yellow-600 text-white text-sm"
+                          >
+                            Archive
+                          </button>
+                          <button
+                            onClick={() => handleOrderAction(order.id, 'hide')}
+                            className="px-2 py-1 shadow rounded-md bg-gray-600 hover:bg-gray-500 text-white text-sm"
+                          >
+                            Hide
+                          </button>
+                        </>
+                      )}
+
+                      {activeTab === 'archived' && (
+                        <button
+                          onClick={() => handleOrderAction(order.id, 'unarchive')}
+                          className="px-2 py-1 shadow rounded-md bg-green-700 hover:bg-green-600 text-white text-sm"
+                        >
+                          Unarchive
+                        </button>
+                      )}
+
+                      {activeTab === 'hidden' && (
+                        <button
+                          onClick={() => handleOrderAction(order.id, 'unhide')}
+                          className="px-2 py-1 shadow rounded-md bg-green-700 hover:bg-green-600 text-white text-sm"
+                        >
+                          Unhide
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="mt-4 space-y-2">
+                      {order.products.map((product) => (
+                        <div key={product.id} className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                          <Image src={product.imageUrl} alt={product.name} width={64} height={64} className="rounded object-cover" />
+                          <div>
+                            <p className="font-semibold text-white">{product.name}</p>
+                            <p className="text-sm text-gray-400">Qty: {product.quantity}</p>
+                            <p className="text-sm text-green-300">₹{(product.price * product.quantity).toLocaleString('en-IN')}</p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    <p className=" text-indigo-400">subtotal: ₹{(order.payment - order.deliveryCharge).toLocaleString('en-IN')} + delivery: ₹{order.deliveryCharge}</p>
-                    <p className="font-bold text-indigo-300">Total: ₹{(order.payment).toLocaleString('en-IN')}</p>
-                  </div>
+                      ))}
+                      <p className=" text-indigo-400">subtotal: ₹{(order.payment - order.deliveryCharge).toLocaleString('en-IN')} + delivery: ₹{order.deliveryCharge}</p>
+                      <p className="font-bold text-indigo-300">Total: ₹{(order.payment).toLocaleString('en-IN')}</p>
+                    </div>
                   </div>
 
-                  
+
 
                   <div className=" flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    
+
                     <div className="flex items-start gap-2">
                       <div className='flex flex-col gap-2'>
-                        
+
 
                         {order.orderStatus === 'Shipped' && (
                           <ShippingLegManager
@@ -637,7 +724,7 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
                       <div className='flex flex-col gap-10'>
 
                         <div >
-                        <label className="text-sm text-white block mb-2">Current Status</label>
+                          <label className="text-sm text-white block mb-2">Current Status</label>
                           <select
                             value={order.orderStatus}
                             onChange={(e) => updateStatus(order.id, e.target.value)}
@@ -652,8 +739,8 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
                                   status === 'Order Placed' && order.orderStatus !== 'Order Placed'
                                     ? 'text-gray-500 bg-gray-900'
                                     : status === 'Cancelled'
-                                    ? 'text-red-600 bg-gray-900'
-                                    : ''
+                                      ? 'text-red-600 bg-gray-900'
+                                      : ''
                                 }
                               >
                                 {status}
@@ -680,23 +767,23 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
                       </div>
                     </div>
                   </div>
-                  
+
                 </div>
               )
             })}
 
-    {visibleCount < filteredOrders.length && (
-                    <div className="flex justify-center mt-6">
-                      <button
-                        onClick={() => setVisibleCount((prev) => prev + 10)}
-                        className="px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-600"
-                      >
-                        Load More
-                      </button>
-                    </div>
-                  )}
+            {visibleCount < filteredOrders.length && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 10)}
+                  className="px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-600"
+                >
+                  Load More
+                </button>
+              </div>
+            )}
           </div>
-          
+
         )}
       </main>
     </>

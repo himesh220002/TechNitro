@@ -37,6 +37,10 @@ export type Order = {
 
   products: ProductInOrder[]
   shippingEvents?: ShippingEvent[]
+  ishiddenforuser?: boolean
+  isarchived?: boolean
+  ishiddenforadmin?: boolean
+  isarchivedforadmin?: boolean
 
   // Razorpay specific
   paymentid?: string | null

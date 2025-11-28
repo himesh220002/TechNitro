@@ -41,6 +41,10 @@ model Order {
   createdAt      DateTime @default(now())
   products       Json
   shippingEvents Json?
+  ishiddenforuser Boolean @default(false)
+  isarchived      Boolean @default(false)
+  ishiddenforadmin Boolean @default(false)
+  isarchivedforadmin Boolean @default(false)
 
   @@schema("public")
 }

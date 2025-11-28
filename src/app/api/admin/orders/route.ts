@@ -40,10 +40,17 @@ export async function GET(req: Request) {
       );
     }
 
+    // Parse query params
+    const { searchParams } = new URL(req.url);
+    const archived = searchParams.get("archived") === "true";
+    const hidden = searchParams.get("hidden") === "true";
+
     // Fetch all orders using service-role
     const { data, error } = await supabaseAdmin
       .from("orders")
       .select("*")
+      .eq("isarchivedforadmin", archived)
+      .eq("ishiddenforadmin", hidden)
       .order("created_at", { ascending: false });
 
     if (error) {
