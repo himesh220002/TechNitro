@@ -168,7 +168,7 @@ export default function FeaturedHero() {
         </p>
 
         {/* Feature Highlights */}
-        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 mt-6 text-sm text-white/90">
+        <div className="sm:grid grid-cols-1 sm:grid-cols-1 gap-4 mt-6 text-sm text-white/90 hidden">
           <div className="bg-white/10 p-1 sm:p-2 rounded-lg backdrop-blur-sm">
             <h3 className="font-semibold mb-1">🚀 Performance</h3>
             <p>Top-tier processors and blazing-fast SSDs.</p>
@@ -192,7 +192,7 @@ export default function FeaturedHero() {
           <h1 className=" text-xl md:text-3xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-red-300 font-extrabold animate-slide-in">{current.name}</h1>
           <ul className="space-y-1 text-gray-300  text-lg">
             {current.features.map((f, i) => (
-              <li key={i} className="text-sm sm:text-lg animate-slide-up">
+              <li key={i} className="text-sm sm:text-lg border border-b-red-600/50 border-red-50/10 rounded-sm  animate-slide-up">
                 {f}
               </li>
             ))}

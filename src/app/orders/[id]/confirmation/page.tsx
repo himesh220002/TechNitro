@@ -47,7 +47,7 @@ export default function OrderConfirmationPage() {
 
 
   return (
-  <main className="max-w-2xl mx-auto p-6">
+  <main className="max-w-2xl mx-auto p-1 sm:p-6">
     <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 space-y-6 print:border-none print:shadow-none">
       <div className="text-center">
         <div className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold animate-pulse">
@@ -61,7 +61,7 @@ export default function OrderConfirmationPage() {
         <p><span className="font-bold">Order ID:</span> <span className="font-mono">{order.id}</span></p>
         <p><span className="font-bold">Placed on:</span> {new Date(order.created_at).toLocaleString()}</p>
         <p><span className="font-bold">Payment Method:</span> {order.paymentMethod}</p>
-        <p><span className="font-bold">Payment Status:</span> {order.paymentStatus}</p>
+        <p><span className="font-bold">Payment Status:</span> {order.orderStatus}</p>
         <p><span className="font-bold">Payment Result:</span> {order.paymentResult}</p>
       </div>
       <div className="border-t border-gray-300 pt-4 text-sm text-gray-700 space-y-1">
@@ -116,7 +116,7 @@ export default function OrderConfirmationPage() {
       <div className="text-right">
         <button
           onClick={() => router.push('/my-orders')}
-          className="mt-4 px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+          className="mt-4 px-6 py-2 bg-purple-800 text-white shadow-md rounded hover:bg-indigo-700 transition"
         >
           View All Orders
         </button>
@@ -194,7 +194,7 @@ export default function OrderConfirmationPage() {
                         <p><strong>Order ID:</strong> ${order.id}</p>
                         <p><strong>Placed on:</strong> ${new Date(order.created_at).toLocaleString()}</p>
                         <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
-                        <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
+                        <p><strong>Payment Status:</strong> ${order.orderStatus}</p>
                         </div>
                         <div style= "border: 1px solid black; padding:10px;">
                         <p><strong>Payment Result:</strong> ${order.paymentResult}</p>
@@ -242,7 +242,7 @@ export default function OrderConfirmationPage() {
                 }
               }
             }}
-            className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+            className="px-4 py-2 bg-indigo-700 shadow-md text-white rounded hover:bg-indigo-700"
             >
             📥 Download Invoice
             </button>

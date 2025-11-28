@@ -40,8 +40,9 @@ type Order = {
   pin: string
   paymentMethod: string
   payment: number
+  paymentResult: string
   deliveryCharge:number
-  paymentStatus: string
+  orderStatus: string
   created_at: string
   products: ProductInOrder[]
   shippingEvents?: ShippingEvent[]
@@ -81,6 +82,9 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
 
+  const [visibleCount, setVisibleCount] = useState(20)
+
+
   useEffect(() => {
     const checkAdminAccess = async () => {
       const { data: { session } } = await supabase.auth.getSession()
@@ -105,6 +109,9 @@ export default function AdminOrdersPage() {
   const [destinationCity, setDestinationCity] = useState('')
   const [routePlan, setRoutePlan] = useState<RouteEdge[]>([])
   const [selectedRouteType, setSelectedRouteType] = useState<'cost-effective' | 'time-effective' | 'hybrid'| null>(null)
+
+  const [openNotesOrderId, setOpenNotesOrderId] = useState<string | null>(null)
+
 
  
   const [weightKg, setWeightKg] = useState(1)
@@ -165,7 +172,7 @@ export default function AdminOrdersPage() {
       const updated = await res.json()
       setOrders((prev) =>
         prev.map((order) =>
-          order.id === id ? { ...order, paymentStatus: updated.paymentStatus } : order
+          order.id === id ? { ...order, orderStatus: updated.orderStatus } : order
         )
       )
     } else {
@@ -177,18 +184,22 @@ export default function AdminOrdersPage() {
     .filter((order) => {
       const created = new Date(order.created_at)
       const inDateRange = created >= startDate && created <= endDate
-      const matchesStatus = statusFilter ? order.paymentStatus === statusFilter : true
+      const matchesStatus = statusFilter ? order.orderStatus === statusFilter : true
       const matchesSearch = searchQuery.trim()
         ? order.accountName.toLowerCase().includes(searchQuery.toLowerCase()) ||
           order.phone.includes(searchQuery) ||
           order.products.some((p) =>
             p.name.toLowerCase().includes(searchQuery.toLowerCase())
           ) ||
-          order.user_id.toLowerCase().includes(searchQuery.toLowerCase()) 
+          order.user_id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.paymentResult.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          order.orderStatus.toLowerCase().includes(searchQuery.toLowerCase()) 
         : true
       return inDateRange && matchesStatus && matchesSearch
     })
     .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+
+    const visibleOrders = filteredOrders.slice(0, visibleCount)
 
     function SkeletonOrderCard() {
       return (
@@ -526,11 +537,14 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
             <p className="text-gray-500">No orders found.</p>
           ) : (
           <div className="space-y-6 max-w-6xl m-auto">
-            {filteredOrders.map((order) => {
+            {visibleOrders.map((order) => {
+
+              
               
 
               return (
-                <div key={order.id} className="flex justify-between  items-start border border-gray-500 p-4 rounded bg-gradient-to-br from-cyan-500/40 via-black/30 to-black/50 shadow-sm">
+                
+                <div key={order.id} className="flex flex-col sm:flex-row gap-5 justify-between  items-start border border-gray-500 p-4 rounded bg-gradient-to-br from-cyan-500/40 via-black/30 to-black/50 shadow-sm">
                   <div>
                   <div className=" flex gap-2 text-xl font-semibold text-white">
                     <span className="text-green-500">Order#</span><span>{order.id}</span>
@@ -541,6 +555,43 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
                   <p className="text-sm text-indigo-300"><span className="text-green-500">Phone: </span>{order.phone}</p>
                   <p className="text-sm text-indigo-300"><span className="text-green-500">Address: </span>{order.address}</p>
                   <p className="text-sm text-indigo-300"><span className="text-green-500">Pin: </span>{order.pin}</p>
+                  <p
+                  className={`text-sm ${
+                    order.paymentResult === "pending"
+                      ? "text-yellow-400"
+                      : order.paymentResult === "success"
+                      ? "text-green-400"
+                      : order.paymentResult === "cancelled"
+                      ?"text-red-400"
+                      : "text-gray-200"
+                  }`}
+                >
+                  <span className="text-gray-300">Payment Result:</span> {order.paymentResult}
+                </p>
+                  <p
+                  className={`text-sm ${
+                  order.orderStatus === "Order Placed"
+                    ? "text-yellow-400"
+                    : order.orderStatus === "Order Confirmed"
+                    ? "text-blue-400"
+                    : order.orderStatus === "Packed"
+                    ? "text-blue-300 bg-green-700/40 w-fit pr-2"
+                    : order.orderStatus === "Shipped"
+                    ? "text-pink-400"
+                    : order.orderStatus === "Out for Delivery"
+                    ? "text-yellow-700 bg-purple-700/40 w-fit p-2 rounded-xl"
+                    : order.orderStatus === "Cancelled"
+                    ? "text-red-100 bg-red-700/40 w-fit pr-2"
+                    : order.orderStatus === "Returned"
+                    ? "text-gray-400 bg-gray-700/40 w-fit px-2 py-1"
+                    : order.orderStatus === "Refund Initiated"
+                    ? "text-gray-600"
+                    : "text-white"
+                }`}
+                >
+                  <span className='text-gray-300' >Order Status:</span> {order.orderStatus}
+                </p>
+                
                   <button className='px-2 py-1 my-2 shadow rounded-md bg-indigo-800 hover:bg-blue-700'
                     onClick={()=>{
                       router.push(`/orders/${order.id}/confirmation`)
@@ -573,7 +624,7 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
                       <div className='flex flex-col gap-2'>
                         
 
-                        {order.paymentStatus === 'Shipped' && (
+                        {order.orderStatus === 'Shipped' && (
                           <ShippingLegManager
                             orderId={order.id}
                             shippingEvents={order.shippingEvents}
@@ -585,52 +636,67 @@ const calculateObjectTransferCost = (route: RouteEdge[], weightKg: number) =>
 
                       <div className='flex flex-col gap-10'>
 
-                        <div>
+                        <div >
                         <label className="text-sm text-white block mb-2">Current Status</label>
-                      <select
-                        value={order.paymentStatus}
-                        onChange={(e) => updateStatus(order.id, e.target.value)}
-                        className="bg-gray-800 text-white px-3 py-2 rounded"
-                      >
-                        {statusOptions.map((status) => (
-                          <option
-                            key={status}
-                            value={status}
-                            disabled={status === 'Order Placed' && order.paymentStatus !== 'Order Placed'}
-                            className={
-                              status === 'Order Placed' && order.paymentStatus !== 'Order Placed'
-                                ? 'text-gray-500 bg-gray-900'
-                                : status === 'Cancelled'
-                                ? 'text-red-600 bg-gray-900'
-                                : ''
+                          <select
+                            value={order.orderStatus}
+                            onChange={(e) => updateStatus(order.id, e.target.value)}
+                            className="bg-gray-800 text-white px-3 py-2 rounded"
+                          >
+                            {statusOptions.map((status) => (
+                              <option
+                                key={status}
+                                value={status}
+                                disabled={status === 'Order Placed' && order.orderStatus !== 'Order Placed'}
+                                className={
+                                  status === 'Order Placed' && order.orderStatus !== 'Order Placed'
+                                    ? 'text-gray-500 bg-gray-900'
+                                    : status === 'Cancelled'
+                                    ? 'text-red-600 bg-gray-900'
+                                    : ''
+                                }
+                              >
+                                {status}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            className="rounded border p-1 ml-2"
+                            onClick={() =>
+                              setOpenNotesOrderId(openNotesOrderId === order.id ? null : order.id)
                             }
                           >
-                            {status}
-                          </option>
-                        ))}
-                      </select>
-                      <div>
-                          <OrderNote orderId={order.id}/>
+                            {openNotesOrderId === order.id ? "Close" : "Notes"}
+                          </button>
+
+                          {openNotesOrderId === order.id && (
+                            <div className="mt-2">
+                              <OrderNote orderId={order.id} />
+                            </div>
+                          )}
+
                         </div>
-                      </div>
 
-                        {/* Add Shipping Timeline */}
-                        {/* {order.shippingEvents && order.shippingEvents.length > 0 && (
-                          <div className="mt-4 border-t border-gray-700 pt-4">
-                            <h3 className="text-sm font-semibold text-gray-400 mb-2">📦 Shipping Route</h3>
-                            <ShippingTimeline events={order.shippingEvents} />
-                          </div>
-                        )} */}
-
-                      
                       </div>
                     </div>
                   </div>
+                  
                 </div>
               )
             })}
 
+    {visibleCount < filteredOrders.length && (
+                    <div className="flex justify-center mt-6">
+                      <button
+                        onClick={() => setVisibleCount((prev) => prev + 10)}
+                        className="px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-600"
+                      >
+                        Load More
+                      </button>
+                    </div>
+                  )}
           </div>
+          
         )}
       </main>
     </>

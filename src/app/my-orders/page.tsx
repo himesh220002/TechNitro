@@ -8,7 +8,7 @@ import type { Order, ProductInOrder } from '@/types/order'
 import Image from 'next/image'
 import Footer from '@/components/Footer'
 import { useRouter } from 'next/navigation'
-import ShippingTimeline from '@/components/ShippingTimeline'
+// import ShippingTimeline from '@/components/ShippingTimeline'
 import { toast } from 'react-hot-toast'
 
 // import ShippingTimeline from '@/components/ShippingTimeline'
@@ -37,7 +37,7 @@ export default function MyOrdersPage() {
     const updated = await res.json()
     setOrders((prev) =>
       prev.map((order) =>
-        order.id === id ? { ...order, paymentStatus: updated.paymentStatus } : order
+        order.id === id ? { ...order, orderStatus: updated.orderStatus } : order
       )
     )
   } else {
@@ -146,8 +146,39 @@ export default function MyOrdersPage() {
                 <p className="text-sm text-gray-300">
                   Placed on {new Date(order.created_at).toLocaleString()}
                 </p>
+               <p
+                className={`text-sm ${
+                  order.paymentResult === "pending"
+                    ? "text-yellow-400"
+                    : order.paymentResult === "success"
+                    ? "text-green-400"
+                    : "text-red-400"
+                }`}
+              >
+                <span className="text-gray-300">Payment Result:</span> {order.paymentResult}
+              </p>
+
                 <div className='flex justify-between items-end'>
-                <p className="text-sm text-yellow-400"><span className='text-gray-300'>Status:</span> {order.paymentStatus}</p>
+                <p className={`text-sm ${
+                  order.orderStatus === "Order Placed"
+                    ? "text-yellow-400"
+                    : order.orderStatus === "Order Confirmed"
+                    ? "text-blue-400"
+                    : order.orderStatus === "Packed"
+                    ? "text-blue-300 bg-green-700/40 w-fit pr-2"
+                    : order.orderStatus === "Shipped"
+                    ? "text-pink-400"
+                    : order.orderStatus === "Out for Delivery"
+                    ? "text-yellow-700 bg-purple-700/40 w-fit p-2 rounded-xl"
+                    : order.orderStatus === "Cancelled"
+                    ? "text-red-100 bg-red-700/40 w-fit pr-2"
+                    : order.orderStatus === "Returned"
+                    ? "text-gray-400 bg-gray-700/40 w-fit px-2 py-1"
+                    : order.orderStatus === "Refund Initiated"
+                    ? "text-gray-600"
+                    : "text-white"
+                }`}><span className='text-gray-300'>Status:</span> {order.orderStatus}</p>
+                  
                 <div className="relative">
                   <button
                     onClick={() =>
@@ -162,19 +193,19 @@ export default function MyOrdersPage() {
                       <div className="absolute right-0 mt-2 w-56 bg-gray-900 border border-gray-700 rounded shadow z-20">
                       <button
                         onClick={() => {
-                          if (['Order Placed', 'Order Confirmed', 'Packed'].includes(order.paymentStatus)) {
+                          if (['Order Placed', 'Order Confirmed', 'Packed'].includes(order.orderStatus)) {
                             setOpenCancelId(order.id)
                           }
                           // setOpenDropdown(null)
                         }}
-                        disabled={!['Order Placed', 'Order Confirmed', 'Packed'].includes(order.paymentStatus)}
+                        disabled={!['Order Placed', 'Order Confirmed', 'Packed'].includes(order.orderStatus)}
                         title={
-                          ['Order Placed', 'Order Confirmed', 'Packed'].includes(order.paymentStatus)
+                          ['Order Placed', 'Order Confirmed', 'Packed'].includes(order.orderStatus)
                             ? ''
                             : 'Order has shipped — cancellation is disabled. You can apply for return later.'
                         }
                         className={`block w-full text-left px-4 py-2 text-sm ${
-                          ['Order Placed', 'Order Confirmed', 'Packed'].includes(order.paymentStatus)
+                          ['Order Placed', 'Order Confirmed', 'Packed'].includes(order.orderStatus)
                             ? 'text-red-600 hover:bg-red-100'
                             : 'text-gray-500 cursor-not-allowed'
                         }`}
@@ -266,14 +297,14 @@ export default function MyOrdersPage() {
                     </div>
                   ))}
                 </div>
-                {order.shippingEvents && order.shippingEvents.length > 0 && (
+                {/* {order.shippingEvents && order.shippingEvents.length > 0 && (
                   <div className="mt-4 border-t border-gray-700 pt-2">
                     <div className="flex items-center gap-2 overflow-x-auto pb-2">
                       <span className="text-xs text-gray-400 whitespace-nowrap">📦</span>
                       <ShippingTimeline events={order.shippingEvents} compact={true} horizontal={true} />
                     </div>
                   </div>
-                )}
+                )} */}
                 <div className="flex justify-between">
                 <p className="mt-4 text-sm text-gray-300">
                   delivery: ₹{order.deliveryCharge.toLocaleString('en-IN')}

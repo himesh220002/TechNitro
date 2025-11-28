@@ -36,7 +36,7 @@ model Order {
   pin            String
   paymentMethod  String
   payment        Float
-  paymentStatus  String   @default("Order Placed")
+  orderStatus  String   @default("Order Placed")
   paymentResult  String?  // ✅ New column for Razorpay outcome
   createdAt      DateTime @default(now())
   products       Json

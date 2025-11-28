@@ -28,7 +28,7 @@ CREATE TABLE "public"."Order" (
     "pin" TEXT NOT NULL,
     "paymentMethod" TEXT NOT NULL,
     "payment" DOUBLE PRECISION NOT NULL,
-    "paymentStatus" TEXT NOT NULL DEFAULT 'Order Placed',
+    "orderStatus" TEXT NOT NULL DEFAULT 'Order Placed',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "products" JSONB NOT NULL,
     "shippingEvents" JSONB,

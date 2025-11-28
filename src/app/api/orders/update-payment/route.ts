@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/admin-supabase-server";
 
 export async function POST(req: Request) {
   try {
-    const { orderId, paymentResult } = await req.json();
+    const { orderId, paymentResult , paymentid, razorpayorderid, signature } = await req.json();
 
     if (!orderId || !paymentResult) {
       return NextResponse.json(
@@ -12,10 +12,21 @@ export async function POST(req: Request) {
         { status: 400 }
       );
     }
+     const orderStatus =
+      paymentResult === "success"
+        ? "Order Confirmed"
+        : paymentResult === "cancelled"
+        ? "Cancelled"
+        : "Pending";
 
     const { error } = await supabaseAdmin
       .from("orders")
-      .update({ paymentResult })
+      .update({ paymentResult,
+        orderStatus,
+        paymentid,          // 🔥 essential
+        razorpayorderid,    // optional but helpful
+        signature  
+       })
       .eq("id", orderId);
 
     if (error) {

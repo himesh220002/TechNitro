@@ -107,3 +107,25 @@ body {
   z-index: 0;
   pointer-events: none;
 }
+
+
+@keyframes bounceInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  60% {
+    opacity: 1;
+    transform: translateX(30px);
+  }
+  80% {
+    transform: translateX(-10px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.animate-bounceInLeft {
+  animation: bounceInLeft 0.6s ease forwards;
+}

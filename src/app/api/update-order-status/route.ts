@@ -11,7 +11,6 @@ export async function POST(req: Request) {
   try {
     const { id, status } = await req.json();
 
-    // 1️⃣ Fetch order
     const { data: order, error: fetchErr } = await supabaseAdmin
       .from("orders")
       .select("*")
@@ -22,14 +21,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
-    const previousStatus = order.paymentStatus;
+    const previousStatus = order.orderStatus;
     const products: ProductInOrder[] = order.products ?? [];
 
-    // ❗ IMPORTANT FIX: correct property names:
-    // order.paymentStatus  (NOT payment_status)
-    // order.shippingEvents (NOT shipping_events)
-
-    // 2️⃣ Restore inventory on cancellation (before shipped)
+    
     if (
       status === "Cancelled" &&
       ["Order Placed", "Order Confirmed", "Packed"].includes(previousStatus)
@@ -42,7 +37,7 @@ export async function POST(req: Request) {
       }
     }
 
-    // 3️⃣ Deduct inventory on "Order Placed" only once
+    
     if (
       status === "Order Placed" &&
       !["Cancelled", "Returned"].includes(previousStatus)
@@ -55,10 +50,9 @@ export async function POST(req: Request) {
       }
     }
 
-    // 4️⃣ Update order status
     const { data: updated, error: updateErr } = await supabaseAdmin
       .from("orders")
-      .update({ paymentStatus: status })
+      .update({ orderStatus: status })
       .eq("id", id)
       .select()
       .single();

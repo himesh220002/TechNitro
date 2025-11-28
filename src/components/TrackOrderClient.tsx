@@ -39,7 +39,7 @@ export default function TrackOrderClient() {
       try {
         const res = await fetch(`/api/order-status?id=${orderId}`)
         const data = await res.json()
-        setStatus(data.paymentStatus)
+        setStatus(data.orderStatus)
         setShippingEvents(data.shippingEvents || [])
       } catch (error) {
         console.error('❌ Failed to fetch order status:', error)
@@ -61,7 +61,7 @@ export default function TrackOrderClient() {
     try {
       const res = await fetch(`/api/order-status?id=${orderId}`)
       const data = await res.json()
-      setStatus(data.paymentStatus)
+      setStatus(data.orderStatus)
       setShippingEvents(data.shippingEvents || []) 
     } catch (error) {
       console.error('❌ Failed to fetch order status:', error)

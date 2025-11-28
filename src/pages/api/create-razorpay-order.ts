@@ -21,6 +21,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       amount: amount * 100,
       currency: 'INR',
       receipt: `rcpt_${Date.now()}`,
+      payment_capture: true,
     })
 
     res.status(200).json({

@@ -12,6 +12,13 @@ import LoadingBars from './ui/LoadingBar'
 
 const supabase = createClientComponentClient()
 
+type RazorpayHandlerResponse = {
+  razorpay_payment_id: string
+  razorpay_order_id: string
+  razorpay_signature: string
+}
+
+
 export default function CheckoutClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -145,7 +152,7 @@ const totalPaid = subtotal + deliveryCharge;
     const orderId = uuid()
     const newOrder = {
       id: orderId,
-      userId,
+      user_id: userId,
       accountName: form.accountName,
       accountNumber: form.accountNumber,
       phone: form.phone,
@@ -155,9 +162,9 @@ const totalPaid = subtotal + deliveryCharge;
       paymentMethod: form.paymentMethod,
       deliveryCharge,
       payment: totalPaid,
-      paymentStatus: 'Order Placed',
+      orderStatus: 'Order Placed',
       paymentResult: 'pending',
-      createdAt: new Date().toISOString(),
+      // created_at: new Date().toISOString(),
     }
 
     await fetch('/api/orders', {
@@ -178,29 +185,44 @@ const totalPaid = subtotal + deliveryCharge;
       name: 'Ecommerce Catalog',
       description: 'Order Payment',
       order_id: razorpayOrderId,
-      handler: async function () {
+      capture: true,
+      handler: async function (response: RazorpayHandlerResponse) {
         try {
-          const res = await fetch('/api/orders/update-payment', {
+          const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = response;
+
+          await fetch('/api/orders/update-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderId, paymentResult: 'success' }),
-          })
-          const data = await res.json()
-          console.log('Update-payment response:', data)
+            body: JSON.stringify({
+              orderId,
+              paymentResult: 'success',
+
+              // match DB exactly
+              paymentid: razorpay_payment_id,
+              razorpayorderid: razorpay_order_id,
+              signature: razorpay_signature
+            }),
+          });
+
+          console.log("🔥 Razorpay handler response:", response)
         } catch (err) {
-          console.error('Failed to update paymentResult:', err)
+          console.error('Failed to update paymentResult:', err);
         }
-        localStorage.removeItem('cart')
-        localStorage.removeItem('checkoutItem')
-        setItems([])
-        router.push(`/orders/${orderId}/confirmation`)
+
+        localStorage.removeItem('cart');
+        localStorage.removeItem('checkoutItem');
+        setItems([]);
+        setTimeout(() => {
+          router.push(`/orders/${orderId}/confirmation`);
+        }, 800);
       },
+
       modal: {
         ondismiss: async function () {
           await fetch('/api/orders/update-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderId, paymentResult: 'cancelled' }),
+            body: JSON.stringify({ orderId, paymentResult: 'cancelled', paymentId: null }),
           })
           alert('Payment cancelled. Your cart is preserved.')
         },
@@ -263,7 +285,7 @@ function calculateConsolidatedDeliveryCharge(items: { category: string; quantity
 
   return (
     <>
-      <main className="max-w-6xl mx-auto p-6">
+      <main className="max-w-6xl mx-auto p-0 sm:p-6">
         <h1 className="text-3xl font-bold mb-6">💳 Checkout</h1>
 
         {items.length === 0 ? (

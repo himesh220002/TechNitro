@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     // 🔥 Fetch ONLY required fields
     const { data, error } = await supabaseAdmin
       .from("orders")
-      .select("paymentStatus, shippingEvents")
+      .select("orderStatus, shippingEvents")
       .eq("id", id)
       .single();
 
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({
-      paymentStatus: data.paymentStatus,
+      orderStatus: data.orderStatus,
       shippingEvents: data.shippingEvents ?? [],
     });
   } catch (err) {

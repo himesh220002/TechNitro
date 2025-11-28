@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const body = await req.json();
 
     // Read userId directly from body
-    const userId = body.userId;
+    const userId = body.user_id;
 
     if (!userId) {
       return NextResponse.json({ error: "User ID missing" }, { status: 400 });
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
         deliveryCharge: body.deliveryCharge,
         products: body.products,
         shippingEvents: [],
-        paymentStatus: "Order Placed",
+        orderStatus: "Order Placed",
         paymentResult: body.paymentResult ?? "pending",
       })
       .select()

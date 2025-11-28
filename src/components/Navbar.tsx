@@ -7,6 +7,12 @@ import { Menu, X } from 'lucide-react'
 import Image from 'next/image'
 import { FaCartShopping } from "react-icons/fa6";
 import { User } from '@supabase/supabase-js'
+import { FaHome} from "react-icons/fa";
+import { AiFillProduct } from "react-icons/ai";
+import { RiDashboardFill } from "react-icons/ri";
+import { MdOutlineRecommend } from "react-icons/md";
+import { FaJediOrder } from "react-icons/fa";
+import { IoMdCart } from "react-icons/io";
 
 export default function Navbar() {
   const supabase = createClientComponentClient()
@@ -14,6 +20,8 @@ export default function Navbar() {
   // user === undefined -> still loading/hydrating; null -> no user; User -> signed in
   const [user, setUser] = useState<User | null | undefined>(undefined)
   const [showDropdown, setShowDropdown] = useState(false)
+  
+  const [touchStartY, setTouchStartY] = useState<number | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -47,6 +55,22 @@ export default function Navbar() {
     window.location.href = '/login'
   }
 
+  
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartY(e.touches[0].clientY)
+  }
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY !== null) {
+      const currentY = e.touches[0].clientY
+      if (touchStartY - currentY > 80) {
+        // dragged up > 80px
+        setIsOpen(false)
+        setTouchStartY(null)
+      }
+    }
+  }
+
   return (
     <header className="bg-gradient-to-br from-white via-white to-indigo-200 shadow-lg sticky top-0 z-50 mb-0 md:mb-10">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-12 sm:h-16">
@@ -59,19 +83,22 @@ export default function Navbar() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex space-x-2 text-gray-200 font-medium">
           {[
-            { href: '/', label: 'Home' },
-            { href: '/products', label: 'Products' },
-            { href: '/dashboard', label: 'Dashboard' },
-            { href: '/recommendations', label: 'Recommendations' },
-            { href: '/my-orders', label: 'My Order' },
-            { href: '/cart', label: <FaCartShopping className='text-2xl'/> },
-          ].map(({ href, label }) => (
+            { href: '/', label: 'Home', icon: <FaHome className="text-2xl" /> },
+            { href: '/products', label: 'Products', icon: <AiFillProduct className="text-2xl" /> },
+            { href: '/dashboard', label: 'Dashboard', icon: <RiDashboardFill className="text-2xl" /> },
+            { href: '/recommendations', label: 'Recommendations', icon: <MdOutlineRecommend className="text-2xl" /> },
+            { href: '/my-orders', label: 'MyOrders', icon: <FaJediOrder className="text-2xl" /> },
+            { href: '/cart', label: 'Cart', icon: <FaCartShopping className="text-2xl" /> },
+          ].map(({ href, label, icon }) => (
             <Link
               key={href}
               href={href}
-              className="transition-all duration-500  p-3 bg-gradient-to-tr from-gray-700 to-black/50 rounded-full hover:rounded-full  hover:pt-1 hover:pb-5 shadow shadow-black hover:shadow-lg hover:shadow-indigo-500/50"
+              className="relative flex flex-col items-center group p-3 bg-gradient-to-tr from-gray-700 to-black/50 rounded-full shadow shadow-black hover:shadow-lg hover:shadow-indigo-500/50 transition-all duration-300"
             >
-              {label}
+              {icon}
+              <span className="absolute -bottom-8 text-center text-sm text-gray-400 opacity-0 group-hover:opacity-70 transition-opacity duration-300">
+                {label}
+              </span>
             </Link>
           ))}
           {user ? (
@@ -130,27 +157,34 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-gray-700   px-4 pb-4 space-y-2 p-2">
-          <Link href="/" onClick={() => setIsOpen(false)} className="block text-center">
-            Home
+        <div
+        className={`fixed inset-x-0 top-12 bg-gray-900/70 shadow-md transform transition-transform duration-500 ease-in-out md:hidden ${
+          isOpen ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+        }`}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+      >
+        <div className="  flex flex-col  items-end px-3 pb-4 space-y-2 p-2  ">
+          <Link href="/" onClick={() => setIsOpen(false)} className="block text-center px-4 py-2 flex gap-2 items-center justify-center bg-purple-900 rounded-lg  animate-bounceInLeft">
+            <FaHome className="text-2xl"/>
           </Link>
-          <Link href="/products" onClick={() => setIsOpen(false)} className="block text-center">
-            Products
+          <Link href="/products" onClick={() => setIsOpen(false)} className="block text-center px-4 py-2 flex gap-2 items-center justify-center bg-purple-900 rounded-lg  animate-bounceInLeft">
+            <AiFillProduct className="text-2xl" />  Products
           </Link>
-          <Link href="/dashboard" onClick={() => setIsOpen(false)} className="block text-center">
-            Dashboard
+          <Link href="/dashboard" onClick={() => setIsOpen(false)} className="block text-center px-4 py-2 flex gap-2 items-center justify-center bg-purple-900 rounded-lg  animate-bounceInLeft">
+            <RiDashboardFill className="text-2xl"/>  Dashboard
           </Link>
-          <Link href="/recommendations" onClick={() => setIsOpen(false)} className="block text-center">
-            Recommendations
+          <Link href="/recommendations" onClick={() => setIsOpen(false)} className="block text-center px-4 py-2 flex gap-2 items-center justify-center bg-purple-900 rounded-lg  animate-bounceInLeft">
+            <MdOutlineRecommend className="text-2xl" /> Recommendations
           </Link>
-          <Link href="/my-orders" onClick={() => setIsOpen(false)} className="block text-center">
-            MY Orders
+          <Link href="/my-orders" onClick={() => setIsOpen(false)} className="block text-center px-4 py-2 flex gap-2 items-center justify-center bg-purple-900 rounded-lg animate-bounceInLeft" >
+            <FaJediOrder className="text-2xl" /> MY Orders
           </Link>
-          <Link href="/cart" onClick={() => setIsOpen(false)} className="block text-center">
-            Cart
+          <Link href="/cart" onClick={() => setIsOpen(false)} className="block text-center px-4 py-2 flex gap-2 items-center justify-center bg-purple-900 rounded-lg  animate-bounceInLeft">
+            <IoMdCart className="text-2xl" />
           </Link>
           {user ? (
-              <div className="relative flex justify-center">
+              <div className="relative flex justify-center items-center">
                 <button
                   onClick={() => setShowDropdown((prev) => !prev)}
                   className="flex items-center w-[110px] text-lg gap-2 bg-gray-800 px-3 py-3 rounded-full hover:bg-gray-700 cursor-pointer"
@@ -167,12 +201,12 @@ export default function Navbar() {
 
                 {showDropdown && (
                   <div className="absolute top-10 mt-2 w-48 bg-gray-800 border border-gray-700 rounded shadow-lg z-50">
-                    <div className="px-4 py-2 text-sm text-gray-300">
+                    <div className="px-4 py-2 text-sm text-gray-300 bg-gray-700">
                       {user.email}
                     </div>
                     <button
                       onClick={handleLogout}
-                      className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-gray-700"
+                      className="w-full text-center px-4 py-2 text-sm text-red-400 bg-gray-900"
                     >
                       ❌ Logout
                     </button>
@@ -190,6 +224,7 @@ export default function Navbar() {
                 </a>
               )
             )}
+        </div>
         </div>
       )}
     </header>

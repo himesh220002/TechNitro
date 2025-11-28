@@ -28,7 +28,7 @@ export default function TrackOrderPage() {
       try {
         const res = await fetch(`/api/order-status?id=${orderId}`)
         const data = await res.json()
-        setStatus(data.paymentStatus)
+        setStatus(data.orderStatus)
       } catch (error) {
         console.error('Failed to fetch order status:', error)
       } finally {

@@ -5,13 +5,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Footer from '@/components/Footer'
 import { MdRecommend } from "react-icons/md";
-// import { baseUrl } from '@/lib/baseUrl'
+import { baseUrl } from '@/lib/baseUrl'
 
 export const dynamic = 'force-dynamic'
 
 async function getRecommendedProducts(): Promise<Product[]> {
-  // const res = await fetch(`${baseUrl}/api/recommendations`, {
-  const res = await fetch(`http://localhost:3000/api/recommendations`, {
+  const res = await fetch(`${baseUrl}/api/recommendations`, {
+  // const res = await fetch(`http://localhost:3000/api/recommendations`, {
     cache: "force-cache",   // ✅ cache results for ISR
     next: { revalidate: 60 } // ✅ revalidate every 60s
   })

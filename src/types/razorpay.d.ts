@@ -6,6 +6,7 @@ interface RazorpayOptions {
   description?: string
   order_id: string
   handler: (response: RazorpayResponse) => void
+  capture?: boolean  
   modal?: {
     ondismiss?: () => void
   }
