@@ -144,7 +144,7 @@ export default function OrderConfirmationPage() {
       <div>
         <div className="text-xs text-gray-500 text-center border-t border-gray-300 pt-4">
             This invoice serves as proof of purchase.<br />
-            For support, contact <a href="mailto:versionname4@gmail.com" className="text-indigo-600 underline">versionname4@gmail.com</a>.
+            For support, contact <a href="mailto:versionname4@gmail.com" className="text-indigo-600 underline">versionname4@gmail.com</a>
           </div>
 
         <div className="text-sm text-center text-gray-600">
@@ -246,7 +246,8 @@ export default function OrderConfirmationPage() {
 
                         <p style="font-size: 12px; color: #666; margin-top: 2rem;">
                           This invoice serves as proof of purchase.<br />
-                          For support, contact versionname4@gmail
+                          For support, contact <a href="mailto:versionname4@gmail.com" className="text-indigo-600 underline">versionname4@gmail.com</a><br/>
+                          Call us at +91-80008-45454
                         </p>
                         
                     </body>
