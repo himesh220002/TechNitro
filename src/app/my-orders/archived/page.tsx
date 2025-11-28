@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Navbar from '@/components/Navbar'
 import type { Order } from '@/types/order'
@@ -13,7 +13,7 @@ export default function ArchivedOrdersPage() {
     const [orders, setOrders] = useState<Order[]>([])
     const [loading, setLoading] = useState<boolean>(true)
 
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async () => {
         try {
             setLoading(true)
             const session = await supabase.auth.getSession()
@@ -36,11 +36,11 @@ export default function ArchivedOrdersPage() {
         } finally {
             setLoading(false)
         }
-    }
+    }, [supabase.auth])
 
     useEffect(() => {
         fetchOrders()
-    }, [supabase.auth])
+    }, [fetchOrders])
 
     return (
         <>

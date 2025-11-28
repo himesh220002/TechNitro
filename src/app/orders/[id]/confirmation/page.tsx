@@ -45,6 +45,21 @@ export default function OrderConfirmationPage() {
   const subtotal = order.payment - deliveryCharge;
   const gstAmount = Math.round(subtotal - subtotal / (1 + gstRate));
 
+  // Utility function
+  function maskAccount(accountNumber: string, paymentMethod: string) {
+    if (!accountNumber) return ""
+
+    const last4 = accountNumber.slice(-4)
+
+    if (paymentMethod.toLowerCase() === "upi") {
+      const first4 = accountNumber.slice(0, 4)
+      return `${first4}******${last4}`
+    }
+
+    return `******${last4}`
+  }
+
+
 
   return (
   <main className="max-w-2xl mx-auto p-1 sm:p-6">
@@ -66,7 +81,11 @@ export default function OrderConfirmationPage() {
       </div>
       <div className="border-t border-gray-300 pt-4 text-sm text-gray-700 space-y-1">
         <p><span className="font-bold">Customer Name:</span> {order.accountName}</p>
-        <p><span className="font-bold">Email:</span> {order.accountNumber}</p>
+        <p>
+          <span className="font-bold">Account:</span>{" "}
+          {maskAccount(order.accountNumber, order.paymentMethod)}
+        </p>
+
       </div>
 
 
@@ -203,7 +222,8 @@ export default function OrderConfirmationPage() {
                         <p><strong>Expected Delivery:</strong> Within 3–5 business days</p>
                         </div></div>
                         <p><strong>Customer Name:</strong> ${order.accountName}</p>
-                        <p><strong>Email:</strong> ${order.accountNumber}</p>
+                        <p><strong>Account:</strong> ${" "}
+                        ${maskAccount(order.accountNumber, order.paymentMethod)}</p>
                         <table>
                         <thead>
                             <tr><th>Product</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
