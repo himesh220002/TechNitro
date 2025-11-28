@@ -129,7 +129,7 @@ export default function OrderConfirmationPage() {
           </div>
 
         <div className="text-sm text-center text-gray-600">
-            Need help? Call us at <span className="font-semibold  text-gray-800">+91-80008-454545</span>
+            Need help? Call us at <span className="font-semibold  text-gray-800">+91-80008-45454</span>
         </div>
       </div>
 

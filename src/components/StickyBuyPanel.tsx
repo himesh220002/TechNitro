@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Product } from '@/types/product'
 import { useRouter } from 'next/navigation'
-import { Toaster, toast } from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 export default function StickyBuyPanel({ product }: { product: Product }) {
   const router = useRouter()
@@ -17,16 +17,16 @@ export default function StickyBuyPanel({ product }: { product: Product }) {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]')
     const existing = cart.find((p: { id: string; quantity?: number }) => p.id === product.id)
     if (existing) {
-        const newQuantity = Math.min((existing.quantity || 0) + quantity, product.inventory)
-        if (newQuantity === existing.quantity) {
+      const newQuantity = Math.min((existing.quantity || 0) + quantity, product.inventory)
+      if (newQuantity === existing.quantity) {
         toast('Already added to cart at max quantity', { icon: '⚠️' })
-        } else {
+      } else {
         existing.quantity = newQuantity
         toast.success(`Updated quantity to ${newQuantity}`)
-        }
+      }
     } else {
-        cart.push({ ...product, quantity })
-        toast.success('Added to cart')
+      cart.push({ ...product, quantity })
+      toast.success('Added to cart')
     }
 
     localStorage.setItem('cart', JSON.stringify(cart))
@@ -63,7 +63,6 @@ export default function StickyBuyPanel({ product }: { product: Product }) {
 
         <div className="mt-4 text-xs text-gray-400">Secure payment • 7-day returns</div>
       </div>
-      <Toaster position="bottom-right" />
     </aside>
   )
 }

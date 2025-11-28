@@ -2,7 +2,7 @@
 
 import { Product } from '@/types/product'
 import { useRouter } from 'next/navigation'
-import { Toaster, toast} from 'react-hot-toast'
+import { toast } from 'react-hot-toast'
 
 
 export default function ProductActions({ product }: { product: Product }) {
@@ -36,7 +36,7 @@ export default function ProductActions({ product }: { product: Product }) {
 
   return (
     <div className="mt-0 sm:mt-8 flex gap-2 sm:gap-4">
-      
+
       <button
         className={`px-2 py-2 sm:px-6 sm:py-2 text-sm sm:text-xl font-semibold rounded transition ${product.inventory > 0 ? 'bg-gradient-to-b from-indigo-600 to-gray-700 text-white hover:bg-indigo-700' : 'bg-gray-600 text-gray-300 cursor-not-allowed'}`}
         onClick={handleAddToCart}
@@ -51,7 +51,6 @@ export default function ProductActions({ product }: { product: Product }) {
       >
         {product.inventory > 0 ? 'Buy Now' : 'Out of stock'}
       </button>
-      <Toaster  position='top-right'/>
     </div>
   )
 }
