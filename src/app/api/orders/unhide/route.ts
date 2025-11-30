@@ -14,7 +14,8 @@ export async function POST(req: Request) {
         if (error) throw error
 
         return NextResponse.json({ success: true })
-    } catch (e) {
+    } catch (error) {
+        console.error('Error unhiding order:', error)
         return NextResponse.json({ error: "Failed to unhide order" }, { status: 500 })
     }
 }

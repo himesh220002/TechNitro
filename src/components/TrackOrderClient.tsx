@@ -17,6 +17,7 @@ const statusStages: string[] = [
   'Order Placed',
   'Order Confirmed',
   'Packed',
+  'Shipping',
   'Shipped',
   'Out for Delivery',
   'Delivered',
@@ -29,6 +30,8 @@ export default function TrackOrderClient() {
   const [status, setStatus] = useState<string>('')
   const [loading, setLoading] = useState<boolean>(false)
   const [shippingEvents, setShippingEvents] = useState<ShippingEvent[]>([])
+
+
 
 
   useEffect(() => {
@@ -62,7 +65,7 @@ export default function TrackOrderClient() {
       const res = await fetch(`/api/order-status?id=${orderId}`)
       const data = await res.json()
       setStatus(data.orderStatus)
-      setShippingEvents(data.shippingEvents || []) 
+      setShippingEvents(data.shippingEvents || [])
     } catch (error) {
       console.error('❌ Failed to fetch order status:', error)
     } finally {
@@ -70,20 +73,10 @@ export default function TrackOrderClient() {
     }
   }
 
-  const enrichedEvents = shippingEvents.map((event, i, arr) => {
-    if (i === arr.length - 1) return event // last leg, no arrival time
-
-    const next = arr[i + 1]
-    const nextDeparture = new Date(next.timestamp)
-    const delayMin = Math.floor(Math.random() * (120 - 10 + 1)) + 10
-    const arrival = new Date(nextDeparture.getTime() - delayMin * 60000)
-
-    return {
-      ...event,
-      arrivalTime: arrival.toLocaleString()
-    }
-  })
-
+  // Sort events by timestamp ascending for the timeline (oldest first)
+  const sortedEvents = [...shippingEvents].sort((a, b) =>
+    new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+  )
 
   return (
     <>
@@ -104,72 +97,68 @@ export default function TrackOrderClient() {
         ) : status ? (
           <div className="space-y-4">
             {statusStages.map((stage, i) => (
-                <div key={stage} className="flex flex-col gap-2">
-                    <div className="flex items-center gap-4">
-                    <div
-                        className={`w-4 h-4 rounded-full ${
-                        i <= currentIndex ? 'bg-green-500' : 'bg-gray-600'
-                        }`}
-                    />
-                    <p
-                        className={`text-sm ${
-                        i === currentIndex ? 'text-green-300 font-semibold' : 'text-gray-400'
-                        }`}
-                    >
-                        {stage}
-                    </p>
-                    </div>
-
-                    {/* ✅ Show shipping timeline only below "Shipped" and later */}
-                    {stage === 'Shipped' && currentIndex >= i && shippingEvents.length > 0 && (
-                    <div className="ml-6 mt-2 space-y-2">
-                        {enrichedEvents.map((event, index) => (
-                        <div key={index} className="flex  gap-3 items-center">
-                            <div className="flex items-center gap-3">
-                            <div
-                                className={`w-3 h-3 rounded-full ${
-                                event.status === 'active' ? 'bg-green-400' : 'bg-gray-500'
-                                }`}
-                            />
-                            <p
-                                className={`text-sm ${
-                                event.status === 'active'
-                                    ? 'text-green-200 font-medium'
-                                    : 'text-gray-400'
-                                }`}
-                            >
-                                {event.location} <span className='ml-2 text-lg'>{event.mode === 'train' ? '🚆' : event.mode === 'flight' ? '✈️' : event.mode === 'truck' ? '🚚' : ''}</span>
-                            </p>
-                            </div>
-                            {/* {event.arrivalTime && (
-                            <p className="ml-6 text-xs text-gray-400">
-                                Arrived: {event.arrivalTime}
-                            </p>
-                            )} */}
-                            <p className="ml-6 text-xs text-gray-500">
-                                {event.timestamp}
-                            </p>
-                        </div>
-                        ))}
-
-                    </div>
-                    )}
+              <div key={stage} className="flex flex-col gap-2">
+                <div className="flex items-center gap-4">
+                  <div
+                    className={`w-4 h-4 rounded-full ${i <= currentIndex ? 'bg-green-500' : 'bg-gray-600'
+                      }`}
+                  />
+                  <p
+                    className={`text-sm ${i === currentIndex ? 'text-green-300 font-semibold' : 'text-gray-400'
+                      }`}
+                  >
+                    {stage}
+                  </p>
                 </div>
-                ))}
 
-            <div className='flex justify-between items-center'>
-            <p className="mt-4 text-indigo-300 text-sm">
-              Current Status: <span className="font-bold">{status}</span>
-            </p>
-            <button
+                {/* ✅ Show shipping timeline only below "Shipping" and later */}
+                {stage === 'Shipping' && currentIndex >= i && shippingEvents.length > 0 && (
+                  <div className="ml-6 mt-4 mb-4 space-y-0 relative border-l-2 border-gray-700 pl-4 py-2">
+                    <h4 className="text-sm text-white font-semibold mb-3 -ml-6 bg-black inline-block px-2">📦 Tracking History</h4>
+                    {sortedEvents.map((event, index) => {
+                      const isLatest = index === sortedEvents.length - 1;
+                      return (
+                        <div key={index} className="mb-6 relative">
+                          <div className={`absolute -left-[21px] top-1 w-3 h-3 rounded-full border-2 border-black ${isLatest ? 'bg-green-500 animate-pulse' : 'bg-gray-600'}`} />
+
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-gray-200 font-medium text-sm">{event.location}</span>
+                              {event.mode ? (
+                                <span className="text-xs bg-blue-900/30 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800/50 flex items-center gap-1">
+                                  Departed via {event.mode === 'train' ? '🚆 Train' : event.mode === 'flight' ? '✈️ Flight' : '🚛 Truck'}
+                                </span>
+                              ) : (
+                                <span className="text-xs bg-green-900/30 text-green-300 px-1.5 py-0.5 rounded border border-green-800/50">
+                                  Arrived
+                                </span>
+                              )}
+                              {isLatest && <span className="text-[10px] bg-red-600 text-white px-1 rounded uppercase font-bold tracking-wider">Current</span>}
+                            </div>
+                            <span className="text-xs text-gray-500 mt-1">{new Date(event.timestamp).toLocaleString()}</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+              </div>
+            ))}
+
+            <div className='flex justify-between items-center mt-6 pt-4 border-t border-gray-800'>
+              <p className="text-indigo-300 text-sm">
+                Current Status: <span className="font-bold">{status}</span>
+              </p>
+              <button
                 onClick={() => orderId && fetchStatus()}
-                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-            >
+                className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 transition"
+              >
                 🔄 Refresh Status
-            </button>
+              </button>
 
             </div>
-            
+
 
           </div>
         ) : (

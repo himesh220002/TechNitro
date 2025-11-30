@@ -14,7 +14,11 @@ export async function POST(req: Request) {
         if (error) throw error
 
         return NextResponse.json({ success: true })
-    } catch (e) {
-        return NextResponse.json({ error: "Failed to archive order" }, { status: 500 })
+    } catch (error) {
+        console.error('Error archiving order:', error)
+        return NextResponse.json(
+            { error: 'Internal Server Error' },
+            { status: 500 }
+        )
     }
 }

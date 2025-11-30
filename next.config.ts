@@ -9,13 +9,15 @@ const nextConfig: NextConfig = {
         hostname: 'yvnqvzkgxudodfxofagu.supabase.co',
         pathname: '/storage/v1/object/public/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
     ],
-    
-    domains: ['picsum.photos',
-      'lh3.googleusercontent.com',
-    ],
-    
-  
   },
 };
 

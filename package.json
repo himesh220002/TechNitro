@@ -22,7 +22,6 @@
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.551.0",
-    "mongoose": "^8.19.2",
     "next": "16.0.1",
     "prisma": "^6.18.0",
     "razorpay": "^2.9.6",

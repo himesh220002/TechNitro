@@ -60,6 +60,7 @@ const statusOptions = [
   'Order Placed',
   'Order Confirmed',
   'Packed',
+  'Shipping',
   'Shipped',
   'Out for Delivery',
   'Delivered',
@@ -121,55 +122,55 @@ export default function AdminOrdersPage() {
 
 
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true)
+  const fetchOrders = async () => {
+    setLoading(true)
 
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
 
-        if (!session?.access_token) {
-          console.warn("❌ No access token")
-          setOrders([])
-          return
-        }
-
-        const queryParams = new URLSearchParams()
-        if (activeTab === 'archived') {
-          queryParams.append('archived', 'true')
-          queryParams.append('hidden', 'false')
-        } else if (activeTab === 'hidden') {
-          queryParams.append('hidden', 'true')
-          queryParams.append('archived', 'false')
-        } else {
-          queryParams.append('archived', 'false')
-          queryParams.append('hidden', 'false')
-        }
-
-        const res = await fetch(`/api/admin/orders?${queryParams.toString()}`, {
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
-        })
-
-        const data = await res.json()
-
-        if (Array.isArray(data)) {
-          setOrders(data)
-        } else {
-          console.error("Unexpected response:", data)
-          setOrders([])
-        }
-      } catch (err) {
-        console.error("Failed to fetch admin orders:", err)
+      if (!session?.access_token) {
+        console.warn("❌ No access token")
         setOrders([])
-      } finally {
-        setLoading(false)
+        return
       }
-    }
 
+      const queryParams = new URLSearchParams()
+      if (activeTab === 'archived') {
+        queryParams.append('archived', 'true')
+        queryParams.append('hidden', 'false')
+      } else if (activeTab === 'hidden') {
+        queryParams.append('hidden', 'true')
+        queryParams.append('archived', 'false')
+      } else {
+        queryParams.append('archived', 'false')
+        queryParams.append('hidden', 'false')
+      }
+
+      const res = await fetch(`/api/admin/orders?${queryParams.toString()}`, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      })
+
+      const data = await res.json()
+
+      if (Array.isArray(data)) {
+        setOrders(data)
+      } else {
+        console.error("Unexpected response:", data)
+        setOrders([])
+      }
+    } catch (err) {
+      console.error("Failed to fetch admin orders:", err)
+      setOrders([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
     fetchOrders()
   }, [supabase.auth, activeTab])
 
@@ -385,8 +386,8 @@ export default function AdminOrdersPage() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`px-3 py-1 rounded text-sm capitalize ${activeTab === tab
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
                     }`}
                 >
                   {tab}
@@ -609,22 +610,24 @@ export default function AdminOrdersPage() {
                     <p className="text-sm text-indigo-300"><span className="text-green-500">Pin: </span>{order.pin}</p>
                     <p
                       className={`text-sm ${order.paymentResult === "pending"
-                          ? "text-yellow-400"
-                          : order.paymentResult === "success"
-                            ? "text-green-400"
-                            : order.paymentResult === "cancelled"
-                              ? "text-red-400"
-                              : "text-gray-200"
+                        ? "text-yellow-400"
+                        : order.paymentResult === "success"
+                          ? "text-green-400"
+                          : order.paymentResult === "cancelled"
+                            ? "text-red-400"
+                            : "text-gray-200"
                         }`}
                     >
                       <span className="text-gray-300">Payment Result:</span> {order.paymentResult}
                     </p>
                     <p
                       className={`text-sm ${order.orderStatus === "Order Placed"
-                          ? "text-yellow-400"
-                          : order.orderStatus === "Order Confirmed"
-                            ? "text-blue-400"
-                            : order.orderStatus === "Packed"
+                        ? "text-yellow-400"
+                        : order.orderStatus === "Order Confirmed"
+                          ? "text-blue-400"
+                          : order.orderStatus === "Packed"
+                            ? "text-blue-300 bg-green-700/40 w-fit pr-2"
+                            : order.orderStatus === "Shipping"
                               ? "text-blue-300 bg-green-700/40 w-fit pr-2"
                               : order.orderStatus === "Shipped"
                                 ? "text-pink-400"
@@ -711,11 +714,12 @@ export default function AdminOrdersPage() {
                       <div className='flex flex-col gap-2'>
 
 
-                        {order.orderStatus === 'Shipped' && (
+                        {order.orderStatus === 'Shipping' && (
                           <ShippingLegManager
                             orderId={order.id}
                             shippingEvents={order.shippingEvents}
                             onAddLeg={handleAddLocationWithMode}
+                            onRefresh={fetchOrders}
                           />
                         )}
 

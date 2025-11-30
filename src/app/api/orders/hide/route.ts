@@ -14,7 +14,8 @@ export async function POST(req: Request) {
         if (error) throw error
 
         return NextResponse.json({ success: true })
-    } catch (e) {
+    } catch (error) {
+        console.error('Error hiding order:', error)
         return NextResponse.json({ error: "Failed to hide order" }, { status: 500 })
     }
 }

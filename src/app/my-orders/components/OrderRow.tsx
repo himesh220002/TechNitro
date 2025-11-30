@@ -59,20 +59,55 @@ export default function OrderRow({ order, onUpdate }: OrderRowProps) {
                         ? "text-blue-400"
                         : order.orderStatus === "Packed"
                             ? "text-blue-300 bg-green-700/40 w-fit pr-2"
-                            : order.orderStatus === "Shipped"
-                                ? "text-pink-400"
-                                : order.orderStatus === "Out for Delivery"
-                                    ? "text-yellow-700 bg-purple-700/40 w-fit p-2 rounded-xl"
-                                    : order.orderStatus === "Cancelled"
-                                        ? "text-red-100 bg-red-700/40 w-fit pr-2"
-                                        : order.orderStatus === "Returned"
-                                            ? "text-gray-400 bg-gray-700/40 w-fit px-2 py-1"
-                                            : order.orderStatus === "Refund Initiated"
-                                                ? "text-gray-600"
-                                                : "text-white"
+                            : order.orderStatus === "Shipping"
+                                ? "text-pink-500"
+                                : order.orderStatus === "Shipped"
+                                    ? "text-pink-400"
+                                    : order.orderStatus === "Out for Delivery"
+                                        ? "text-yellow-700 bg-purple-700/40 w-fit p-2 rounded-xl"
+                                        : order.orderStatus === "Cancelled"
+                                            ? "text-red-100 bg-red-700/40 w-fit pr-2"
+                                            : order.orderStatus === "Returned"
+                                                ? "text-gray-400 bg-gray-700/40 w-fit px-2 py-1"
+                                                : order.orderStatus === "Refund Initiated"
+                                                    ? "text-gray-600"
+                                                    : "text-white"
                     }`}>
                     <span className="text-gray-300">Status:</span> {order.orderStatus}
                 </p>
+
+                {order.orderStatus === 'Shipping' && order.shippingEvents && order.shippingEvents.length > 0 && (
+                    <div className="ml-2 flex flex-col items-start gap-1">
+                        {(() => {
+                            // Get the latest event (assuming events might not be sorted, sort by timestamp)
+                            const latestEvent = [...order.shippingEvents].sort((a, b) =>
+                                new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+                            ).pop();
+
+                            if (!latestEvent) return null;
+
+                            return (
+                                <div className="flex items-center gap-2 text-xs sm:text-sm bg-gray-800/50 px-2 py-1 rounded border border-gray-600">
+                                    <span className="text-gray-300 font-medium">{latestEvent.location}</span>
+
+                                    {latestEvent.mode ? (
+                                        <span className="bg-blue-900/40 text-blue-300 px-1.5 py-0.5 rounded border border-blue-800/50 flex items-center gap-1">
+                                            Departed via {latestEvent.mode === 'train' ? '🚆 Train' : latestEvent.mode === 'flight' ? '✈️ Flight' : '🚛 Truck'}
+                                        </span>
+                                    ) : (
+                                        <span className="bg-green-900/40 text-green-300 px-1.5 py-0.5 rounded border border-green-800/50">
+                                            Arrived
+                                        </span>
+                                    )}
+
+                                    <span className="bg-red-600 text-white px-1.5 py-0.5 rounded font-bold tracking-wider text-[10px] uppercase">
+                                        Current
+                                    </span>
+                                </div>
+                            );
+                        })()}
+                    </div>
+                )}
 
                 <div className="relative">
                     <button
