@@ -4,32 +4,39 @@ import { useState } from 'react'
 import { Product } from '@/types/product'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
+import { ShoppingCart, Check, Loader2 } from 'lucide-react'
+import { useCart } from '@/context/CartContext'
 
 export default function StickyBuyPanel({ product }: { product: Product }) {
   const router = useRouter()
+  const { addToCart } = useCart()
   const [quantity, setQuantity] = useState<number>(1)
+  const [isAdding, setIsAdding] = useState(false)
+  const [isAdded, setIsAdded] = useState(false)
 
   const increase = () => setQuantity((q) => Math.min(q + 1, product.inventory))
   const decrease = () => setQuantity((q) => Math.max(1, q - 1))
 
-  const addToCart = () => {
-    if (product.inventory <= 0) return toast.error('Out of stock')
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]')
-    const existing = cart.find((p: { id: string; quantity?: number }) => p.id === product.id)
-    if (existing) {
-      const newQuantity = Math.min((existing.quantity || 0) + quantity, product.inventory)
-      if (newQuantity === existing.quantity) {
-        toast('Already added to cart at max quantity', { icon: '⚠️' })
-      } else {
-        existing.quantity = newQuantity
-        toast.success(`Updated quantity to ${newQuantity}`)
-      }
-    } else {
-      cart.push({ ...product, quantity })
-      toast.success('Added to cart')
+  const handleAddToCart = async () => {
+    if (product.inventory <= 0) {
+      toast.error('Out of stock')
+      return
     }
 
-    localStorage.setItem('cart', JSON.stringify(cart))
+    setIsAdding(true)
+
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 600))
+
+    // Add multiple times based on quantity
+    for (let i = 0; i < quantity; i++) {
+      addToCart(product)
+    }
+
+    setIsAdding(false)
+    setIsAdded(true)
+
+    setTimeout(() => setIsAdded(false), 2000)
   }
 
   const buyNow = () => {
@@ -57,8 +64,39 @@ export default function StickyBuyPanel({ product }: { product: Product }) {
         </div>
 
         <div className="flex flex-col gap-3">
-          <button onClick={addToCart} className={`px-4 py-2 rounded text-white ${product.inventory > 0 ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-gray-600 cursor-not-allowed'}`} disabled={product.inventory <= 0}>Add to cart</button>
+          <button
+            onClick={handleAddToCart}
+            className={`flex items-center justify-center gap-2 px-4 py-2 rounded text-white transition-all duration-300 ${product.inventory > 0
+              ? isAdded
+                ? 'bg-green-600'
+                : 'bg-indigo-600 hover:bg-indigo-700'
+              : 'bg-gray-600 cursor-not-allowed'
+              }`}
+            disabled={product.inventory <= 0 || isAdding}
+          >
+            {isAdding ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : isAdded ? (
+              <>
+                <Check className="w-5 h-5" />
+                <span>Added</span>
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="w-5 h-5" />
+                <span>Add to cart</span>
+              </>
+            )}
+          </button>
           <button onClick={buyNow} className={`px-4 py-2 rounded text-white ${product.inventory > 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 cursor-not-allowed'}`} disabled={product.inventory <= 0}>Buy now</button>
+          <div className="flex gap-2 mt-2">
+            <button className="flex-1 py-2 rounded border border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors flex items-center justify-center gap-2">
+              ❤️ Wishlist
+            </button>
+            <button className="flex-1 py-2 rounded border border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors flex items-center justify-center gap-2">
+              🔍 Compare
+            </button>
+          </div>
         </div>
 
         <div className="mt-4 text-xs text-gray-400">Secure payment • 7-day returns</div>

@@ -1,14 +1,17 @@
-"use client"
+'use client'
 
 import { useEffect, useState, startTransition, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { v4 as uuid } from 'uuid'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import type { Product } from '@/types/product'
-import ContactForm from './ContactForm'
-import PaymentForm from './PaymentForm'
-import { MdRemoveCircle } from 'react-icons/md'
-import LoadingBars from './ui/LoadingBar'
+import { motion, AnimatePresence } from 'framer-motion'
+import CheckoutSteps from './checkout/CheckoutSteps'
+import CartReview from './checkout/CartReview'
+import AddressForm from './checkout/AddressForm'
+import PaymentOptions from './checkout/PaymentOptions'
+import OrderSummary from './checkout/OrderSummary'
+import { toast } from 'react-hot-toast'
 
 const supabase = createClientComponentClient()
 
@@ -18,42 +21,31 @@ type RazorpayHandlerResponse = {
   razorpay_signature: string
 }
 
-
 export default function CheckoutClient() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const source = searchParams?.get('source')
 
+  const [step, setStep] = useState(1)
   const [items, setItems] = useState<(Product & { quantity: number })[]>([])
   const [currentUser, setCurrentUser] = useState<unknown>(null)
+  const [isPayLoading, setIsPayLoading] = useState(false)
+
+  // Form State
   const [form, setForm] = useState({
     accountName: '',
-    accountNumber: '',
+    accountNumber: '', // Used for UPI/Wallet ID if needed
     phone: '',
     address: '',
     pin: '',
     paymentMethod: 'Bank',
   })
 
-  const [isPayLoading, setIsPayLoading] = useState(false)
+  // Coupon State
+  const [couponCode, setCouponCode] = useState('')
+  const [discount, setDiscount] = useState(0)
 
-
-
-
- const formIsValid = useMemo(() => {
-  return (
-    form.accountName.trim() &&
-    form.accountNumber.trim() &&
-    form.phone.trim() &&
-    form.address.trim() &&
-    form.pin.trim() &&
-    items.length > 0
-  )
-}, [form, items])
-
-
-
-
+  // Load Cart
   useEffect(() => {
     const checkoutItem = localStorage.getItem('checkoutItem')
     const cart = localStorage.getItem('cart')
@@ -66,31 +58,25 @@ export default function CheckoutClient() {
     })
   }, [source])
 
+  // Load User
   useEffect(() => {
     let mounted = true
-    ;(async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (mounted) setCurrentUser(user as unknown)
-      } catch (err) {
-        console.error('Failed to get supabase user in CheckoutClient', err)
-      }
-    })()
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
-      setCurrentUser(session?.user ?? null)
-    })
-    const subscription = (data as unknown as { subscription?: { unsubscribe?: () => void } })?.subscription
-    return () => {
-      mounted = false
-      if (subscription?.unsubscribe) subscription.unsubscribe()
-    }
+      ; (async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (mounted) setCurrentUser(user as unknown)
+        } catch (err) {
+          console.error('Failed to get supabase user', err)
+        }
+      })()
+    return () => { mounted = false }
   }, [])
 
+  // Load Razorpay Script
   useEffect(() => {
     const script = document.createElement('script')
     script.src = 'https://checkout.razorpay.com/v1/checkout.js'
     script.async = true
-    script.onload = () => console.log('Razorpay script loaded')
     document.body.appendChild(script)
   }, [])
 
@@ -110,286 +96,287 @@ export default function CheckoutClient() {
     } else {
       localStorage.setItem('cart', JSON.stringify(updated))
     }
+    if (updated.length === 0) {
+      router.push('/products')
+    }
   }
 
-const deliveryCharge = calculateConsolidatedDeliveryCharge(items);
+  // Calculations
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
-const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-const totalPaid = subtotal + deliveryCharge;
+  const deliveryCharge = useMemo(() => {
+    const hasPremiumTransport = items.some(
+      (item) => ['Smartphones', 'Laptops', 'Tablets'].includes(item.category)
+    )
+    const transportTotal = hasPremiumTransport ? 800 : 500
 
+    const packingCosts: Record<string, number> = {
+      Laptops: 800,
+      Smartphones: 400,
+      Tablets: 500,
+      Accessories: 200
+    }
+
+    const packingTotal = items.reduce((sum, item) => {
+      const cost = packingCosts[item.category] || 200
+      return sum + cost * item.quantity
+    }, 0)
+
+    return transportTotal + packingTotal
+  }, [items])
+
+  const totalPaid = Math.max(0, subtotal + deliveryCharge - discount)
+
+  // Validation
+  const isAddressValid = useMemo(() => {
+    return (
+      form.accountName.length >= 3 &&
+      /^\d{10}$/.test(form.phone) &&
+      form.address.length >= 10 &&
+      /^\d{6}$/.test(form.pin)
+    )
+  }, [form])
+
+  const isFormValid = useMemo(() => {
+    if (step === 1) return items.length > 0
+    if (step === 2) return isAddressValid
+    if (step === 3) return true // Payment method is always selected
+    return true
+  }, [step, items, isAddressValid])
 
   const handlePayment = async () => {
-    setIsPayLoading(true); 
-    try{
-    const session = await supabase.auth.getSession()
-    const accessToken = session?.data?.session?.access_token
-    const userId = ((currentUser as Record<string, unknown> | null)?.['id'] as string | undefined) ?? session?.data?.session?.user?.id
-    if (!userId) {
-      setIsPayLoading(false)
-      alert('Please sign in before placing an order')
-      router.push('/login')
-      return
-    }
+    setIsPayLoading(true)
+    try {
+      const session = await supabase.auth.getSession()
+      const accessToken = session?.data?.session?.access_token
+      const userId = ((currentUser as Record<string, unknown> | null)?.['id'] as string | undefined) ?? session?.data?.session?.user?.id
 
-    const productsRes = await fetch('/api/products')
-    const latestProducts: Array<{ id: string; inventory: number }> = await productsRes.json()
-    const inventoryMap = new Map(latestProducts.map((p) => [p.id, p.inventory]))
-    for (const it of items) {
-      const available = inventoryMap.get(it.id)
-      if (!available || available < it.quantity) {
-        alert(`Insufficient stock for ${it.name}`)
+      if (!userId) {
+        setIsPayLoading(false)
+        toast.error('Please sign in before placing an order')
+        router.push('/login')
         return
       }
-    }
 
-    const razorRes = await fetch('/api/create-razorpay-order', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: totalPaid }),
-    })
-    const { razorpayOrderId, razorpayKey } = await razorRes.json()
+      // Inventory Check
+      const productsRes = await fetch('/api/products')
+      const latestProducts: Array<{ id: string; inventory: number }> = await productsRes.json()
+      const inventoryMap = new Map(latestProducts.map((p) => [p.id, p.inventory]))
 
-    const orderId = uuid()
-    const newOrder = {
-      id: orderId,
-      user_id: userId,
-      accountName: form.accountName,
-      accountNumber: form.accountNumber,
-      phone: form.phone,
-      address: form.address,
-      pin: form.pin,
-      products: items,
-      paymentMethod: form.paymentMethod,
-      deliveryCharge,
-      payment: totalPaid,
-      orderStatus: 'Order Placed',
-      paymentResult: 'pending',
-      // created_at: new Date().toISOString(),
-    }
+      for (const it of items) {
+        const available = inventoryMap.get(it.id)
+        if (!available || available < it.quantity) {
+          toast.error(`Insufficient stock for ${it.name}`)
+          setIsPayLoading(false)
+          return
+        }
+      }
 
-    await fetch('/api/orders', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(newOrder),
-    })
+      const orderId = uuid()
 
-    await new Promise((r) => setTimeout(r, 300))
+      // Create Order in DB
+      const newOrder = {
+        id: orderId,
+        user_id: userId,
+        accountName: form.accountName,
+        accountNumber: form.accountNumber,
+        phone: form.phone,
+        address: form.address,
+        pin: form.pin,
+        products: items,
+        paymentMethod: form.paymentMethod,
+        deliveryCharge,
+        payment: totalPaid,
+        orderStatus: 'Order Placed',
+        paymentResult: 'pending',
+      }
 
-    const options = {
-      key: razorpayKey,
-      amount: totalPaid * 100,
-      currency: 'INR',
-      name: 'Ecommerce Catalog',
-      description: 'Order Payment',
-      order_id: razorpayOrderId,
-      capture: true,
-      handler: async function (response: RazorpayHandlerResponse) {
-        try {
-          const { razorpay_payment_id, razorpay_order_id, razorpay_signature } = response;
+      await fetch('/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(newOrder),
+      })
 
+      // Razorpay Flow (For Bank, UPI, Wallet)
+      if (form.paymentMethod !== 'COD') {
+        if (!(window as any).Razorpay) {
+          toast.error('Payment gateway failed to load. Please refresh.')
+          setIsPayLoading(false)
+          return
+        }
+
+        const razorRes = await fetch('/api/create-razorpay-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: totalPaid }),
+        })
+        const { razorpayOrderId, razorpayKey } = await razorRes.json()
+
+        const options = {
+          key: razorpayKey,
+          amount: totalPaid * 100,
+          currency: 'INR',
+          name: 'TechNitro',
+          description: 'Order Payment',
+          order_id: razorpayOrderId,
+          handler: async function (response: RazorpayHandlerResponse) {
+            await fetch('/api/orders/update-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                orderId,
+                paymentResult: 'success',
+                paymentid: response.razorpay_payment_id,
+                razorpayorderid: response.razorpay_order_id,
+                signature: response.razorpay_signature
+              }),
+            })
+
+            localStorage.removeItem('cart')
+            localStorage.removeItem('checkoutItem')
+            router.push(`/orders/${orderId}/confirmation`)
+          },
+          modal: {
+            ondismiss: async function () {
+              await fetch('/api/orders/update-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId, paymentResult: 'cancelled', paymentId: null }),
+              })
+              toast.error('Payment cancelled')
+            },
+          },
+          prefill: {
+            name: form.accountName,
+            contact: form.phone,
+          },
+          theme: { color: '#7c3aed' },
+        }
+
+        const rzp = new (window as any).Razorpay(options)
+        rzp.open()
+      } else {
+        // COD Simulation
+        setTimeout(async () => {
           await fetch('/api/orders/update-payment', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               orderId,
               paymentResult: 'success',
-
-              // match DB exactly
-              paymentid: razorpay_payment_id,
-              razorpayorderid: razorpay_order_id,
-              signature: razorpay_signature
+              paymentid: `COD_${Date.now()}`,
             }),
-          });
-
-          console.log("🔥 Razorpay handler response:", response)
-        } catch (err) {
-          console.error('Failed to update paymentResult:', err);
-        }
-
-        localStorage.removeItem('cart');
-        localStorage.removeItem('checkoutItem');
-        setItems([]);
-        setTimeout(() => {
-          router.push(`/orders/${orderId}/confirmation`);
-        }, 800);
-      },
-
-      modal: {
-        ondismiss: async function () {
-          await fetch('/api/orders/update-payment', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ orderId, paymentResult: 'cancelled', paymentId: null }),
           })
-          alert('Payment cancelled. Your cart is preserved.')
-        },
-      },
-      prefill: {
-        name: form.accountName,
-        contact: form.phone,
-      },
-      theme: {
-        color: '#3399cc',
-      },
-    }
-
-    const rzp = new window.Razorpay(options)
-    setIsPayLoading(false)
-    rzp.open()
-    
+          localStorage.removeItem('cart')
+          localStorage.removeItem('checkoutItem')
+          router.push(`/orders/${orderId}/confirmation`)
+        }, 1500)
+      }
 
     } catch (err) {
-    setIsPayLoading(false)
-    console.error(err)
+      console.error(err)
+      toast.error('Something went wrong. Please try again.')
+    } finally {
+      setIsPayLoading(false)
     }
   }
 
-
-  // --- Consolidated Delivery Charge Calculator ---
-function calculateConsolidatedDeliveryCharge(items: { category: string; quantity: number  }[]) {
-  
-  const hasPremiumTransport = items.some(
-    (item) => item.category === "Smartphones" || item.category === "Laptops" || item.category === "Tablets"
-  );
-  const transportTotal = hasPremiumTransport ? 800 : 500;
-
-  // Packing + handling ranges per category (min–max)
-  const packingCosts: Record<string, { min: number; max: number }> = {
-    Laptops: { min: 600, max: 1000 },        // premium handling, insurance
-    Smartphones: { min: 300, max: 500 },     // safe but light
-    Tablets: { min: 400, max: 600 },         // medium weight
-    Accessories: { min: 150, max: 300 }     // small, general safe
-  };
-
-  // Calculate packing total (quantity-aware)
-  const packingTotalMin = items.reduce((sum, item) => {
-    const cost = packingCosts[item.category]?.min || 200;
-    return sum + cost * item.quantity;
-  }, 0);
-
-  const packingTotalMax = items.reduce((sum, item) => {
-    const cost = packingCosts[item.category]?.max || 300;
-    return sum + cost * item.quantity;
-  }, 0);
-
-  const meanCharge = transportTotal + Math.round((packingTotalMin + packingTotalMax) / 2);
-
-  return meanCharge;
-}
-
-
-
-
   return (
-    <>
-      <main className="max-w-6xl mx-auto p-0 sm:p-6">
-        <h1 className="text-3xl font-bold mb-6">💳 Checkout</h1>
+    <div className="min-h-screen bg-black text-white">
+      <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 className="text-3xl font-bold mb-8 text-center">Checkout</h1>
 
-        {items.length === 0 ? (
-          <p className="text-gray-500">No items selected for checkout.</p>
-        ) : (
-          <>
-            <div className="space-y-6">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="border p-4 rounded bg-gradient-to-br from-blue-400/60 via-black/30 to-black/50 shadow-sm"
-                >
-                  <h2 className="text-xl font-semibold text-gray-300">{item.name}</h2>
-                  <p className="text-green-700 font-medium">
-                    ₹{item.price.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
-                  </p>
-                  <div className="flex items-center gap-4 mt-2">
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                      className="px-2 py-1 bg-gray-700 text-white rounded"
-                    >
-                      −
-                    </button>
-                    <span className="font-medium text-white">{item.quantity}</span>
-                    <button
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                      disabled={item.quantity >= item.inventory}
-                      className={`px-2 py-1 rounded ${
-                        item.quantity >= item.inventory
-                          ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                          : 'bg-gray-700 text-white hover:bg-gray-800'
-                      }`}
-                    >
-                      +
-                    </button>
+        <CheckoutSteps currentStep={step} steps={['Cart', 'Address', 'Payment', 'Review']} />
 
-                    <span className="ml-auto text-sm sm:text-lg text-indigo-300 font-semibold">
-                      Subtotal:{' '}
-                      {(item.price * item.quantity).toLocaleString('en-IN', {
-                        style: 'currency',
-                        currency: 'INR',
-                      })}
-                    </span>
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="ml-1 sm:ml-4 text-sm text-red-500 hover:text-red-700"
-                    >
-                      <MdRemoveCircle  className='text-xl'/>
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              <div className="text-right font-medium text-indigo-300 mt-6 space-y-1">
-                
-                <div>Subtotal:{' '}
-                  {subtotal.toLocaleString('en-IN', {
-                    style: 'currency',
-                    currency: 'INR',
-                  })}
-                </div>
-                <div>Delivery Charges:{' '}
-                  {deliveryCharge.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
-                </div>
-                <div className="text-xl font-bold text-green-400 pt-2">
-                  Total Paid:{' '}
-                  {totalPaid.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
-                </div>
-
-
-              </div>
-
-            </div>
-
-            <ContactForm onSave={(contactInfo) => setForm({ ...form, ...contactInfo })} />
-            <PaymentForm
-              accountName={form.accountName}
-              accountNumber={form.accountNumber}
-              paymentMethod={form.paymentMethod}
-              onChange={(updated) => setForm({ ...form, ...updated })}
-            />
-
-
-
-            <div className="text-right max-w-6xl m-auto mt-6">
-              {isPayLoading ? (
-                  <LoadingBars />   // 🔥 Loader visible until razorpay shows up
-                ) : (
-              <button
-                onClick={handlePayment}
-                disabled={!formIsValid}
-                className={`px-6 py-3 rounded transition ${
-                            formIsValid
-                              ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer '
-                              : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-                          }`}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
               >
-                Pay Now
-              </button>
-            )}
-            </div>
-          </>
-        )}
+                {step === 1 && (
+                  <CartReview
+                    items={items}
+                    updateQuantity={updateQuantity}
+                    removeItem={removeItem}
+                    couponCode={couponCode}
+                    setCouponCode={setCouponCode}
+                    discount={discount}
+                    setDiscount={setDiscount}
+                  />
+                )}
+                {step === 2 && (
+                  <AddressForm
+                    form={form}
+                    setForm={setForm}
+                    isValid={isAddressValid}
+                  />
+                )}
+                {step === 3 && (
+                  <PaymentOptions
+                    paymentMethod={form.paymentMethod}
+                    setPaymentMethod={(m) => setForm({ ...form, paymentMethod: m })}
+                  />
+                )}
+                {step === 4 && (
+                  <div className="space-y-6">
+                    <h2 className="text-xl font-bold mb-4">📝 Review Order</h2>
+                    <div className="bg-gray-900/50 p-6 rounded-xl border border-gray-800 space-y-4">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Shipping to:</span>
+                        <span className="text-right font-medium">{form.accountName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Address:</span>
+                        <span className="text-right text-sm max-w-[200px]">{form.address}, {form.pin}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Phone:</span>
+                        <span className="text-right">{form.phone}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Payment Method:</span>
+                        <span className="text-right text-purple-400 font-medium">{form.paymentMethod}</span>
+                      </div>
+                    </div>
+                    <CartReview
+                      items={items}
+                      updateQuantity={updateQuantity}
+                      removeItem={removeItem}
+                      couponCode={couponCode}
+                      setCouponCode={setCouponCode}
+                      discount={discount}
+                      setDiscount={setDiscount}
+                    />
+                  </div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          <div className="lg:col-span-1">
+            <OrderSummary
+              subtotal={subtotal}
+              deliveryCharge={deliveryCharge}
+              discount={discount}
+              total={totalPaid}
+              onCheckout={handlePayment}
+              loading={isPayLoading}
+              step={step}
+              setStep={setStep}
+              isFormValid={isFormValid}
+            />
+          </div>
+        </div>
       </main>
-    </>
+    </div>
   )
 }
+

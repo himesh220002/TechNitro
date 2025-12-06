@@ -1,27 +1,35 @@
 'use client'
 
+import { useState } from 'react'
 import { Product } from '@/types/product'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
-
+import { ShoppingCart, Check, Loader2 } from 'lucide-react'
+import { useCart } from '@/context/CartContext'
 
 export default function ProductActions({ product }: { product: Product }) {
-
   const router = useRouter()
-  const handleAddToCart = () => {
+  const { addToCart } = useCart()
+  const [isAdding, setIsAdding] = useState(false)
+  const [isAdded, setIsAdded] = useState(false)
+
+  const handleAddToCart = async () => {
     if (product.inventory <= 0) {
       toast.error('Out of stock')
       return
     }
-    const cart = JSON.parse(localStorage.getItem('cart') || '[]')
-    const exists = cart.find((item: Product) => item.id === product.id)
-    if (!exists) {
-      cart.push({ ...product, quantity: 1 })
-      localStorage.setItem('cart', JSON.stringify(cart))
-      toast.success('Added to cart')
-    } else {
-      toast.error('Product already in cart')
-    }
+
+    setIsAdding(true)
+
+    // Simulate network delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 600))
+
+    addToCart(product)
+    setIsAdding(false)
+    setIsAdded(true)
+
+    // Reset state after 2 seconds
+    setTimeout(() => setIsAdded(false), 2000)
   }
 
   const handleBuyNow = () => {
@@ -33,19 +41,38 @@ export default function ProductActions({ product }: { product: Product }) {
     router.push('/checkout?source=buy-now')
   }
 
-
   return (
     <div className="mt-0 sm:mt-8 flex gap-2 sm:gap-4">
+      <button
+        className={`relative flex items-center justify-center gap-2 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-lg font-semibold rounded-xl transition-all duration-300 overflow-hidden ${product.inventory > 0
+          ? isAdded
+            ? 'bg-green-600 text-white'
+            : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30'
+          : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+          }`}
+        onClick={handleAddToCart}
+        disabled={product.inventory <= 0 || isAdding}
+      >
+        {isAdding ? (
+          <Loader2 className="w-5 h-5 animate-spin" />
+        ) : isAdded ? (
+          <>
+            <Check className="w-5 h-5" />
+            <span>Added</span>
+          </>
+        ) : (
+          <>
+            <ShoppingCart className="w-5 h-5" />
+            <span>Add to Cart</span>
+          </>
+        )}
+      </button>
 
       <button
-        className={`px-2 py-2 sm:px-6 sm:py-2 text-sm sm:text-xl font-semibold rounded transition ${product.inventory > 0 ? 'bg-gradient-to-b from-indigo-600 to-gray-700 text-white hover:bg-indigo-700' : 'bg-gray-600 text-gray-300 cursor-not-allowed'}`}
-        onClick={handleAddToCart}
-        disabled={product.inventory <= 0}
-      >
-        {product.inventory > 0 ? 'Add to Cart' : 'Out of stock'}
-      </button>
-      <button
-        className={`px-2 py-2 sm:px-6 sm:py-2 text-sm sm:text-xl font-semibold rounded transition ${product.inventory > 0 ? 'bg-gradient-to-t from-green-500 via-gray-800 to-green-800 text-white hover:bg-green-700' : 'bg-gray-600 text-gray-300 cursor-not-allowed'}`}
+        className={`flex-1 px-4 py-2 sm:px-6 sm:py-3 text-sm sm:text-lg font-semibold rounded-xl transition-all duration-300 ${product.inventory > 0
+          ? 'bg-white text-black hover:bg-gray-100 hover:shadow-lg hover:shadow-white/10'
+          : 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700'
+          }`}
         onClick={handleBuyNow}
         disabled={product.inventory <= 0}
       >

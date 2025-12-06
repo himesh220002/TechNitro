@@ -19,59 +19,72 @@ export default function ProductBlock({
   discount,
 }: ProductBlockProps) {
   return (
-    <div className="da w-full sm:w-auto ">
-      <div className=" da-inner p-4 sm:p-6 bg-white dark:bg-gray-100 rounded-lg shadow relative h-full">
-        <Link href={link} className="da-media flex items-center justify-start sm:justify-start gap-4 group">
-          {/* Image */}
-          <div className="da-media-left shrink-0">
-            <Image
-              src={imageUrl}
-              alt={title}
-              width={173}
-              height={118}
-              className="object-contain h-15 md:h-30 w-25 md:w-50"
-              loading="lazy"
-            />
-          </div>
+    <div className="w-full sm:w-auto h-full">
+      <Link
+        href={link}
+        className="group relative block h-full bg-gray-900 rounded-3xl overflow-hidden border border-white/5 hover:border-purple-500/50 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-500/20"
+      >
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-gray-800/50 via-gray-900 to-black opacity-100 group-hover:opacity-0 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/40 via-gray-900 to-black opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-          {/* Text */}
-          <div className=" flex flex-row sm:flex-col gap-2 justify-between items-center sm:items-start da-media-body group-hover:-translate-y-1 transition-transform duration-300">
-            <div className="da-text text-sm md:text-lg text-gray-800 dark:text-gray-700 text-base leading-snug  ">
-              {title.split('<br>').map((line, i) => (
-                <div key={i}>
-                  {line.includes('<strong>') ? (
-                    <strong className="font-semibold text-lg md:text-xl text-black dark:text-gray-700 ">
-                      {line.replace(/<[^>]+>/g, '')}
-                    </strong>
-                  ) : (
-                    line
-                  )}
-                </div>
-              ))}
+        <div className="relative z-10 p-6 flex flex-col h-full">
+          {/* Badge */}
+          {badge && (
+            <div className="absolute top-4 right-4 bg-yellow-400 text-black text-[10px] font-bold px-2 py-1 rounded-full uppercase tracking-wider shadow-lg transform group-hover:scale-110 transition-transform">
+              {badge}
+            </div>
+          )}
+
+          {/* Content Layout */}
+          <div className="flex items-center justify-between gap-4 h-full">
+            {/* Image */}
+            <div className="relative w-24 h-24 sm:w-32 sm:h-32 shrink-0">
+              <div className="absolute inset-0 bg-white/5 rounded-full blur-xl group-hover:bg-purple-500/20 transition-colors duration-500" />
+              <Image
+                src={imageUrl}
+                alt={title}
+                fill
+                className="object-contain drop-shadow-xl transform group-hover:scale-110 group-hover:-rotate-6 transition-transform duration-500"
+                loading="lazy"
+              />
             </div>
 
-            {/* Action */}
-            <div className="da-action mt-2 text-sm text-primary font-medium group-hover:underline">
-              {discount ? (
-                <span className="inline-flex items-center gap-1 text-green-600 dark:text-green-600">
-                  <span className="text-xs">Up to</span>
-                  <span className="text-lg font-bold">{discount}%</span>
-                  <span className="text-xs">off</span>
-                </span>
-              ) : (
-                'Shop now'
-              )}
+            {/* Text Content */}
+            <div className="flex-1 flex flex-col justify-center items-start space-y-2">
+              <div className="text-lg sm:text-xl text-white leading-tight font-medium">
+                {title.split('<br>').map((line, i) => (
+                  <span key={i} className="block">
+                    {line.includes('<strong>') ? (
+                      <strong className="font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 group-hover:from-purple-200 group-hover:to-pink-200 transition-all">
+                        {line.replace(/<[^>]+>/g, '')}
+                      </strong>
+                    ) : (
+                      <span className="text-gray-400 group-hover:text-gray-300 transition-colors">{line}</span>
+                    )}
+                  </span>
+                ))}
+              </div>
+
+              {/* Action Area */}
+              <div className="mt-2">
+                {discount ? (
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-1 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold">
+                      Save {discount}%
+                    </span>
+                    <span className="text-xs text-gray-500 line-through">Shop Now</span>
+                  </div>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-sm font-medium text-purple-400 group-hover:text-purple-300 transition-colors">
+                    Explore <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  </span>
+                )}
+              </div>
             </div>
           </div>
-        </Link>
-
-        {/* Optional badge */}
-        {badge && (
-          <div className="absolute top-2 right-2 bg-yellow-400 text-xs font-semibold px-2 py-1 rounded">
-            {badge}
-          </div>
-        )}
-      </div>
+        </div>
+      </Link>
     </div>
   )
 }

@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-
+import { Timer } from 'lucide-react'
 
 
 // const features = [
@@ -25,6 +25,7 @@ const slides = [
     image: '/headphonepng.png',
     link: '/products',
     discount: 22,
+    endsIn: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), // 2 days from now
   },
   {
     name: 'RazorBass X',
@@ -37,6 +38,7 @@ const slides = [
     image: '/razorheadphone.png',
     link: '/products',
     discount: 25,
+    endsIn: new Date(Date.now() + 1000 * 60 * 60 * 5), // 5 hours
   },
   {
     name: 'SonySoundAudio100',
@@ -49,6 +51,7 @@ const slides = [
     image: '/sonyheadphone.png',
     link: '/products',
     discount: 20,
+    endsIn: new Date(Date.now() + 1000 * 60 * 60 * 12), // 12 hours
   },
 ]
 
@@ -58,10 +61,35 @@ const images = ['/headphonepng.png', '/razorheadphone.png', '/sonyheadphone.png'
 export default function FeaturedHero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const current = slides[currentSlide]
+  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
 
 
   const router = useRouter();
   const rafRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = +current.endsIn - +new Date()
+      let timeLeft = { hours: 0, minutes: 0, seconds: 0 }
+
+      if (difference > 0) {
+        timeLeft = {
+          hours: Math.floor((difference / (1000 * 60 * 60))),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        }
+      }
+      return timeLeft
+    }
+
+    setTimeLeft(calculateTimeLeft())
+
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft())
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [current])
 
   useEffect(() => {
     const section = document.getElementById('torch-section1')
@@ -149,85 +177,114 @@ export default function FeaturedHero() {
   }, [])
 
   return (
-    <section id="torch-section1" className="relative bg-gradient-to-b from-black/40 via-purple-900 to-indigo-100/20 text-black rounded sm:rounded-xl p-3 pt-15 sm:p-10 mb-5 sm:mb-10 shadow-lg overflow-hidden min-h-[520px] flex flex-col sm:flex-row justify-around gap-5 items-center" key={currentSlide}>
-      
+    <section id="torch-section1" className="relative bg-black rounded-3xl p-6 sm:p-12 mb-10 shadow-2xl overflow-hidden min-h-[600px] flex flex-col lg:flex-row justify-between items-center gap-10 border border-white/10 group" key={currentSlide}>
+
+      {/* Animated Background */}
+      <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-20 z-0" />
+      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-purple-900/40 via-black to-indigo-900/40 z-0" />
+      <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-600/30 rounded-full blur-[100px] animate-pulse" />
+      <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-600/30 rounded-full blur-[100px] animate-pulse delay-1000" />
+
       <div
         id="torch-overlay1"
-        className="pointer-events-none absolute inset-0 z-10"
+        className="pointer-events-none absolute inset-0 z-10 transition-opacity duration-500"
         style={{ mixBlendMode: 'screen' }}
       />
-      
-      
-      <div className="relative z-30 space-y-4">        
-        <h1 className="text-xl sm:text-3xl md:text-4xl bg-clip-text text-transparent bg-gradient-to-br from-pink-500 via-blue-300 to-green-400 text-center font-extrabold">Welcome to TechNitro</h1>
-        
 
-        {/* Tagline */}
-        <p className="italic text-white/80 text-xs sm:text-md mt-2">
-          “Tech that inspires. Prices that empower.”
-        </p>
+      {/* Left Content */}
+      <div className="relative z-20 flex-1 space-y-8 text-center lg:text-left max-w-2xl">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md w-fit mx-auto lg:mx-0">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            <span className="text-xs font-medium text-gray-300 tracking-wide uppercase">New Arrival</span>
+          </div>
 
-        {/* Feature Highlights */}
-        <div className="sm:grid grid-cols-1 sm:grid-cols-1 gap-4 mt-6 text-sm text-white/90 hidden">
-          <div className="bg-white/10 p-1 sm:p-2 rounded-lg backdrop-blur-sm">
-            <h3 className="font-semibold mb-1">🚀 Performance</h3>
-            <p>Top-tier processors and blazing-fast SSDs.</p>
-          </div>
-          <div className="bg-white/10 p-1 sm:p-2 rounded-lg backdrop-blur-sm">
-            <h3 className="font-semibold mb-1">💸 Value</h3>
-            <p>Curated picks that balance price and power.</p>
-          </div>
-          <div className="bg-white/10 p-1 sm:p-2 rounded-lg backdrop-blur-sm">
-            <h3 className="font-semibold mb-1">🎨 Design</h3>
-            <p>Modern aesthetics with premium build quality.</p>
-          </div>
+          <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white leading-tight">
+            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 drop-shadow-lg">
+              {current.name}
+            </span>
+          </h1>
+
+          <p className="text-lg sm:text-xl text-gray-400 font-light max-w-lg mx-auto lg:mx-0">
+            Experience sound like never before. <span className="text-white font-medium">Tech that inspires.</span>
+          </p>
         </div>
 
-        
+        {/* Features */}
+        <div className="flex flex-wrap justify-center lg:justify-start gap-3">
+          {current.features.map((f, i) => (
+            <span key={i} className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-gray-300 backdrop-blur-sm hover:bg-white/10 transition-colors cursor-default">
+              {f}
+            </span>
+          ))}
+        </div>
 
-      </div>
-      <div className='flex flex-col sm:flex-row gap-2 items-center'>
-        {/* Left: Product Highlights */}
-        <div className="z-20 max-w-xl text-center space-y-4" >
-          <h1 className=" text-xl md:text-3xl bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-red-300 font-extrabold animate-slide-in">{current.name}</h1>
-          <ul className="space-y-1 text-gray-300  text-lg">
-            {current.features.map((f, i) => (
-              <li key={i} className="text-sm sm:text-lg border border-b-red-600/50 border-red-50/10 rounded-sm  animate-slide-up">
-                {f}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-2 sm:mt-4 text-yellow-400 font-semibold text-md sm:text-xl animate-zoom-in">{current.discount}% Discount — Limited Time!</div>
+        {/* CTA & Timer */}
+        <div className="flex flex-col sm:flex-row items-center gap-6 justify-center lg:justify-start pt-4">
           <button
-          onClick={() => router.push(current.link)}
-          className='inline-block mt-1 sm:mt-4 bg-yellow-400 text-gray-900 text-md sm:text-xl font-semibold px-3 sm:px-6 py-1 sm:py-3 rounded-full hover:bg-yellow-300 transition animate-zoom-in'
+            onClick={() => router.push(current.link)}
+            className="group relative px-8 py-4 bg-white text-black font-bold text-lg rounded-full overflow-hidden transition-transform hover:scale-105 active:scale-95"
           >
-              Buy Now
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <span className="relative z-10 flex items-center gap-2 group-hover:text-white transition-colors">
+              Buy Now <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </span>
           </button>
-          
-        </div>
 
-        {/* Right: Product Image */}
-        <div className="z-10 w-[300px] sm:w-[400px] h-[200px] sm:h-[400px] animate-image-slide">
+          <div className="flex items-center gap-4 px-6 py-3 rounded-2xl bg-black/40 border border-white/10 backdrop-blur-md">
+            <div className="text-left">
+              <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Offer Ends In</div>
+              <div className="flex gap-1 text-white font-mono font-bold text-lg">
+                <span>{String(timeLeft.hours).padStart(2, '0')}</span>
+                <span className="text-gray-500">:</span>
+                <span>{String(timeLeft.minutes).padStart(2, '0')}</span>
+                <span className="text-gray-500">:</span>
+                <span className="text-yellow-400">{String(timeLeft.seconds).padStart(2, '0')}</span>
+              </div>
+            </div>
+            <div className="h-8 w-px bg-white/10" />
+            <div className="text-right">
+              <div className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">Discount</div>
+              <div className="text-lg font-bold text-green-400">-{current.discount}%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Image */}
+      <div className="relative z-20 flex-1 flex justify-center items-center w-full max-w-lg">
+        <div className="relative w-full aspect-square">
+          <div className="absolute inset-0 bg-gradient-to-tr from-purple-500/20 to-indigo-500/20 rounded-full blur-3xl animate-pulse" />
           <Image
             src={current.image}
-            alt="Headphone"
-            height={400}
-            width={400}
-            className="object-contain h-[200px] sm:h-[400px] transition-opacity duration-700 ease-in-out"
+            alt={current.name}
+            fill
+            className="object-contain drop-shadow-[0_20px_50px_rgba(0,0,0,0.5)] animate-image-slide z-10"
+            priority
           />
+
+          {/* Floating Badge */}
+          <div className="absolute top-10 right-10 z-20 bg-white/10 backdrop-blur-xl border border-white/20 p-4 rounded-2xl shadow-xl animate-bounce" style={{ animationDuration: '3s' }}>
+            <div className="text-xs text-gray-300 uppercase font-bold">Rating</div>
+            <div className="flex items-center gap-1">
+              <span className="text-2xl font-bold text-white">4.9</span>
+              <span className="text-yellow-400">★</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Bottom: Bullet Navigation */}
+      {/* Navigation Dots */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-30">
         {images.map((_, i) => (
           <button
             key={i}
             onClick={() => setCurrentSlide(i)}
-            className={`w-2 h-2  transition ${
-              currentSlide === i ? 'rounded-lg w-8 bg-white' : 'rounded-full bg-white/40'
-            }`}
+            className={`h-1.5 rounded-full transition-all duration-300 ${currentSlide === i ? 'w-8 bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)]' : 'w-2 bg-white/20 hover:bg-white/40'
+              }`}
           />
         ))}
       </div>

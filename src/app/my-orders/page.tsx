@@ -7,13 +7,21 @@ import type { Order } from '@/types/order'
 import Footer from '@/components/Footer'
 import { useRouter } from 'next/navigation'
 import OrderList from './components/OrderList'
+import OrderStats from './components/OrderStats'
+import OrderFilters from './components/OrderFilters'
 import Link from 'next/link'
+import { Package } from 'lucide-react'
 
 export default function MyOrdersPage() {
   const supabase = useMemo(() => createClientComponentClient(), [])
   const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState<boolean>(true)
+
+  // Filter states
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('all')
+  const [sortBy, setSortBy] = useState('date-desc')
 
   const fetchOrders = useCallback(async () => {
     try {
@@ -45,43 +53,80 @@ export default function MyOrdersPage() {
     fetchOrders()
   }, [fetchOrders])
 
+  const filteredOrders = useMemo(() => {
+    let result = [...orders]
+
+    // Search
+    if (search) {
+      const q = search.toLowerCase()
+      result = result.filter(o =>
+        o.id.toLowerCase().includes(q) ||
+        o.products.some(p => p.name.toLowerCase().includes(q))
+      )
+    }
+
+    // Status
+    if (status !== 'all') {
+      result = result.filter(o => o.orderStatus === status)
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      switch (sortBy) {
+        case 'date-asc': return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        case 'amount-desc': return b.payment - a.payment
+        case 'amount-asc': return a.payment - b.payment
+        case 'date-desc':
+        default: return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      }
+    })
+
+    return result
+  }, [orders, search, status, sortBy])
+
   return (
-    <>
+    <div className="min-h-screen bg-black">
       <Navbar />
-      <main className="max-w-6xl min-h-[500px] mx-auto p-3 sm:p-6">
-        <div className='flex flex-col sm:flex-row gap-4 justify-between items-center mb-6'>
-          <h1 className="text-xl sm:text-3xl font-bold ">📦 My Orders</h1>
+      <main className="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+              <Package className="text-purple-500" size={32} />
+              My Orders
+            </h1>
+            <p className="text-gray-400 mt-1">Track and manage your recent purchases</p>
+          </div>
 
           <div className="flex gap-4">
-            <Link href="/my-orders/archived" className="text-sm text-gray-400 hover:text-white">
+            <Link
+              href="/my-orders/archived"
+              className="px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-400 hover:text-white hover:border-gray-700 transition-all text-sm font-medium"
+            >
               Archived Orders
             </Link>
-            <Link href="/my-orders/hidden" className="text-sm text-gray-400 hover:text-white">
+            <Link
+              href="/my-orders/hidden"
+              className="px-4 py-2 rounded-xl bg-gray-900 border border-gray-800 text-gray-400 hover:text-white hover:border-gray-700 transition-all text-sm font-medium"
+            >
               Hidden Orders
             </Link>
           </div>
-
-          <div className='flex gap-2 items-center'>
-            <label className='text-sm sm:text-lg'> Track Order</label>
-            <input
-              type="text"
-              placeholder="Enter Order ID"
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  const id = (e.target as HTMLInputElement).value.trim()
-                  if (id) {
-                    router.push(`/track-order?id=${id}`)
-                  }
-                }
-              }}
-              className=" sm:ml-4  px-2 py-1 sm:px-4 sm:py-2 rounded bg-gray-800 text-white"
-            />
-          </div>
         </div>
 
-        <OrderList orders={orders} loading={loading} onUpdate={fetchOrders} />
+        {!loading && orders.length > 0 && <OrderStats orders={orders} />}
+
+        <OrderFilters
+          search={search}
+          setSearch={setSearch}
+          status={status}
+          setStatus={setStatus}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+        />
+
+        <OrderList orders={filteredOrders} loading={loading} onUpdate={fetchOrders} />
       </main>
       <Footer />
-    </>
+    </div>
   )
 }

@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { KeepAliveUtil } from '@/lib/keep-alive'
 import { InvoiceProvider } from '@/context/InvoiceContext'
+import { CartProvider } from '@/context/CartContext'
 
 import { Toaster } from 'react-hot-toast'
 
@@ -22,9 +23,11 @@ export default function ClientWrapper({
   }, [])
 
   return (
-    <InvoiceProvider>
-      {children}
-      <Toaster position="top-right" />
-    </InvoiceProvider>
+    <CartProvider>
+      <InvoiceProvider>
+        {children}
+        <Toaster position="top-right" />
+      </InvoiceProvider>
+    </CartProvider>
   )
 }
