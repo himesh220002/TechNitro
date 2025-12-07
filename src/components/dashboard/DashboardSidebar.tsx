@@ -9,15 +9,19 @@ import {
     Settings,
     Users,
     Bell,
-    LogOut
+    LogOut,
+    Tag,
+    ShoppingBag
 } from 'lucide-react'
 
 const navItems = [
-    { icon: LayoutDashboard, label: 'Overview', href: '/dashboard' },
-    { icon: Package, label: 'Products', href: '/dashboard/products' },
-    { icon: BarChart3, label: 'Analytics', href: '/dashboard/analytics' },
-    { icon: Users, label: 'Customers', href: '/dashboard/customers' },
-    { icon: Settings, label: 'Settings', href: '/dashboard/settings' },
+    { icon: LayoutDashboard, label: 'Overview', href: '/admin/dashboard' },
+    { icon: Package, label: 'Products', href: '/admin/dashboard/products' },
+    { icon: ShoppingBag, label: 'Orders', href: '/admin/dashboard/orders' },
+    { icon: Tag, label: 'Coupons', href: '/admin/dashboard/coupons' },
+    { icon: BarChart3, label: 'Analytics', href: '/admin/dashboard/analytics' },
+    { icon: Users, label: 'Customers', href: '/admin/dashboard/customers' },
+    { icon: Settings, label: 'Settings', href: '/admin/dashboard/settings' },
 ]
 
 export default function DashboardSidebar() {
@@ -42,8 +46,8 @@ export default function DashboardSidebar() {
                             key={item.href}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 ${isActive
-                                    ? 'bg-purple-600/10 text-purple-400 border border-purple-600/20'
-                                    : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                                ? 'bg-purple-600/10 text-purple-400 border border-purple-600/20'
+                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
                                 }`}
                         >
                             <item.icon size={20} />

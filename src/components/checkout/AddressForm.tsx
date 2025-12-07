@@ -139,8 +139,8 @@ export default function AddressForm({ form, setForm, isValid }: AddressFormProps
                     onClick={saveAddress}
                     disabled={!isValid}
                     className={`text-xs flex items-center gap-1 px-3 py-2 rounded-lg transition-colors ${isValid
-                            ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-500/10'
-                            : 'text-gray-600 cursor-not-allowed'
+                        ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-500/10'
+                        : 'text-gray-600 cursor-not-allowed'
                         }`}
                 >
                     <Save size={14} /> Save for later
@@ -158,8 +158,8 @@ export default function AddressForm({ form, setForm, isValid }: AddressFormProps
                         onChange={(e) => handleChange('accountName', e.target.value)}
                         onBlur={() => handleBlur('accountName')}
                         className={`peer w-full pl-10 pr-4 py-3 bg-gray-900/50 border rounded-xl outline-none transition-all ${touched.accountName && errors.accountName
-                                ? 'border-red-500/50 focus:border-red-500'
-                                : 'border-gray-700 focus:border-purple-500'
+                            ? 'border-red-500/50 focus:border-red-500'
+                            : 'border-gray-700 focus:border-purple-500'
                             } text-white placeholder-transparent`}
                     />
                     <label className="absolute left-10 top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-500 peer-focus:bg-black peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-black peer-[:not(:placeholder-shown)]:px-1 cursor-text">
@@ -181,8 +181,8 @@ export default function AddressForm({ form, setForm, isValid }: AddressFormProps
                         onChange={(e) => handleChange('phone', e.target.value.replace(/\D/g, ''))}
                         onBlur={() => handleBlur('phone')}
                         className={`peer w-full pl-10 pr-4 py-3 bg-gray-900/50 border rounded-xl outline-none transition-all ${touched.phone && errors.phone
-                                ? 'border-red-500/50 focus:border-red-500'
-                                : 'border-gray-700 focus:border-purple-500'
+                            ? 'border-red-500/50 focus:border-red-500'
+                            : 'border-gray-700 focus:border-purple-500'
                             } text-white placeholder-transparent`}
                     />
                     <label className="absolute left-10 top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-500 peer-focus:bg-black peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-black peer-[:not(:placeholder-shown)]:px-1 cursor-text">
@@ -203,8 +203,8 @@ export default function AddressForm({ form, setForm, isValid }: AddressFormProps
                         onChange={(e) => handleChange('address', e.target.value)}
                         onBlur={() => handleBlur('address')}
                         className={`peer w-full pl-10 pr-4 py-3 bg-gray-900/50 border rounded-xl outline-none transition-all resize-none ${touched.address && errors.address
-                                ? 'border-red-500/50 focus:border-red-500'
-                                : 'border-gray-700 focus:border-purple-500'
+                            ? 'border-red-500/50 focus:border-red-500'
+                            : 'border-gray-700 focus:border-purple-500'
                             } text-white placeholder-transparent`}
                     />
                     <label className="absolute left-10 top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-500 peer-focus:bg-black peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-black peer-[:not(:placeholder-shown)]:px-1 cursor-text">
@@ -226,8 +226,8 @@ export default function AddressForm({ form, setForm, isValid }: AddressFormProps
                         onChange={(e) => handleChange('pin', e.target.value.replace(/\D/g, ''))}
                         onBlur={() => handleBlur('pin')}
                         className={`peer w-full pl-10 pr-4 py-3 bg-gray-900/50 border rounded-xl outline-none transition-all ${touched.pin && errors.pin
-                                ? 'border-red-500/50 focus:border-red-500'
-                                : 'border-gray-700 focus:border-purple-500'
+                            ? 'border-red-500/50 focus:border-red-500'
+                            : 'border-gray-700 focus:border-purple-500'
                             } text-white placeholder-transparent`}
                     />
                     <label className="absolute left-10 top-3.5 text-gray-500 text-sm transition-all peer-placeholder-shown:text-base peer-placeholder-shown:top-3.5 peer-focus:-top-2.5 peer-focus:text-xs peer-focus:text-purple-500 peer-focus:bg-black peer-focus:px-1 peer-[:not(:placeholder-shown)]:-top-2.5 peer-[:not(:placeholder-shown)]:text-xs peer-[:not(:placeholder-shown)]:bg-black peer-[:not(:placeholder-shown)]:px-1 cursor-text">
@@ -244,13 +244,13 @@ export default function AddressForm({ form, setForm, isValid }: AddressFormProps
                 <div className="mt-8">
                     <h3 className="text-sm font-medium text-gray-400 mb-3">Saved Addresses ({savedAddresses.length}/5)</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {savedAddresses.map((addr) => (
+                        {savedAddresses.map((addr, index) => (
                             <div
-                                key={addr.id}
+                                key={addr.id || index}
                                 onClick={() => selectAddress(addr)}
                                 className={`relative p-4 rounded-xl border cursor-pointer transition-all ${selectedAddressId === addr.id
-                                        ? 'bg-purple-500/10 border-purple-500 ring-1 ring-purple-500/50'
-                                        : 'bg-gray-900/30 border-gray-800 hover:border-gray-700 hover:bg-gray-900/50'
+                                    ? 'bg-purple-500/10 border-purple-500 ring-1 ring-purple-500/50'
+                                    : 'bg-gray-900/30 border-gray-800 hover:border-gray-700 hover:bg-gray-900/50'
                                     }`}
                             >
                                 {selectedAddressId === addr.id && (

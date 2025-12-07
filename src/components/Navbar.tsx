@@ -30,8 +30,8 @@ export default function Navbar() {
 
   const [touchStartY, setTouchStartY] = useState<number | null>(null)
 
-  // Check if user is admin (you can customize this logic)
-  const isAdmin = user?.user_metadata?.role === 'admin' || user?.email?.includes('admin')
+  // Check if user is admin based on role in user metadata
+  const isAdmin = user?.user_metadata?.role === 'admin'
 
   useEffect(() => {
     let mounted = true
@@ -116,7 +116,7 @@ export default function Navbar() {
   const navLinks = [
     { href: '/', label: 'Home', icon: <FaHome className="text-2xl" />, show: true },
     { href: '/products', label: 'Products', icon: <AiFillProduct className="text-2xl" />, show: true },
-    { href: '/dashboard', label: 'Dashboard', icon: <RiDashboardFill className="text-2xl" />, show: isAdmin },
+    { href: '/admin/dashboard', label: 'Dashboard', icon: <RiDashboardFill className="text-2xl" />, show: isAdmin },
     { href: '/recommendations', label: 'For You', icon: <MdOutlineRecommend className="text-2xl" />, show: true },
     { href: '/my-orders', label: 'My Orders', icon: <FaJediOrder className="text-2xl" />, show: true },
   ].filter(link => link.show)

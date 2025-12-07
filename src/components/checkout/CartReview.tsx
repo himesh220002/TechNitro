@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { Product } from '@/types/product'
 import { Minus, Plus, Trash2, Tag } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import { validateCoupon } from '@/lib/coupons'
 
 interface CartReviewProps {
     items: (Product & { quantity: number })[]
@@ -14,6 +15,8 @@ interface CartReviewProps {
     setCouponCode: (code: string) => void
     discount: number
     setDiscount: (amount: number) => void
+    appliedCouponCode: string
+    setAppliedCouponCode: (code: string) => void
 }
 
 export default function CartReview({
@@ -23,27 +26,47 @@ export default function CartReview({
     couponCode,
     setCouponCode,
     discount,
-    setDiscount
+    setDiscount,
+    appliedCouponCode,
+    setAppliedCouponCode
 }: CartReviewProps) {
     const [isApplying, setIsApplying] = useState(false)
+    const [userId, setUserId] = useState<string>('')
+
+    useEffect(() => {
+        // Get or create user ID for coupon tracking
+        let uid = localStorage.getItem('userId')
+        if (!uid) {
+            uid = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            localStorage.setItem('userId', uid)
+        }
+        setUserId(uid)
+    }, [])
 
     const applyCoupon = () => {
-        if (!couponCode) return
+        if (!couponCode) {
+            toast.error('Please enter a coupon code')
+            return
+        }
+
         setIsApplying(true)
 
-        // Simulate API call
         setTimeout(() => {
-            if (couponCode.toUpperCase() === 'WELCOME10') {
+            const validation = validateCoupon(couponCode, userId)
+
+            if (validation.valid && validation.coupon) {
                 const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-                const disc = Math.round(subtotal * 0.1)
+                const disc = Math.round(subtotal * (validation.coupon.discount / 100))
                 setDiscount(disc)
-                toast.success('Coupon applied! You saved 10%.')
+                setAppliedCouponCode(validation.coupon.code)
+                toast.success(`${validation.message} You saved ${validation.coupon.discount}%!`)
             } else {
                 setDiscount(0)
-                toast.error('Invalid coupon code')
+                setAppliedCouponCode('')
+                toast.error(validation.message)
             }
             setIsApplying(false)
-        }, 800)
+        }, 600)
     }
 
     return (
@@ -101,7 +124,7 @@ export default function CartReview({
                 <label className="text-sm text-gray-400 mb-2 block flex items-center gap-2">
                     <Tag size={14} /> Have a coupon?
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                     <input
                         type="text"
                         placeholder="Enter code (Try WELCOME10)"
@@ -112,7 +135,7 @@ export default function CartReview({
                     <button
                         onClick={applyCoupon}
                         disabled={!couponCode || isApplying}
-                        className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors"
+                        className="px-4 py-2 bg-purple-600 text-white rounded-lg text-sm font-medium hover:bg-purple-500 disabled:opacity-50 transition-colors whitespace-nowrap"
                     >
                         {isApplying ? 'Applying...' : 'Apply'}
                     </button>

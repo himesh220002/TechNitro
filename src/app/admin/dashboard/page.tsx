@@ -8,8 +8,9 @@ import DashboardStats from '@/components/dashboard/DashboardStats'
 import DashboardFilters from '@/components/dashboard/DashboardFilters'
 import DashboardProductList from '@/components/dashboard/DashboardProductList'
 import DashboardCharts from '@/components/dashboard/DashboardCharts'
-import { Plus, Download, Upload } from 'lucide-react'
+import { Plus, Download, Upload, Trash2, X } from 'lucide-react'
 import Breadcrumbs from '@/components/Breadcrumbs'
+import { toast } from 'react-hot-toast'
 
 export default function DashboardPage() {
   const [products, setProducts] = useState<Product[]>([])
@@ -85,6 +86,42 @@ export default function DashboardPage() {
     }
   }
 
+  // Bulk Delete Handler
+  const handleBulkDelete = async () => {
+    if (selectedIds.length === 0) return
+
+    const selectedProducts = products.filter(p => selectedIds.includes(p.id))
+    const productNames = selectedProducts.map(p => p.name).join(', ')
+
+    if (!confirm(`Are you sure you want to delete ${selectedIds.length} product(s)?\n\n${productNames}\n\nThis action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      // Delete all selected products
+      const deletePromises = selectedIds.map(id =>
+        fetch(`/api/products/${id}`, { method: 'DELETE' })
+      )
+
+      const results = await Promise.all(deletePromises)
+      const successCount = results.filter(r => r.ok).length
+
+      if (successCount === selectedIds.length) {
+        toast.success(`Successfully deleted ${successCount} product(s)`)
+        setSelectedIds([])
+        // Refresh products
+        const res = await fetch('/api/products')
+        const data = await res.json()
+        setProducts(data)
+      } else {
+        toast.error(`Deleted ${successCount} of ${selectedIds.length} products. Some failed.`)
+      }
+    } catch (error) {
+      toast.error('Error deleting products')
+      console.error('Bulk delete error:', error)
+    }
+  }
+
   return (
     <GradientBackground>
       <div className="flex min-h-screen">
@@ -102,21 +139,6 @@ export default function DashboardPage() {
             <div>
               <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard</h1>
               <p className="text-gray-400 mt-1 text-sm sm:text-base">Manage your products and view performance</p>
-            </div>
-
-            <div className="flex flex-wrap gap-2 sm:gap-3">
-              <button className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700 transition-colors text-sm">
-                <Upload size={18} />
-                <span className="hidden sm:inline">Export</span>
-              </button>
-              <button className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-gray-800 text-gray-300 hover:bg-gray-700 border border-gray-700 transition-colors text-sm">
-                <Download size={18} />
-                <span className="hidden sm:inline">Import</span>
-              </button>
-              <button className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/25 transition-all text-sm">
-                <Plus size={18} />
-                <span>Add Product</span>
-              </button>
             </div>
           </header>
 
@@ -142,6 +164,29 @@ export default function DashboardPage() {
             showInStockOnly={showInStockOnly}
             setShowInStockOnly={setShowInStockOnly}
           />
+
+          {/* Bulk Actions Bar - Right above table */}
+          {selectedIds.length > 0 && (
+            <div className="mb-4 p-4 bg-purple-900/20 border border-purple-500/30 rounded-xl flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <span className="text-white font-medium">{selectedIds.length} product(s) selected</span>
+                <button
+                  onClick={() => setSelectedIds([])}
+                  className="text-gray-400 hover:text-white transition-colors"
+                  title="Clear selection"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+              <button
+                onClick={handleBulkDelete}
+                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors"
+              >
+                <Trash2 size={18} />
+                Delete Selected
+              </button>
+            </div>
+          )}
 
           {/* Product List */}
           {loading ? (

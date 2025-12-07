@@ -46,6 +46,10 @@ export type Order = {
   paymentid?: string | null
   razorpayorderid?: string | null
   signature?: string | null
+
+  // Coupon fields
+  coupon_code?: string | null
+  discount?: number
 }
 
 

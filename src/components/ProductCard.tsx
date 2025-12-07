@@ -101,8 +101,8 @@ export default function ProductCard({ product }: ProductCardProps) {
               onClick={handleAddToCart}
               disabled={isAdded}
               className={`p-3 rounded-full transition-all transform translate-y-4 group-hover:translate-y-0 duration-300 delay-75 shadow-lg ${isAdded
-                  ? 'bg-green-500 text-white'
-                  : 'bg-white text-gray-900 hover:bg-purple-500 hover:text-white'
+                ? 'bg-green-500 text-white'
+                : 'bg-white text-gray-900 hover:bg-purple-500 hover:text-white'
                 }`}
               title="Add to Cart"
             >
@@ -123,17 +123,17 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           </div>
 
-          <h3 className="text-lg font-semibold text-white mb-2 line-clamp-2 group-hover:text-purple-400 transition-colors">
+          <h3 className="text-base sm:text-lg font-semibold text-white mb-2 line-clamp-2 group-hover:text-purple-400 transition-colors">
             {product.name}
           </h3>
 
-          <div className="mt-auto flex items-center justify-between">
-            <p className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
+          <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <p className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
               ₹{product.price.toLocaleString('en-IN')}
             </p>
-            <span className={`text-xs px-2 py-1 rounded-full ${product.inventory > 0
-                ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                : 'bg-red-500/10 text-red-400 border border-red-500/20'
+            <span className={`text-xs px-2 py-1 rounded-full self-start ${product.inventory > 0
+              ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+              : 'bg-red-500/10 text-red-400 border border-red-500/20'
               }`}>
               {product.inventory > 0 ? 'In Stock' : 'Out of Stock'}
             </span>

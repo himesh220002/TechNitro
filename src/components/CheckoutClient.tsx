@@ -12,6 +12,7 @@ import AddressForm from './checkout/AddressForm'
 import PaymentOptions from './checkout/PaymentOptions'
 import OrderSummary from './checkout/OrderSummary'
 import { toast } from 'react-hot-toast'
+import { applyCouponToOrder } from '@/lib/coupons'
 
 const supabase = createClientComponentClient()
 
@@ -44,6 +45,7 @@ export default function CheckoutClient() {
   // Coupon State
   const [couponCode, setCouponCode] = useState('')
   const [discount, setDiscount] = useState(0)
+  const [appliedCouponCode, setAppliedCouponCode] = useState('')
 
   // Load Cart
   useEffect(() => {
@@ -189,6 +191,8 @@ export default function CheckoutClient() {
         payment: totalPaid,
         orderStatus: 'Order Placed',
         paymentResult: 'pending',
+        coupon_code: appliedCouponCode || null,
+        discount: discount || 0,
       }
 
       await fetch('/api/orders', {
@@ -237,6 +241,13 @@ export default function CheckoutClient() {
 
             localStorage.removeItem('cart')
             localStorage.removeItem('checkoutItem')
+
+            // Track coupon usage
+            if (appliedCouponCode) {
+              const userId = localStorage.getItem('userId') || ''
+              applyCouponToOrder(appliedCouponCode, userId, orderId)
+            }
+
             router.push(`/orders/${orderId}/confirmation`)
           },
           modal: {
@@ -310,6 +321,8 @@ export default function CheckoutClient() {
                     setCouponCode={setCouponCode}
                     discount={discount}
                     setDiscount={setDiscount}
+                    appliedCouponCode={appliedCouponCode}
+                    setAppliedCouponCode={setAppliedCouponCode}
                   />
                 )}
                 {step === 2 && (
@@ -354,6 +367,8 @@ export default function CheckoutClient() {
                       setCouponCode={setCouponCode}
                       discount={discount}
                       setDiscount={setDiscount}
+                      appliedCouponCode={appliedCouponCode}
+                      setAppliedCouponCode={setAppliedCouponCode}
                     />
                   </div>
                 )}

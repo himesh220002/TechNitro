@@ -10,16 +10,18 @@ export default function RegisterPage() {
     email: '',
     password: '',
     confirmPassword: '',
+    adminAccessCode: '',
   })
+  const [showAdminField, setShowAdminField] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  
+
 
 
   async function handleRegister(e: React.FormEvent) {
     e.preventDefault()
 
-    
+
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       return
@@ -28,13 +30,18 @@ export default function RegisterPage() {
     try {
       setError('')
       setLoading(true)
-      
+
+      // Check if admin access code is provided and valid
+      const isAdmin = formData.adminAccessCode &&
+        formData.adminAccessCode === process.env.NEXT_PUBLIC_ADMIN_ACCESS_CODE
+
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
-            name: formData.name
+            name: formData.name,
+            role: isAdmin ? 'admin' : 'user'
           }
         }
       })
@@ -55,7 +62,7 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md m-2 sm:m-0 p-4 sm:p-8 space-y-6 bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-700"
@@ -79,7 +86,7 @@ export default function RegisterPage() {
 
         {/* Register Form */}
         <form onSubmit={handleRegister} className="space-y-4">
-            
+
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-1.5">Full Name</label>
             <input
@@ -128,6 +135,29 @@ export default function RegisterPage() {
             />
           </div>
 
+          {/* Admin Access Code (Optional) */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-sm font-medium text-gray-400">Admin Access Code (Optional)</label>
+              <button
+                type="button"
+                onClick={() => setShowAdminField(!showAdminField)}
+                className="text-xs text-indigo-400 hover:text-indigo-300"
+              >
+                {showAdminField ? 'Hide' : 'Show'}
+              </button>
+            </div>
+            {showAdminField && (
+              <input
+                type="password"
+                value={formData.adminAccessCode}
+                onChange={(e) => setFormData({ ...formData, adminAccessCode: e.target.value })}
+                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 focus:border-purple-500 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500/30 transition-all"
+                placeholder="Enter admin code to create admin account"
+              />
+            )}
+          </div>
+
           <button
             type="submit"
             disabled={loading}
@@ -136,8 +166,8 @@ export default function RegisterPage() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
                 Creating account...
               </span>
@@ -159,7 +189,7 @@ export default function RegisterPage() {
             className="w-full py-3 px-4 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 transition-colors"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
-              <path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z"/>
+              <path fill="currentColor" d="M21.35 11.1h-9.17v2.73h6.51c-.33 3.81-3.5 5.44-6.5 5.44C8.36 19.27 5 16.25 5 12c0-4.1 3.2-7.27 7.2-7.27 3.09 0 4.9 1.97 4.9 1.97L19 4.72S16.56 2 12.1 2C6.42 2 2.03 6.8 2.03 12c0 5.05 4.13 10 10.22 10 5.35 0 9.25-3.67 9.25-9.09 0-1.15-.15-1.81-.15-1.81z" />
             </svg>
             Continue with Google
           </button>

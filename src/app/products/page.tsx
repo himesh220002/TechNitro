@@ -1,176 +1,183 @@
-//src/app/products/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Product } from '@/types/product'
-import Link from 'next/link'
-import Image from 'next/image'
 import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 import GradientBackground from '@/components/GradientBackground'
-import { motion } from 'framer-motion'
+import ProductFilters from '@/components/products/ProductFilters'
+import ProductSort from '@/components/products/ProductSort'
+import ProductGrid from '@/components/products/ProductGrid'
+import { Search } from 'lucide-react'
 
 export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
-  const [sortBy, setSortBy] = useState<'name' | 'price' | 'inventory'>('name')
-  const [filterBy, setFilterBy] = useState<'all' | 'accessories' | 'laptops'|'smartphones'|'tablets'>('all')
   const [loading, setLoading] = useState(true)
 
+  // Filter States
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filters, setFilters] = useState({
+    category: [] as string[],
+    priceRange: [0, 200000] as [number, number],
+    rating: null as number | null
+  })
+  const [sortBy, setSortBy] = useState('featured')
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+
+  // Derived data for filters
+  const categories = useMemo(() => {
+    const cats = new Set(products.map(p => p.category))
+    return Array.from(cats)
+  }, [products])
+
+  const priceBounds = useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 200000 }
+    const prices = products.map(p => p.price)
+    return {
+      min: Math.min(...prices),
+      max: Math.max(...prices)
+    }
+  }, [products])
 
   useEffect(() => {
-    async function fetchProducts() {
-      setLoading(true)
+    fetchProducts()
+  }, [])
+
+  // Update price range when products load
+  useEffect(() => {
+    if (products.length > 0) {
+      setFilters(prev => ({
+        ...prev,
+        priceRange: [priceBounds.min, priceBounds.max]
+      }))
+    }
+  }, [priceBounds.min, priceBounds.max, products.length])
+
+  const fetchProducts = async () => {
+    setLoading(true)
+    try {
       const res = await fetch('/api/products')
-      const data: Product[] = await res.json()
-
-      // ✅ Step 1: Filter by category
-    const filtered = filterBy === 'all'
-      ? data
-      : data.filter((product) => product.category.toLowerCase() === filterBy)
-
-      const sorted = [...filtered].sort((a, b) => {
-        if (sortBy === 'name') return a.name.localeCompare(b.name)
-        if (sortBy === 'price') return a.price - b.price
-        if (sortBy === 'inventory') return a.inventory - b.inventory
-        return 0
-      })
-      setProducts(sorted)
+      const data = await res.json()
+      setProducts(Array.isArray(data) ? data : [])
+    } catch (error) {
+      console.error('Failed to fetch products', error)
+    } finally {
       setLoading(false)
     }
-    fetchProducts()
-  }, [filterBy, sortBy])
+  }
 
-  function SkeletonCard() {
-  return (
-    <div className="rounded p-4 shadow-sm bg-gradient-to-tr from-gray-700/40 to-black/60 animate-pulse space-y-4">
-      <div className="w-full h-60 bg-gray-600 rounded" />
-      <div className="h-4 bg-gray-700 rounded w-3/4" />
-      <div className="h-4 bg-gray-700 rounded w-1/2" />
-      <div className="h-4 bg-gray-700 rounded w-2/3" />
-    </div>
-  )
-}
+  // Filter and Sort Logic
+  const filteredProducts = useMemo(() => {
+    let result = [...products]
 
+    // Search
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      result = result.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.category.toLowerCase().includes(q)
+      )
+    }
+
+    // Category
+    if (filters.category.length > 0) {
+      result = result.filter(p => filters.category.includes(p.category))
+    }
+
+    // Price
+    result = result.filter(p =>
+      p.price >= filters.priceRange[0] &&
+      p.price <= filters.priceRange[1]
+    )
+
+    // Rating
+    if (filters.rating) {
+      result = result.filter(p => (p.rating || 0) >= filters.rating!)
+    }
+
+    // Sorting
+    switch (sortBy) {
+      case 'price_asc':
+        result.sort((a, b) => a.price - b.price)
+        break
+      case 'price_desc':
+        result.sort((a, b) => b.price - a.price)
+        break
+      case 'newest':
+        result.sort((a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime())
+        break
+      case 'rating':
+        result.sort((a, b) => (b.rating || 0) - (a.rating || 0))
+        break
+      default: // featured - keep default order or randomize
+        break
+    }
+
+    return result
+  }, [products, searchQuery, filters, sortBy])
 
   return (
     <GradientBackground>
       <Navbar />
-      <main className="p-6 max-w-[1600px] mx-auto">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-2 sm:gap-4"
-        >
-          <h1 className="text-xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-pink-600">
-            🛍️ Explore Products
+
+      {/* Hero Header */}
+      <div className="relative pt-32 pb-12 px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 to-transparent pointer-events-none" />
+        <div className="max-w-[1600px] mx-auto relative z-10">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4 tracking-tight">
+            Explore Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">Collection</span>
           </h1>
-          <div className='flex gap-3 sm:gap-10'>
-            <div className="flex items-center  gap-1 sm:gap-4">
-                <label className="text-gray-400 text-xs sm:text-sm">Filter by:</label>
-                <select
-                value={filterBy}
-                onChange={(e) => setFilterBy(e.target.value as typeof filterBy)}
-                className="px-2 py-1 sm:px-4 sm:py-2 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-              >
-                <option className='bg-gray-900' value="all">All</option>
-                <option className='bg-gray-900' value="accessories">Accessories</option>
-                <option className='bg-gray-900' value="laptops">Laptop</option>
-                <option className='bg-gray-900' value="smartphones">Smartphone</option>
-                <option className='bg-gray-900' value="tablets">Tablet</option>
-              </select>
-            </div>
+          <p className="text-gray-400 text-lg max-w-2xl mb-8">
+            Discover premium tech gadgets designed to elevate your lifestyle. From high-performance laptops to next-gen accessories.
+          </p>
 
-            <div className="flex items-center gap-1 sm:gap-4">
-              <label className="text-gray-400 text-xs sm:text-sm">Sort by:</label>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                className="px-2 py-1 sm:px-4 sm:py-2 rounded-lg bg-gray-800/50 backdrop-blur-sm border border-gray-700 text-gray-200 focus:ring-2 focus:ring-purple-500 focus:outline-none"
-              >
-                <option className='bg-gray-900' value="name">Name</option>
-                <option className='bg-gray-900' value="price">Price</option>
-                <option className='bg-gray-900' value="inventory">Stock</option>
-              </select>
-            </div>
+          {/* Search Bar */}
+          <div className="relative max-w-xl">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="text"
+              placeholder="Search for products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-4 bg-gray-900/60 border border-gray-700 rounded-2xl text-white placeholder-gray-500 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none backdrop-blur-xl transition-all shadow-xl"
+            />
           </div>
-        </motion.div>
+        </div>
+      </div>
 
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-          {loading
-            ? Array.from({ length: 8 }).map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: i * 0.1 }}
-                >
-                  <SkeletonCard />
-                </motion.div>
-              ))
-            : products.map((product, idx) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.3, delay: idx * 0.1 }}
-                >
-                  <Link
-                    href={`/products/${product.slug}`}
-                    className="group block rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300
-                    bg-gradient-to-br from-gray-800/50 to-gray-900/50 backdrop-blur-lg
-                    border border-gray-700/50 hover:border-purple-500/50"
-                  >
-                    <div className="relative overflow-hidden rounded-lg">
-                      {product.imageUrl ? (
-                        <Image
-                          src={product.imageUrl}
-                          alt={product.name}
-                          width={300}
-                          height={300}
-                          className="object-cover bg-white w-full h-60 rounded-lg transform group-hover:scale-105 transition-transform duration-300"
-                        />
-                      ) : (
-                        <div className="w-full h-60 bg-gray-800 flex items-center justify-center text-gray-500 rounded-lg">
-                          No image
-                        </div>
-                      )}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </div>
-                    <div className="mt-4 space-y-2">
-                      <h2 className="text-lg font-semibold text-gray-100 group-hover:text-purple-400 transition-colors">
-                        {product.name}
-                      </h2>
-                      <p className="text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
-                        ₹{(product.price).toLocaleString("en-IN")}
-                      </p>
-                      <div className="flex items-center justify-between">
-                        <p className="text-sm text-gray-400">
-                          {product.inventory > 0 ? (
-                            <span className="flex items-center gap-1">
-                              <span className="w-2 h-2 rounded-full bg-green-500" />
-                              In Stock: {product.inventory}
-                            </span>
-                          ) : (
-                            <span className="flex items-center gap-1">
-                              <span className="w-2 h-2 rounded-full bg-red-500" />
-                              Out of Stock
-                            </span>
-                          )}
-                        </p>
-                        <motion.div
-                          whileHover={{ scale: 1.1 }}
-                          className="text-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          →
-                        </motion.div>
-                      </div>
-                    </div>
-                  </Link>
-                </motion.div>
-              ))}
+      <main className="px-6 pb-20 max-w-[1600px] mx-auto">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Sidebar Filters */}
+          <div className="lg:w-[280px] shrink-0">
+            <ProductFilters
+              filters={filters}
+              setFilters={setFilters}
+              minPrice={priceBounds.min}
+              maxPrice={priceBounds.max}
+              categories={categories}
+            />
+          </div>
+
+          {/* Main Content */}
+          <div className="flex-1">
+            <ProductSort
+              totalProducts={filteredProducts.length}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              viewMode={viewMode}
+              setViewMode={setViewMode}
+            />
+
+            <ProductGrid
+              products={filteredProducts}
+              viewMode={viewMode}
+              loading={loading}
+            />
+          </div>
         </div>
       </main>
+
       <Footer />
     </GradientBackground>
   )

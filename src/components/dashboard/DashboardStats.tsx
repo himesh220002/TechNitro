@@ -51,26 +51,26 @@ export default function DashboardStats({ totalProducts, lowStock, outOfStock, to
     ]
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
             {stats.map((stat, index) => (
                 <motion.div
                     key={stat.label}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
-                    className="p-6 rounded-2xl bg-gray-900/50 border border-gray-800 backdrop-blur-xl hover:border-gray-700 transition-colors"
+                    className="p-4 sm:p-6 rounded-2xl bg-gray-900/50 border border-gray-800 backdrop-blur-xl hover:border-gray-700 transition-colors"
                 >
                     <div className="flex justify-between items-start mb-4">
-                        <div className={`p-3 rounded-xl ${stat.bg} ${stat.border} border`}>
-                            <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                        <div className={`p-2 sm:p-3 rounded-xl ${stat.bg} ${stat.border} border`}>
+                            <stat.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${stat.color}`} />
                         </div>
                         <span className={`text-xs font-medium px-2 py-1 rounded-full ${stat.change.includes('+') ? 'bg-green-500/10 text-green-400' : 'bg-gray-800 text-gray-400'
                             }`}>
                             {stat.change}
                         </span>
                     </div>
-                    <h3 className="text-gray-400 text-sm font-medium">{stat.label}</h3>
-                    <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+                    <h3 className="text-gray-400 text-xs sm:text-sm font-medium">{stat.label}</h3>
+                    <p className="text-xl sm:text-2xl font-bold text-white mt-1 truncate">{stat.value}</p>
                 </motion.div>
             ))}
         </div>

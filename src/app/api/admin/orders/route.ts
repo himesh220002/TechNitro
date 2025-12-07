@@ -44,14 +44,21 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const archived = searchParams.get("archived") === "true";
     const hidden = searchParams.get("hidden") === "true";
+    const userId = searchParams.get("userId");
 
     // Fetch all orders using service-role
-    const { data, error } = await supabaseAdmin
+    let query = supabaseAdmin
       .from("orders")
       .select("*")
       .eq("isarchivedforadmin", archived)
       .eq("ishiddenforadmin", hidden)
       .order("created_at", { ascending: false });
+
+    if (userId) {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error(error);
