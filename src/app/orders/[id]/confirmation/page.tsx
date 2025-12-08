@@ -14,7 +14,7 @@ export default function OrderConfirmationPage() {
   const orderId = searchParams?.id as string
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
-  
+
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -46,129 +46,118 @@ export default function OrderConfirmationPage() {
   const gstAmount = Math.round(subtotal - subtotal / (1 + gstRate));
 
   // Utility function
-  function maskAccount(accountNumber: string, paymentMethod: string) {
-    if (!accountNumber) return ""
 
-    const last4 = accountNumber.slice(-4)
-
-    if (paymentMethod.toLowerCase() === "upi") {
-      const first4 = accountNumber.slice(0, 4)
-      return `${first4}******${last4}`
-    }
-
-    return `******${last4}`
-  }
 
 
 
   return (
-  <main className="max-w-2xl mx-auto p-1 sm:p-6">
-    <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 space-y-6 print:border-none print:shadow-none">
-      <div className="text-center">
-        <div className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold animate-pulse">
-          ✅ Payment Successful
-        </div>
-        <h1 className="text-2xl font-bold text-gray-800 mt-4">Order Confirmation</h1>
-        <p className="text-sm text-gray-500">Thank you for your purchase!</p>
-      </div>
-
-      <div className="text-sm text-gray-700 space-y-1">
-        <p><span className="font-bold">Order ID:</span> <span className="font-mono">{order.id}</span></p>
-        <p><span className="font-bold">Placed on:</span> {new Date(order.created_at).toLocaleString()}</p>
-        <p><span className="font-bold">Payment Method:</span> {order.paymentMethod}</p>
-        <p><span className="font-bold">Payment Status:</span> {order.orderStatus}</p>
-        <p><span className="font-bold">Payment Result:</span> {order.paymentResult}</p>
-      </div>
-      <div className="border-t border-gray-300 pt-4 text-sm text-gray-700 space-y-1">
-        <p><span className="font-bold">Customer Name:</span> {order.accountName}</p>
-        <p>
-          <span className="font-bold">Account:</span>{" "}
-          {maskAccount(order.accountNumber, order.paymentMethod)}
-        </p>
-
-      </div>
-
-
-      <div className="border-t border-gray-300 pt-4 space-y-4">
-        {order.products.map((product: ProductInOrder) => (
-          <div key={product.id} className="flex items-center gap-4">
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              width={64}
-              height={64}
-              className="rounded border border-gray-300"
-            />
-            <div className="flex-1">
-              <p className="font-semibold text-gray-800">{product.name}</p>
-              <p className="text-sm text-gray-500">Qty: {product.quantity}</p>
-            </div>
-            <div className="text-right font-medium text-gray-700">
-              ₹{(product.price * product.quantity).toLocaleString('en-IN')}
-            </div>
+    <main className="max-w-2xl mx-auto p-1 sm:p-6">
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 space-y-6 print:border-none print:shadow-none">
+        <div className="text-center">
+          <div className="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold animate-pulse">
+            ✅ Payment Successful
           </div>
-        ))}
-      </div>
-      
-        
-
-      <div className="border-t border-gray-300 pt-4 text-right">
-        <div className="text-right text-sm pt-4 text-gray-700 space-y-1">
-          <p>Subtotal: ₹{(subtotal - gstAmount).toLocaleString('en-IN')}</p>
-          <p>Included GST (approx.): ₹{gstAmount.toLocaleString('en-IN')}</p>
-          <p>Delivery Charges: ₹{deliveryCharge.toLocaleString('en-IN')}</p>
-
-          <p className="text-lg font-bold text-gray-800 pt-2">
-            Total Paid: ₹{order.payment.toLocaleString('en-IN')}
-          </p>
+          <h1 className="text-2xl font-bold text-gray-800 mt-4">Order Confirmation</h1>
+          <p className="text-sm text-gray-500">Thank you for your purchase!</p>
         </div>
 
-      </div>
+        <div className="text-sm text-gray-700 space-y-1">
+          <p><span className="font-bold">Order ID:</span> <span className="font-mono">{order.id}</span></p>
+          <p><span className="font-bold">Placed on:</span> {new Date(order.created_at).toLocaleString()}</p>
+          <p><span className="font-bold">Payment Method:</span> {order.paymentMethod}</p>
+          <p><span className="font-bold">Payment Status:</span> {order.orderStatus}</p>
+          <p><span className="font-bold">Payment Result:</span> {order.paymentResult}</p>
+        </div>
+        <div className="border-t border-gray-300 pt-4 text-sm text-gray-700 space-y-1">
+          <p><span className="font-bold">Customer Name:</span> {order.accountName}</p>
+          <p>
+            <span className="font-bold">Email:</span>{" "}
+            {order.accountNumber}
+          </p>
 
-      <div className="border-t border-gray-300 pt-4 text-sm text-gray-700 space-y-1">
-        <p><span className="font-bold">Items Ordered:</span> {order.products.reduce((sum, p) => sum + p.quantity, 0)}</p>
-        <p><span className="font-bold">Delivery Address:</span> {order.address}, <span className='font-bold'>Pin:</span>{order.pin}</p>
-        <p><span className="font-bold">Expected Delivery:</span> Within 3–5 business days</p>
-      </div>
+        </div>
 
 
-      <div className="text-right">
-        <button
-          onClick={() => router.push('/my-orders')}
-          className="mt-4 px-6 py-2 bg-purple-800 text-white shadow-md rounded hover:bg-indigo-700 transition"
-        >
-          View All Orders
-        </button>
-      </div>
+        <div className="border-t border-gray-300 pt-4 space-y-4">
+          {order.products.map((product: ProductInOrder) => (
+            <div key={product.id} className="flex items-center gap-4">
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                width={64}
+                height={64}
+                className="rounded border border-gray-300"
+              />
+              <div className="flex-1">
+                <p className="font-semibold text-gray-800">{product.name}</p>
+                <p className="text-sm text-gray-500">Qty: {product.quantity}</p>
+              </div>
+              <div className="text-right font-medium text-gray-700">
+                ₹{(product.price * product.quantity).toLocaleString('en-IN')}
+              </div>
+            </div>
+          ))}
+        </div>
 
-      <div>
-        <div className="text-xs text-gray-500 text-center border-t border-gray-300 pt-4">
+
+
+        <div className="border-t border-gray-300 pt-4 text-right">
+          <div className="text-right text-sm pt-4 text-gray-700 space-y-1">
+            <p>Subtotal: ₹{(subtotal - gstAmount).toLocaleString('en-IN')}</p>
+            <p>Included GST (approx.): ₹{gstAmount.toLocaleString('en-IN')}</p>
+            <p>Delivery Charges: ₹{deliveryCharge.toLocaleString('en-IN')}</p>
+
+            <p className="text-lg font-bold text-gray-800 pt-2">
+              Total Paid: ₹{order.payment.toLocaleString('en-IN')}
+            </p>
+          </div>
+
+        </div>
+
+        <div className="border-t border-gray-300 pt-4 text-sm text-gray-700 space-y-1">
+          <p><span className="font-bold">Items Ordered:</span> {order.products.reduce((sum, p) => sum + p.quantity, 0)}</p>
+          <p><span className="font-bold">Delivery Address:</span> {order.address}, <span className='font-bold'>Pin:</span>{order.pin}</p>
+          <p><span className="font-bold">Expected Delivery:</span> Within 3–5 business days</p>
+        </div>
+
+
+        <div className="text-right">
+          <button
+            onClick={() => router.push('/my-orders')}
+            className="mt-4 px-6 py-2 bg-purple-800 text-white shadow-md rounded hover:bg-indigo-700 transition"
+          >
+            View All Orders
+          </button>
+        </div>
+
+        <div>
+          <div className="text-xs text-gray-500 text-center border-t border-gray-300 pt-4">
             This invoice serves as proof of purchase.<br />
             For support, contact <a href="mailto:versionname4@gmail.com" className="text-indigo-600 underline">versionname4@gmail.com</a>
           </div>
 
-        <div className="text-sm text-center text-gray-600">
+          <div className="text-sm text-center text-gray-600">
             Need help? Call us at <span className="font-semibold  text-gray-800">+91-80008-45454</span>
+          </div>
         </div>
-      </div>
 
-        
-          
+
+
         <div className="flex justify-between mt-6 border-t border-gray-300 pt-4  gap-3">
-            <button
+          <button
             onClick={() => window.print()}
             className="px-4 py-2 bg-gray-100 text-gray-800 rounded hover:bg-gray-200 border border-gray-300"
-            >
+          >
             🖨️ Print Receipt
-            </button>
-            <button
+          </button>
+          <button
             onClick={() => {
               const img = document.createElement('img')
               img.src = `${location.origin}/LogoTechNitroFlat.png`
-              img.onload = () => {  
-              const printWindow = window.open('', '_blank')
+              img.onload = () => {
+                const printWindow = window.open('', '_blank')
                 if (printWindow) {
-                printWindow.document.write(`
+                  printWindow.document.write(`
                     <html>
                     <head>
                         <title>Invoice - ${order.id}</title>
@@ -222,8 +211,7 @@ export default function OrderConfirmationPage() {
                         <p><strong>Expected Delivery:</strong> Within 3–5 business days</p>
                         </div></div>
                         <p><strong>Customer Name:</strong> ${order.accountName}</p>
-                        <p><strong>Account:</strong> ${" "}
-                        ${maskAccount(order.accountNumber, order.paymentMethod)}</p>
+                        <p><strong>Email:</strong> ${order.accountNumber}</p>
                         <table>
                         <thead>
                             <tr><th>Product</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
@@ -253,26 +241,26 @@ export default function OrderConfirmationPage() {
                     </body>
                     </html>
                 `)
-                printWindow.document.close()
-                printWindow.onload = () => {
-                  setTimeout(() => {
-                    printWindow.focus()
-                    printWindow.print()
-                  }, 500) // 500ms delay ensures image is rendered
-                }
+                  printWindow.document.close()
+                  printWindow.onload = () => {
+                    setTimeout(() => {
+                      printWindow.focus()
+                      printWindow.print()
+                    }, 500) // 500ms delay ensures image is rendered
+                  }
                 }
               }
             }}
             className="px-4 py-2 bg-indigo-700 shadow-md text-white rounded hover:bg-indigo-700"
-            >
+          >
             📥 Download Invoice
-            </button>
+          </button>
         </div>
-        
 
 
-    </div>
-  </main>
-)
+
+      </div>
+    </main>
+  )
 
 }

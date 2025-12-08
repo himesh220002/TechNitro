@@ -41,7 +41,7 @@ const slides = [
     endsIn: new Date(Date.now() + 1000 * 60 * 60 * 5), // 5 hours
   },
   {
-    name: 'SonySoundAudio100',
+    name: 'SonySoundAudio 100',
     features: [
       '40mm driver',
       'Soft Cushions',
@@ -192,7 +192,7 @@ export default function FeaturedHero() {
       />
 
       {/* Left Content */}
-      <div className="relative z-20 flex-1 space-y-8 text-center lg:text-left max-w-2xl">
+      <div className="relative z-20 flex-1 space-y-8 text-center lg:text-left max-w-3xl">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md w-fit mx-auto lg:mx-0">
             <span className="relative flex h-2 w-2">
@@ -203,8 +203,11 @@ export default function FeaturedHero() {
           </div>
 
           <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white leading-tight">
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-400 drop-shadow-lg">
-              {current.name}
+            <span className="block drop-shadow-lg">
+              {current.name.split(' ')[0]}{' '}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+                {current.name.split(' ').slice(1).join(' ')}
+              </span>
             </span>
           </h1>
 

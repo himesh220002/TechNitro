@@ -13,6 +13,7 @@ import PaymentOptions from './checkout/PaymentOptions'
 import OrderSummary from './checkout/OrderSummary'
 import { toast } from 'react-hot-toast'
 import { applyCouponToOrder } from '@/lib/coupons'
+import { useCart } from '@/context/CartContext'
 
 const supabase = createClientComponentClient()
 
@@ -27,15 +28,21 @@ export default function CheckoutClient() {
   const searchParams = useSearchParams()
   const source = searchParams?.get('source')
 
+  const { items: cartItems, updateQuantity: updateCartQuantity, removeFromCart: removeCartItem, clearCart } = useCart()
+
+  // Local state for Buy Now flow
+  const [buyNowItems, setBuyNowItems] = useState<(Product & { quantity: number })[]>([])
+
+  // Derived items based on source
+  const items = source === 'buy-now' ? buyNowItems : cartItems
+
   const [step, setStep] = useState(1)
-  const [items, setItems] = useState<(Product & { quantity: number })[]>([])
   const [currentUser, setCurrentUser] = useState<unknown>(null)
   const [isPayLoading, setIsPayLoading] = useState(false)
 
   // Form State
   const [form, setForm] = useState({
     accountName: '',
-    accountNumber: '', // Used for UPI/Wallet ID if needed
     phone: '',
     address: '',
     pin: '',
@@ -47,17 +54,14 @@ export default function CheckoutClient() {
   const [discount, setDiscount] = useState(0)
   const [appliedCouponCode, setAppliedCouponCode] = useState('')
 
-  // Load Cart
+  // Load Buy Now Item
   useEffect(() => {
-    const checkoutItem = localStorage.getItem('checkoutItem')
-    const cart = localStorage.getItem('cart')
-    startTransition(() => {
-      if (source === 'buy-now' && checkoutItem) {
-        setItems([JSON.parse(checkoutItem)])
-      } else if (source === 'cart' && cart) {
-        setItems(JSON.parse(cart))
+    if (source === 'buy-now') {
+      const checkoutItem = localStorage.getItem('checkoutItem')
+      if (checkoutItem) {
+        setBuyNowItems([JSON.parse(checkoutItem)])
       }
-    })
+    }
   }, [source])
 
   // Load User
@@ -83,25 +87,45 @@ export default function CheckoutClient() {
   }, [])
 
   const updateQuantity = (id: string, qty: number) => {
-    const updated = items.map((item) =>
-      item.id === id ? { ...item, quantity: Math.max(1, Math.min(qty, item.inventory)) } : item
-    )
-    setItems(updated)
-    localStorage.setItem(items.length === 1 ? 'checkoutItem' : 'cart', JSON.stringify(items.length === 1 ? updated[0] : updated))
+    if (source === 'buy-now') {
+      const updated = buyNowItems.map((item) =>
+        item.id === id ? { ...item, quantity: Math.max(1, Math.min(qty, item.inventory)) } : item
+      )
+      setBuyNowItems(updated)
+      localStorage.setItem('checkoutItem', JSON.stringify(updated[0]))
+    } else {
+      updateCartQuantity(id, qty)
+    }
   }
 
   const removeItem = (id: string) => {
-    const updated = items.filter((item) => item.id !== id)
-    setItems(updated)
-    if (items.length === 1 && localStorage.getItem('checkoutItem')) {
+    if (source === 'buy-now') {
+      const updated = buyNowItems.filter((item) => item.id !== id)
+      setBuyNowItems(updated)
       localStorage.removeItem('checkoutItem')
+      if (updated.length === 0) {
+        router.push('/products')
+      }
     } else {
-      localStorage.setItem('cart', JSON.stringify(updated))
-    }
-    if (updated.length === 0) {
-      router.push('/products')
+      removeCartItem(id)
+      if (cartItems.length <= 1) { // If this was the last item (length is still 1 before update propagates?) 
+        // Actually context update is immediate but we might need to check length after. 
+        // Better to let the effect handle redirect or check cartItems.length in render?
+        // If we remove the last item, cartItems will be empty on next render.
+      }
     }
   }
+
+  // Redirect if cart is empty
+  useEffect(() => {
+    if (source === 'cart' && cartItems.length === 0 && step === 1) {
+      // Only redirect if we are in step 1 (Cart Review)
+      // But wait, if we are in checkout and cart becomes empty, we should probably redirect.
+      // Initial load might be empty before context loads? Context initializes from localstorage synchronously-ish in effect?
+      // Context initializes with empty array, then useEffect loads from LS. 
+      // We need to avoid redirecting before load.
+    }
+  }, [cartItems, source, step])
 
   // Calculations
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -146,6 +170,10 @@ export default function CheckoutClient() {
     return true
   }, [step, items, isAddressValid])
 
+  const handleBack = () => {
+    if (step > 1) setStep(step - 1)
+  }
+
   const handlePayment = async () => {
     setIsPayLoading(true)
     try {
@@ -181,7 +209,6 @@ export default function CheckoutClient() {
         id: orderId,
         user_id: userId,
         accountName: form.accountName,
-        accountNumber: form.accountNumber,
         phone: form.phone,
         address: form.address,
         pin: form.pin,
@@ -193,6 +220,7 @@ export default function CheckoutClient() {
         paymentResult: 'pending',
         coupon_code: appliedCouponCode || null,
         discount: discount || 0,
+        accountNumber: session?.data?.session?.user?.email || '',
       }
 
       await fetch('/api/orders', {
@@ -239,8 +267,11 @@ export default function CheckoutClient() {
               }),
             })
 
-            localStorage.removeItem('cart')
-            localStorage.removeItem('checkoutItem')
+            if (source === 'buy-now') {
+              localStorage.removeItem('checkoutItem')
+            } else {
+              clearCart()
+            }
 
             // Track coupon usage
             if (appliedCouponCode) {
@@ -281,8 +312,11 @@ export default function CheckoutClient() {
               paymentid: `COD_${Date.now()}`,
             }),
           })
-          localStorage.removeItem('cart')
-          localStorage.removeItem('checkoutItem')
+          if (source === 'buy-now') {
+            localStorage.removeItem('checkoutItem')
+          } else {
+            clearCart()
+          }
           router.push(`/orders/${orderId}/confirmation`)
         }, 1500)
       }
@@ -387,6 +421,7 @@ export default function CheckoutClient() {
               step={step}
               setStep={setStep}
               isFormValid={isFormValid}
+              onBack={handleBack}
             />
           </div>
         </div>

@@ -2,65 +2,38 @@
 
 import { useEffect, useState, startTransition } from 'react'
 import { Product } from '@/types/product'
+import { useCart } from '@/context/CartContext'
 import Navbar from '@/components/Navbar'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 
 export default function CartPage() {
-    const router = useRouter()
-  const [cart, setCart] = useState<(Product & { quantity: number })[]>([])
+  const router = useRouter()
+  const { items: cart, updateQuantity, removeFromCart } = useCart()
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-  const hydrateCart = async () => {
-    const stored = localStorage.getItem('cart')
-    if (stored) {
-      startTransition(() => {
-        setCart(JSON.parse(stored))
-      })
-    }
-    // defer loading state update to next tick
-    queueMicrotask(() => setLoading(false))
-  }
-
-  hydrateCart()
-}, [])
-
-
-  const updateCart = (newCart: typeof cart) => {
-    setCart(newCart)
-    localStorage.setItem('cart', JSON.stringify(newCart))
-  }
+    // Simulate hydration delay or just set loading false immediately since context handles hydration
+    setLoading(false)
+  }, [])
 
   const increaseQty = (id: string) => {
-  const updated = cart.map((item) =>
-    item.id === id
-      ? {
-          ...item,
-          quantity: item.quantity < item.inventory
-            ? item.quantity + 1
-            : item.quantity, // don't exceed stock
-        }
-      : item
-  )
-  updateCart(updated)
-}
-
+    const item = cart.find(i => i.id === id)
+    if (item && item.quantity < item.inventory) {
+      updateQuantity(id, item.quantity + 1)
+    }
+  }
 
   const decreaseQty = (id: string) => {
-    const updated = cart
-      .map((item) =>
-        item.id === id && item.quantity > 1
-          ? { ...item, quantity: item.quantity - 1 }
-          : item
-      )
-    updateCart(updated)
+    const item = cart.find(i => i.id === id)
+    if (item && item.quantity > 1) {
+      updateQuantity(id, item.quantity - 1)
+    }
   }
 
   const removeItem = (id: string) => {
-    const updated = cart.filter((item) => item.id !== id)
-    updateCart(updated)
+    removeFromCart(id)
   }
 
   const handleCheckout = () => {
@@ -85,7 +58,7 @@ export default function CartPage() {
         </div>
       </div>
     )
-}
+  }
 
 
 
@@ -111,7 +84,7 @@ export default function CartPage() {
             <span className="text-6xl mb-4">🛍️</span>
             <h2 className="text-2xl font-semibold text-gray-400 mb-2">Your cart is empty</h2>
             <p className="text-gray-500 mb-6">Add some awesome products to your cart</p>
-            <Link 
+            <Link
               href="/products"
               className="px-6 py-3 rounded-lg bg-purple-600 text-white hover:bg-purple-700 
                      transition-colors flex items-center gap-2"
@@ -166,11 +139,10 @@ export default function CartPage() {
                             <button
                               onClick={() => increaseQty(item.id)}
                               disabled={item.quantity >= item.inventory}
-                              className={`transition-colors ${
-                                item.quantity >= item.inventory
-                                  ? 'text-gray-600 cursor-not-allowed'
-                                  : 'text-gray-400 hover:text-white'
-                              }`}
+                              className={`transition-colors ${item.quantity >= item.inventory
+                                ? 'text-gray-600 cursor-not-allowed'
+                                : 'text-gray-400 hover:text-white'
+                                }`}
                             >
                               +
                             </button>

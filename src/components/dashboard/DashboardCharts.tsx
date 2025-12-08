@@ -305,8 +305,8 @@ export default function DashboardCharts({ products }: DashboardChartsProps) {
                                 </Pie>
                                 <Tooltip
                                     contentStyle={{
-                                        backgroundColor: '#1f2937',
-                                        border: '1px solid #374151',
+                                        backgroundColor: '#8eadddff',
+                                        border: '0px solid #374151',
                                         borderRadius: '8px',
                                         fontSize: '12px'
                                     }}

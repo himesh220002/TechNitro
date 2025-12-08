@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
-import GradientBackground from '@/components/GradientBackground'
+import DashboardWrapper from '@/components/dashboard/DashboardWrapper'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -400,417 +399,412 @@ export default function AdminOrdersPage() {
 
 
   return (
-    <GradientBackground>
-      <div className="flex min-h-screen">
-        <DashboardSidebar />
-        <main className="flex-1 lg:ml-64 p-6 lg:p-10">
-          <Breadcrumbs items={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Orders' }]} />
+    <DashboardWrapper>
+      <Breadcrumbs items={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Orders' }]} />
 
-          <div className="w-full flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6 border border-gray-800 p-4 rounded-xl">
-            <div className="flex flex-col gap-2">
-              <h1 className="text-3xl font-bold text-white">Orders Management</h1>
-              <div className="flex gap-2">
-                {[
-                  { key: 'active' as const, label: 'Active', icon: <Package size={16} /> },
-                  { key: 'archived' as const, label: 'Archived', icon: <Archive size={16} /> },
-                  { key: 'hidden' as const, label: 'Hidden', icon: <EyeOff size={16} /> },
-                ].map((tab) => (
-                  <button
-                    key={tab.key}
-                    onClick={() => setActiveTab(tab.key)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.key
-                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25'
-                      : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300'
-                      }`}
-                  >
-                    {tab.icon}
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="flex gap-4 items-center flex-wrap">
-              <div className="flex flex-col gap-2">
-                <div className="flex gap-2 items-center">
-                  <label className="text-sm text-white">Start (Month/Year)</label>
-                  <input
-                    type="month"
-                    value={startDate.toISOString().slice(0, 7)}
-                    onChange={(e) => {
-                      const [year, month] = e.target.value.split('-')
-                      setStartDate(new Date(+year, +month - 1, 1))
-                    }}
-                    className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
-                  />
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label className="text-sm text-white">End (Month/Year)</label>
-                  <input
-                    type="month"
-                    value={endDate.toISOString().slice(0, 7)}
-                    onChange={(e) => {
-                      const [year, month] = e.target.value.split('-')
-                      setEndDate(new Date(+year, +month, 0))
-                    }}
-                    className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
-                  />
-                </div>
-              </div>
-
-              <div className='flex flex-col gap-4'>
-                <div>
-                  <label className="text-sm text-white mr-2">Filter by Status</label>
-                  <select
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                    className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
-                  >
-                    <option value="">All</option>
-                    {statusOptions.map((status) => (
-                      <option key={status} value={status}>
-                        {status}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-sm text-white mr-2">Search</label>
-                  <input
-                    type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Buyer, phone, product..."
-                    className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
-                  />
-                </div>
-              </div>
+      <div className="w-full flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6 border border-gray-800 p-4 rounded-xl">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-3xl font-bold text-white">Orders Management</h1>
+          <div className="flex gap-2">
+            {[
+              { key: 'active' as const, label: 'Active', icon: <Package size={16} /> },
+              { key: 'archived' as const, label: 'Archived', icon: <Archive size={16} /> },
+              { key: 'hidden' as const, label: 'Hidden', icon: <EyeOff size={16} /> },
+            ].map((tab) => (
               <button
-                onClick={() => {
-                  setShowRouteModal(true)
-                }}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/25 transition-all"
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.key
+                  ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25'
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300'
+                  }`}
               >
-                Show Suggested Route
+                {tab.icon}
+                {tab.label}
               </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex gap-4 items-center flex-wrap">
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 items-center">
+              <label className="text-sm text-white">Start (Month/Year)</label>
+              <input
+                type="month"
+                value={startDate.toISOString().slice(0, 7)}
+                onChange={(e) => {
+                  const [year, month] = e.target.value.split('-')
+                  setStartDate(new Date(+year, +month - 1, 1))
+                }}
+                className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
+              />
+            </div>
+            <div className="flex gap-2 items-center">
+              <label className="text-sm text-white">End (Month/Year)</label>
+              <input
+                type="month"
+                value={endDate.toISOString().slice(0, 7)}
+                onChange={(e) => {
+                  const [year, month] = e.target.value.split('-')
+                  setEndDate(new Date(+year, +month, 0))
+                }}
+                className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
+              />
             </div>
           </div>
 
-          {showRouteModal && (
-            <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-              <div className="bg-[#1f1f1f] p-8 rounded-xl w-full max-w-md shadow-xl border border-gray-700 space-y-6">
-                <h2 className="text-2xl font-bold text-white text-center">Find the Best Shipping Route</h2>
+          <div className='flex flex-col gap-4'>
+            <div>
+              <label className="text-sm text-white mr-2">Filter by Status</label>
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
+              >
+                <option value="">All</option>
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {status}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                {/* City Selectors */}
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-sm text-gray-300 block mb-1">Source City</label>
-                    <select
-                      value={sourceCity}
-                      onChange={(e) => setSourceCity(e.target.value)}
-                      className="bg-gray-800 text-white px-3 py-2 rounded w-full"
-                    >
-                      <option value="">Select source</option>
-                      {validCities.map((city) => (
-                        <option key={city} value={city}>{city}</option>
-                      ))}
-                    </select>
-                  </div>
+            <div>
+              <label className="text-sm text-white mr-2">Search</label>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buyer, phone, product..."
+                className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
+              />
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setShowRouteModal(true)
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/25 transition-all"
+          >
+            Show Suggested Route
+          </button>
+        </div>
+      </div>
 
-                  <div>
-                    <label className="text-sm text-gray-300 block mb-1">Destination City</label>
-                    <select
-                      value={destinationCity}
-                      onChange={(e) => setDestinationCity(e.target.value)}
-                      className="bg-gray-800 text-white px-3 py-2 rounded w-full"
-                    >
-                      <option value="">Select destination</option>
-                      {validCities.map((city) => (
-                        <option key={city} value={city}>{city}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+      {showRouteModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-[#1f1f1f] p-8 rounded-xl w-full max-w-md shadow-xl border border-gray-700 space-y-6">
+            <h2 className="text-2xl font-bold text-white text-center">Find the Best Shipping Route</h2>
 
-                {/* Route Type */}
-                {selectedRouteType && (
-                  <p className="text-sm text-gray-400 text-center">
-                    Recommended: {selectedRouteType === 'cost-effective' ? '💰 Cost Effective' : '⚡ Time Efficient'}
-                  </p>
-                )}
-
-                {/* Weight Input */}
-                <div>
-                  <label className="text-sm text-gray-300 block mb-1">Parcel Weight (kg)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={weightKg}
-                    onChange={(e) => setWeightKg(Number(e.target.value))}
-                    className="bg-gray-800 text-white px-3 py-2 rounded w-full"
-                  />
-                </div>
-
-                {/* Generate Button */}
-                <button
-                  onClick={() => {
-                    const { type, route } = chooseOptimalRoute(
-                      normalizedGraph,
-                      sourceCity.trim().toLowerCase(),
-                      destinationCity.trim().toLowerCase(),
-                      weightKg
-                    )
-                    setRoutePlan(route)
-                    setSelectedRouteType(type)
-                  }}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full font-semibold"
+            {/* City Selectors */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-gray-300 block mb-1">Source City</label>
+                <select
+                  value={sourceCity}
+                  onChange={(e) => setSourceCity(e.target.value)}
+                  className="bg-gray-800 text-white px-3 py-2 rounded w-full"
                 >
-                  Generate Route
-                </button>
+                  <option value="">Select source</option>
+                  {validCities.map((city) => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
+              </div>
 
-                {/* Cost Display */}
-                <p className="text-sm text-gray-400 text-center">
-                  Estimated Cargo Cost: ₹{calculateObjectTransferCost(routePlan, weightKg).toFixed(0)}
-                </p>
-
-                {/* Route Breakdown */}
-                {routePlan.length > 0 && (
-                  <div>
-                    <h3 className="text-sm text-white mb-2 font-semibold">Suggested Route</h3>
-                    <ul className="text-sm text-gray-300 space-y-1">
-                      {routePlan.map((step, i) => (
-                        <li key={i}>
-                          {step.from} → {step.to} ({step.mode}, ~{step.timeHr} hrs, ₹{getLegCost(step, weightKg).toFixed(0)})
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Close Button */}
-                <button
-                  onClick={() => {
-                    setShowRouteModal(false)
-                    setRoutePlan([])
-                    setSourceCity('')
-                    setDestinationCity('')
-                  }}
-                  className="text-sm text-gray-400 hover:text-white text-center w-full mt-4"
+              <div>
+                <label className="text-sm text-gray-300 block mb-1">Destination City</label>
+                <select
+                  value={destinationCity}
+                  onChange={(e) => setDestinationCity(e.target.value)}
+                  className="bg-gray-800 text-white px-3 py-2 rounded w-full"
                 >
-                  Close
-                </button>
+                  <option value="">Select destination</option>
+                  {validCities.map((city) => (
+                    <option key={city} value={city}>{city}</option>
+                  ))}
+                </select>
               </div>
             </div>
-          )}
 
+            {/* Route Type */}
+            {selectedRouteType && (
+              <p className="text-sm text-gray-400 text-center">
+                Recommended: {selectedRouteType === 'cost-effective' ? '💰 Cost Effective' : '⚡ Time Efficient'}
+              </p>
+            )}
 
-
-          {loading ? (
-            <div className="space-y-6 max-w-[1600px] m-auto">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <SkeletonOrderCard key={i} />
-              ))}
+            {/* Weight Input */}
+            <div>
+              <label className="text-sm text-gray-300 block mb-1">Parcel Weight (kg)</label>
+              <input
+                type="number"
+                min={1}
+                value={weightKg}
+                onChange={(e) => setWeightKg(Number(e.target.value))}
+                className="bg-gray-800 text-white px-3 py-2 rounded w-full"
+              />
             </div>
-          ) : filteredOrders.length === 0 ? (
-            <p className="text-gray-500">No orders found.</p>
-          ) : (
-            <div className="space-y-6 max-w-[1600px] m-auto">
-              {visibleOrders.map((order) => {
+
+            {/* Generate Button */}
+            <button
+              onClick={() => {
+                const { type, route } = chooseOptimalRoute(
+                  normalizedGraph,
+                  sourceCity.trim().toLowerCase(),
+                  destinationCity.trim().toLowerCase(),
+                  weightKg
+                )
+                setRoutePlan(route)
+                setSelectedRouteType(type)
+              }}
+              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full font-semibold"
+            >
+              Generate Route
+            </button>
+
+            {/* Cost Display */}
+            <p className="text-sm text-gray-400 text-center">
+              Estimated Cargo Cost: ₹{calculateObjectTransferCost(routePlan, weightKg).toFixed(0)}
+            </p>
+
+            {/* Route Breakdown */}
+            {routePlan.length > 0 && (
+              <div>
+                <h3 className="text-sm text-white mb-2 font-semibold">Suggested Route</h3>
+                <ul className="text-sm text-gray-300 space-y-1">
+                  {routePlan.map((step, i) => (
+                    <li key={i}>
+                      {step.from} → {step.to} ({step.mode}, ~{step.timeHr} hrs, ₹{getLegCost(step, weightKg).toFixed(0)})
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setShowRouteModal(false)
+                setRoutePlan([])
+                setSourceCity('')
+                setDestinationCity('')
+              }}
+              className="text-sm text-gray-400 hover:text-white text-center w-full mt-4"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
+
+
+      {loading ? (
+        <div className="space-y-6 max-w-[1600px] m-auto">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <SkeletonOrderCard key={i} />
+          ))}
+        </div>
+      ) : filteredOrders.length === 0 ? (
+        <p className="text-gray-500">No orders found.</p>
+      ) : (
+        <div className="space-y-6 max-w-[1600px] m-auto">
+          {visibleOrders.map((order) => {
 
 
 
 
-                return (
+            return (
 
-                  <div key={order.id} className="flex flex-col sm:flex-row gap-5 justify-between  items-start border border-gray-500 p-4 rounded bg-gradient-to-br from-cyan-500/40 via-black/30 to-black/50 shadow-sm">
+              <div key={order.id} className="flex flex-col sm:flex-row gap-5 justify-between  items-start border border-gray-500 p-4 rounded bg-gradient-to-br from-cyan-500/40 via-black/30 to-black/50 shadow-sm">
+                <div>
+                  <div className=" flex gap-2 text-xl font-semibold text-white">
+                    <span className="text-green-500">Order#</span><span>{order.id}</span>
+                  </div>
+                  <p className="text-sm text-gray-300">Placed on {new Date(order.created_at).toLocaleString()}</p>
+                  <p className="text-sm text-indigo-100"><span className="text-blue-400">User Id: </span>{(order.user_id).slice(0, 8)}</p>
+                  <p className="text-sm text-indigo-300"><span className="text-green-500">Buyer: </span>{order.accountName}</p>
+                  <p className="text-sm text-indigo-300"><span className="text-green-500">Phone: </span>{order.phone}</p>
+                  <p className="text-sm text-indigo-300"><span className="text-green-500">Address: </span>{order.address}</p>
+                  <p className="text-sm text-indigo-300"><span className="text-green-500">Pin: </span>{order.pin}</p>
+                  <p
+                    className={`text-sm ${order.paymentResult === "pending"
+                      ? "text-yellow-400"
+                      : order.paymentResult === "success"
+                        ? "text-green-400"
+                        : order.paymentResult === "cancelled"
+                          ? "text-red-400"
+                          : "text-gray-200"
+                      }`}
+                  >
+                    <span className="text-gray-300">Payment Result:</span> {order.paymentResult}
+                  </p>
+                  <div className="flex items-center justify-between mb-3">
                     <div>
-                      <div className=" flex gap-2 text-xl font-semibold text-white">
-                        <span className="text-green-500">Order#</span><span>{order.id}</span>
-                      </div>
-                      <p className="text-sm text-gray-300">Placed on {new Date(order.created_at).toLocaleString()}</p>
-                      <p className="text-sm text-indigo-100"><span className="text-blue-400">User Id: </span>{(order.user_id).slice(0, 8)}</p>
-                      <p className="text-sm text-indigo-300"><span className="text-green-500">Buyer: </span>{order.accountName}</p>
-                      <p className="text-sm text-indigo-300"><span className="text-green-500">Phone: </span>{order.phone}</p>
-                      <p className="text-sm text-indigo-300"><span className="text-green-500">Address: </span>{order.address}</p>
-                      <p className="text-sm text-indigo-300"><span className="text-green-500">Pin: </span>{order.pin}</p>
-                      <p
-                        className={`text-sm ${order.paymentResult === "pending"
-                          ? "text-yellow-400"
-                          : order.paymentResult === "success"
-                            ? "text-green-400"
-                            : order.paymentResult === "cancelled"
-                              ? "text-red-400"
-                              : "text-gray-200"
-                          }`}
-                      >
-                        <span className="text-gray-300">Payment Result:</span> {order.paymentResult}
-                      </p>
-                      <div className="flex items-center justify-between mb-3">
-                        <div>
-                          <p className="text-xs text-gray-500">Order ID: {order.id.slice(0, 8)}</p>
-                          <p className="text-sm text-gray-400">{new Date(order.created_at).toLocaleDateString('en-IN')}</p>
-                        </div>
-                        {getStatusBadge(order.orderStatus)}
-                      </div>
+                      <p className="text-xs text-gray-500">Order ID: {order.id.slice(0, 8)}</p>
+                      <p className="text-sm text-gray-400">{new Date(order.created_at).toLocaleDateString('en-IN')}</p>
+                    </div>
+                    {getStatusBadge(order.orderStatus)}
+                  </div>
 
-                      <div className="flex gap-2 my-2">
-                        <button className='px-2 py-1 shadow rounded-md bg-indigo-800 hover:bg-blue-700'
-                          onClick={() => {
-                            router.push(`/orders/${order.id}/confirmation`)
-                          }}
+                  <div className="flex gap-2 my-2">
+                    <button className='px-2 py-1 shadow rounded-md bg-indigo-800 hover:bg-blue-700'
+                      onClick={() => {
+                        router.push(`/orders/${order.id}/confirmation`)
+                      }}
+                    >
+                      View Invoice
+                    </button>
+
+                    {activeTab === 'active' && (
+                      <>
+                        <button
+                          onClick={() => handleOrderAction(order.id, 'archive')}
+                          className="px-2 py-1 shadow rounded-md bg-yellow-700 hover:bg-yellow-600 text-white text-sm"
                         >
-                          View Invoice
+                          Archive
                         </button>
+                        <button
+                          onClick={() => handleOrderAction(order.id, 'hide')}
+                          className="px-2 py-1 shadow rounded-md bg-gray-600 hover:bg-gray-500 text-white text-sm"
+                        >
+                          Hide
+                        </button>
+                      </>
+                    )}
 
-                        {activeTab === 'active' && (
-                          <>
-                            <button
-                              onClick={() => handleOrderAction(order.id, 'archive')}
-                              className="px-2 py-1 shadow rounded-md bg-yellow-700 hover:bg-yellow-600 text-white text-sm"
-                            >
-                              Archive
-                            </button>
-                            <button
-                              onClick={() => handleOrderAction(order.id, 'hide')}
-                              className="px-2 py-1 shadow rounded-md bg-gray-600 hover:bg-gray-500 text-white text-sm"
-                            >
-                              Hide
-                            </button>
-                          </>
-                        )}
+                    {activeTab === 'archived' && (
+                      <button
+                        onClick={() => handleOrderAction(order.id, 'unarchive')}
+                        className="px-2 py-1 shadow rounded-md bg-green-700 hover:bg-green-600 text-white text-sm"
+                      >
+                        Unarchive
+                      </button>
+                    )}
 
-                        {activeTab === 'archived' && (
-                          <button
-                            onClick={() => handleOrderAction(order.id, 'unarchive')}
-                            className="px-2 py-1 shadow rounded-md bg-green-700 hover:bg-green-600 text-white text-sm"
-                          >
-                            Unarchive
-                          </button>
-                        )}
+                    {activeTab === 'hidden' && (
+                      <button
+                        onClick={() => handleOrderAction(order.id, 'unhide')}
+                        className="px-2 py-1 shadow rounded-md bg-green-700 hover:bg-green-600 text-white text-sm"
+                      >
+                        Unhide
+                      </button>
+                    )}
+                  </div>
 
-                        {activeTab === 'hidden' && (
-                          <button
-                            onClick={() => handleOrderAction(order.id, 'unhide')}
-                            className="px-2 py-1 shadow rounded-md bg-green-700 hover:bg-green-600 text-white text-sm"
-                          >
-                            Unhide
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Product Thumbnails - Horizontal Scroll */}
-                      <div className="mb-4">
-                        <p className="text-sm text-gray-400 mb-2">Products ({order.products.length})</p>
-                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-                          {order.products.map((product) => (
-                            <div key={product.id} className="flex-shrink-0 w-32 bg-gray-800/50 rounded-lg p-2 border border-gray-700 hover:border-purple-500/50 transition-colors">
-                              <div className="relative w-full h-24 bg-white rounded mb-2 overflow-hidden">
-                                <Image
-                                  src={product.imageUrl}
-                                  alt={product.name}
-                                  fill
-                                  className="object-contain p-1"
-                                />
-                              </div>
-                              <p className="text-xs text-white font-medium truncate">{product.name}</p>
-                              <p className="text-xs text-gray-400">Qty: {product.quantity}</p>
-                              <p className="text-xs text-green-400 font-semibold">₹{(product.price * product.quantity).toLocaleString('en-IN')}</p>
-                            </div>
-                          ))}
+                  {/* Product Thumbnails - Horizontal Scroll */}
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-400 mb-2">Products ({order.products.length})</p>
+                    <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
+                      {order.products.map((product) => (
+                        <div key={product.id} className="flex-shrink-0 w-32 bg-gray-800/50 rounded-lg p-2 border border-gray-700 hover:border-purple-500/50 transition-colors">
+                          <div className="relative w-full h-24 bg-white rounded mb-2 overflow-hidden">
+                            <Image
+                              src={product.imageUrl}
+                              alt={product.name}
+                              fill
+                              className="object-contain p-1"
+                            />
+                          </div>
+                          <p className="text-xs text-white font-medium truncate">{product.name}</p>
+                          <p className="text-xs text-gray-400">Qty: {product.quantity}</p>
+                          <p className="text-xs text-green-400 font-semibold">₹{(product.price * product.quantity).toLocaleString('en-IN')}</p>
                         </div>
-                        <div className="mt-2 flex items-center justify-between text-sm">
-                          <p className="text-indigo-400">Subtotal: ₹{(order.payment - order.deliveryCharge).toLocaleString('en-IN')}</p>
-                          <p className="text-gray-400">Delivery: ₹{order.deliveryCharge}</p>
-                          <p className="font-bold text-indigo-300">Total: ₹{order.payment.toLocaleString('en-IN')}</p>
-                        </div>
-                      </div>
+                      ))}
+                    </div>
+                    <div className="mt-2 flex items-center justify-between text-sm">
+                      <p className="text-indigo-400">Subtotal: ₹{(order.payment - order.deliveryCharge).toLocaleString('en-IN')}</p>
+                      <p className="text-gray-400">Delivery: ₹{order.deliveryCharge}</p>
+                      <p className="font-bold text-indigo-300">Total: ₹{order.payment.toLocaleString('en-IN')}</p>
+                    </div>
+                  </div>
+                </div>
+
+
+
+                <div className=" flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                  <div className="flex items-start gap-2">
+                    <div className='flex flex-col gap-2'>
+
+
+                      {order.orderStatus === 'Shipping' && (
+                        <ShippingLegManager
+                          orderId={order.id}
+                          shippingEvents={order.shippingEvents}
+                          onAddLeg={handleAddLocationWithMode}
+                          onRefresh={fetchOrders}
+                        />
+                      )}
+
                     </div>
 
+                    <div className='flex flex-col gap-10'>
 
-
-                    <div className=" flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-
-                      <div className="flex items-start gap-2">
-                        <div className='flex flex-col gap-2'>
-
-
-                          {order.orderStatus === 'Shipping' && (
-                            <ShippingLegManager
-                              orderId={order.id}
-                              shippingEvents={order.shippingEvents}
-                              onAddLeg={handleAddLocationWithMode}
-                              onRefresh={fetchOrders}
-                            />
-                          )}
-
-                        </div>
-
-                        <div className='flex flex-col gap-10'>
-
-                          <div >
-                            <label className="text-sm text-white block mb-2">Current Status</label>
-                            <select
-                              value={order.orderStatus}
-                              onChange={(e) => updateStatus(order.id, e.target.value)}
-                              className="bg-gray-800 text-white px-3 py-2 rounded"
-                            >
-                              {statusOptions.map((status) => (
-                                <option
-                                  key={status}
-                                  value={status}
-                                  disabled={status === 'Order Placed' && order.orderStatus !== 'Order Placed'}
-                                  className={
-                                    status === 'Order Placed' && order.orderStatus !== 'Order Placed'
-                                      ? 'text-gray-500 bg-gray-900'
-                                      : status === 'Cancelled'
-                                        ? 'text-red-600 bg-gray-900'
-                                        : ''
-                                  }
-                                >
-                                  {status}
-                                </option>
-                              ))}
-                            </select>
-                            <button
-                              className="rounded border p-1 ml-2"
-                              onClick={() =>
-                                setOpenNotesOrderId(openNotesOrderId === order.id ? null : order.id)
+                      <div >
+                        <label className="text-sm text-white block mb-2">Current Status</label>
+                        <select
+                          value={order.orderStatus}
+                          onChange={(e) => updateStatus(order.id, e.target.value)}
+                          className="bg-gray-800 text-white px-3 py-2 rounded"
+                        >
+                          {statusOptions.map((status) => (
+                            <option
+                              key={status}
+                              value={status}
+                              disabled={status === 'Order Placed' && order.orderStatus !== 'Order Placed'}
+                              className={
+                                status === 'Order Placed' && order.orderStatus !== 'Order Placed'
+                                  ? 'text-gray-500 bg-gray-900'
+                                  : status === 'Cancelled'
+                                    ? 'text-red-600 bg-gray-900'
+                                    : ''
                               }
                             >
-                              {openNotesOrderId === order.id ? "Close" : "Notes"}
-                            </button>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          className="rounded border p-1 ml-2"
+                          onClick={() =>
+                            setOpenNotesOrderId(openNotesOrderId === order.id ? null : order.id)
+                          }
+                        >
+                          {openNotesOrderId === order.id ? "Close" : "Notes"}
+                        </button>
 
-                            {openNotesOrderId === order.id && (
-                              <div className="mt-2">
-                                <OrderNote orderId={order.id} />
-                              </div>
-                            )}
-
+                        {openNotesOrderId === order.id && (
+                          <div className="mt-2">
+                            <OrderNote orderId={order.id} />
                           </div>
+                        )}
 
-                        </div>
                       </div>
+
                     </div>
-
                   </div>
-                )
-              })}
-
-              {visibleCount < filteredOrders.length && (
-                <div className="flex justify-center mt-6">
-                  <button
-                    onClick={() => setVisibleCount((prev) => prev + 10)}
-                    className="px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-600"
-                  >
-                    Load More
-                  </button>
                 </div>
-              )}
-            </div>
 
+              </div>
+            )
+          })}
+
+          {visibleCount < filteredOrders.length && (
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 10)}
+                className="px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-600"
+              >
+                Load More
+              </button>
+            </div>
           )}
-        </main>
-      </div>
-    </GradientBackground>
+        </div>
+
+      )}
+    </DashboardWrapper>
   )
 }

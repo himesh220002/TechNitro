@@ -1,9 +1,8 @@
 'use client'
 
 import { Product } from '@/types/product'
-import GradientBackground from '@/components/GradientBackground'
 import { useState, useEffect } from 'react'
-import DashboardSidebar from '@/components/dashboard/DashboardSidebar'
+import DashboardWrapper from '@/components/dashboard/DashboardWrapper'
 import DashboardStats from '@/components/dashboard/DashboardStats'
 import DashboardFilters from '@/components/dashboard/DashboardFilters'
 import DashboardProductList from '@/components/dashboard/DashboardProductList'
@@ -123,86 +122,77 @@ export default function DashboardPage() {
   }
 
   return (
-    <GradientBackground>
-      <div className="flex min-h-screen">
-        {/* Sidebar - hidden on mobile */}
-        <div className="hidden lg:block">
-          <DashboardSidebar />
+    <DashboardWrapper>
+      {/* Breadcrumbs */}
+      <Breadcrumbs items={[{ label: 'Dashboard' }]} />
+
+      {/* Header */}
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard</h1>
+          <p className="text-gray-400 mt-1 text-sm sm:text-base">Manage your products and view performance</p>
         </div>
+      </header>
 
-        <main className="flex-1 lg:ml-64 p-4 sm:p-6 lg:p-10 overflow-x-hidden">
-          {/* Breadcrumbs */}
-          <Breadcrumbs items={[{ label: 'Dashboard' }]} />
+      {/* Stats */}
+      <DashboardStats
+        totalProducts={products.length}
+        lowStock={stats.lowStock}
+        outOfStock={stats.outOfStock}
+        totalValue={stats.totalValue}
+      />
 
-          {/* Header */}
-          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-white">Dashboard</h1>
-              <p className="text-gray-400 mt-1 text-sm sm:text-base">Manage your products and view performance</p>
-            </div>
-          </header>
+      {/* Charts */}
+      <DashboardCharts products={products} />
 
-          {/* Stats */}
-          <DashboardStats
-            totalProducts={products.length}
-            lowStock={stats.lowStock}
-            outOfStock={stats.outOfStock}
-            totalValue={stats.totalValue}
-          />
+      {/* Filters */}
+      <DashboardFilters
+        search={search}
+        setSearch={setSearch}
+        category={category}
+        setCategory={setCategory}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        showInStockOnly={showInStockOnly}
+        setShowInStockOnly={setShowInStockOnly}
+      />
 
-          {/* Charts */}
-          <DashboardCharts products={products} />
+      {/* Bulk Actions Bar - Right above table */}
+      {selectedIds.length > 0 && (
+        <div className="mb-4 p-4 bg-purple-900/20 border border-purple-500/30 rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-white font-medium">{selectedIds.length} product(s) selected</span>
+            <button
+              onClick={() => setSelectedIds([])}
+              className="text-gray-400 hover:text-white transition-colors"
+              title="Clear selection"
+            >
+              <X size={18} />
+            </button>
+          </div>
+          <button
+            onClick={handleBulkDelete}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors"
+          >
+            <Trash2 size={18} />
+            Delete Selected
+          </button>
+        </div>
+      )}
 
-          {/* Filters */}
-          <DashboardFilters
-            search={search}
-            setSearch={setSearch}
-            category={category}
-            setCategory={setCategory}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            showInStockOnly={showInStockOnly}
-            setShowInStockOnly={setShowInStockOnly}
-          />
-
-          {/* Bulk Actions Bar - Right above table */}
-          {selectedIds.length > 0 && (
-            <div className="mb-4 p-4 bg-purple-900/20 border border-purple-500/30 rounded-xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <span className="text-white font-medium">{selectedIds.length} product(s) selected</span>
-                <button
-                  onClick={() => setSelectedIds([])}
-                  className="text-gray-400 hover:text-white transition-colors"
-                  title="Clear selection"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-              <button
-                onClick={handleBulkDelete}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500 transition-colors"
-              >
-                <Trash2 size={18} />
-                Delete Selected
-              </button>
-            </div>
-          )}
-
-          {/* Product List */}
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500" />
-            </div>
-          ) : (
-            <DashboardProductList
-              products={filteredProducts}
-              selectedIds={selectedIds}
-              toggleSelection={toggleSelection}
-              toggleAll={toggleAll}
-            />
-          )}
-        </main>
-      </div>
-    </GradientBackground>
+      {/* Product List */}
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500" />
+        </div>
+      ) : (
+        <DashboardProductList
+          products={filteredProducts}
+          selectedIds={selectedIds}
+          toggleSelection={toggleSelection}
+          toggleAll={toggleAll}
+        />
+      )}
+    </DashboardWrapper>
   )
 }

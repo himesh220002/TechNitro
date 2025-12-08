@@ -15,7 +15,6 @@ interface SavedAddress {
 interface AddressFormProps {
     form: {
         accountName: string
-        accountNumber: string
         phone: string
         address: string
         pin: string

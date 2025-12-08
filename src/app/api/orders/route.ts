@@ -21,9 +21,9 @@ export async function POST(req: Request) {
     // Validate product inventory
     const items: ProductInOrder[] = Array.isArray(body.products)
       ? body.products.map((p: ProductInOrder) => ({
-          id: p.id,
-          quantity: Number(p.quantity),
-        }))
+        id: p.id,
+        quantity: Number(p.quantity),
+      }))
       : [];
 
     for (const item of items) {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
         id: body.id,
         user_id: userId,
         accountName: body.accountName,
-        accountNumber: body.accountNumber,
+        accountNumber: body.accountNumber || "",
         phone: body.phone,
         address: body.address,
         pin: body.pin,

@@ -10,9 +10,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 interface AdminProductCardProps {
   product: Product
+  highlighted?: boolean
 }
 
-export default function AdminProductCard({ product }: AdminProductCardProps) {
+export default function AdminProductCard({ product, highlighted = false }: AdminProductCardProps) {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<Product>({
     ...product,
@@ -74,7 +75,13 @@ export default function AdminProductCard({ product }: AdminProductCardProps) {
   return (
     <motion.div
       layout
-      className={`group relative bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 ${editing ? 'ring-2 ring-purple-500/50 scale-[1.02] z-10' : 'hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10'
+      initial={{ scale: highlighted ? 1.05 : 1 }}
+      animate={{ scale: 1 }}
+      className={`group relative bg-gray-900/40 backdrop-blur-xl border overflow-hidden transition-all duration-300 rounded-2xl ${highlighted
+          ? 'ring-2 ring-purple-500 border-purple-500 shadow-lg shadow-purple-500/50'
+          : editing
+            ? 'ring-2 ring-purple-500/50 scale-[1.02] z-10 border-white/10'
+            : 'hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 border-white/10'
         }`}
     >
       {/* Image Area */}
@@ -99,10 +106,10 @@ export default function AdminProductCard({ product }: AdminProductCardProps) {
 
             <div className="absolute top-3 right-3">
               <span className={`px-2 py-1 rounded-full text-xs font-medium border backdrop-blur-md ${form.inventory > 10
-                  ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                  : form.inventory > 0
-                    ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                    : 'bg-red-500/20 text-red-400 border-red-500/30'
+                ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                : form.inventory > 0
+                  ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+                  : 'bg-red-500/20 text-red-400 border-red-500/30'
                 }`}>
                 {form.inventory > 10 ? 'In Stock' : form.inventory > 0 ? 'Low Stock' : 'Out of Stock'}
               </span>
@@ -161,14 +168,14 @@ export default function AdminProductCard({ product }: AdminProductCardProps) {
             <div className="flex gap-2 pt-2 border-t border-gray-800/50">
               <button
                 onClick={() => setEditing(true)}
-                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-gray-800 hover:bg-purple-600/20 hover:text-purple-400 text-gray-300 transition-all text-sm font-medium group/btn"
+                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-gray-800 text-gray-300 transition-all text-sm font-medium group/btn lg:opacity-80 lg:hover:opacity-100 lg:hover:bg-purple-600/20 lg:hover:text-purple-400"
               >
                 <Edit size={16} className="group-hover/btn:scale-110 transition-transform" />
                 Edit
               </button>
               <button
                 onClick={handleDelete}
-                className="flex items-center justify-center p-2 rounded-lg bg-gray-800 hover:bg-red-500/20 hover:text-red-400 text-gray-300 transition-all"
+                className="flex items-center justify-center p-2 rounded-lg bg-gray-800 text-gray-300 transition-all lg:opacity-80 lg:hover:opacity-100 lg:hover:bg-red-500/20 lg:hover:text-red-400"
                 title="Delete Product"
               >
                 <Trash2 size={16} />

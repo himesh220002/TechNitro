@@ -121,7 +121,7 @@ export default function DashboardProductList({
                                         </span>
                                     </td>
                                     <td className="p-3 sm:p-4 text-right">
-                                        <div className="flex items-center justify-end gap-1 sm:gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center justify-end gap-1 sm:gap-2 lg:opacity-80 lg:group-hover:opacity-100 transition-opacity">
                                             <Link
                                                 href={`/products/${product.slug}`}
                                                 className="p-1.5 sm:p-2 rounded-lg bg-gray-800 text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"

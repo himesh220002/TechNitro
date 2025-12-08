@@ -32,7 +32,8 @@ export default function CartPreview() {
                                         src={item.imageUrl}
                                         alt={item.name}
                                         fill
-                                        className="object-contain p-1"
+                                        sizes="64px"
+                                        className="object-cover"
                                     />
                                 ) : (
                                     <div className="w-full h-full bg-gray-700" />
