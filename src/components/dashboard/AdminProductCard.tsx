@@ -78,10 +78,10 @@ export default function AdminProductCard({ product, highlighted = false }: Admin
       initial={{ scale: highlighted ? 1.05 : 1 }}
       animate={{ scale: 1 }}
       className={`group relative bg-gray-900/40 backdrop-blur-xl border overflow-hidden transition-all duration-300 rounded-2xl ${highlighted
-          ? 'ring-2 ring-purple-500 border-purple-500 shadow-lg shadow-purple-500/50'
-          : editing
-            ? 'ring-2 ring-purple-500/50 scale-[1.02] z-10 border-white/10'
-            : 'hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 border-white/10'
+        ? 'ring-2 ring-purple-500 border-purple-500 shadow-lg shadow-purple-500/50'
+        : editing
+          ? 'ring-2 ring-purple-500/50 scale-[1.02] z-10 border-white/10'
+          : 'hover:border-purple-500/30 hover:shadow-lg hover:shadow-purple-500/10 border-white/10'
         }`}
     >
       {/* Image Area */}
@@ -139,7 +139,7 @@ export default function AdminProductCard({ product, highlighted = false }: Admin
                 {form.rating && (
                   <div className="flex items-center gap-1 text-xs text-yellow-400 mt-1">
                     <Star size={12} fill="currentColor" />
-                    <span>{form.rating}</span>
+                    <span>{form.rating.toFixed(1)}</span>
                   </div>
                 )}
               </div>
@@ -233,13 +233,26 @@ export default function AdminProductCard({ product, highlighted = false }: Admin
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 block">Rating</label>
+                  <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 block">Rating (0-5)</label>
                   <input
                     type="number"
                     value={form.rating}
-                    onChange={(e) => setForm({ ...form, rating: Number(e.target.value) })}
+                    onChange={(e) => setForm({ ...form, rating: Math.round(Number(e.target.value) * 10) / 10 })}
+                    onInput={(e) => {
+                      const input = e.currentTarget;
+                      const value = input.value;
+                      // Allow empty, numbers with max 1 decimal place
+                      if (value && !/^\d*\.?\d?$/.test(value)) {
+                        input.value = value.slice(0, -1);
+                      }
+                      // Enforce max value of 5
+                      if (parseFloat(value) > 5) {
+                        input.value = '5.0';
+                      }
+                    }}
                     className="w-full px-3 py-2 bg-gray-950/50 border border-gray-700 rounded-lg text-white focus:border-purple-500 outline-none text-sm"
-                    min="0" max="10" step="0.1"
+                    min="0" max="5" step="0.1"
+                    placeholder="e.g., 4.5"
                   />
                 </div>
               </div>

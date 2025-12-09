@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Loader2, TrendingUp, Users, Package, CreditCard, Truck, AlertCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 const COLORS = ['#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#3b82f6', '#f97316', '#6366f1'];
 
@@ -81,6 +82,8 @@ export default function AnalyticsPage() {
 
     return (
         <DashboardWrapper>
+            <Breadcrumbs items={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Analytics' }]} />
+
             <div className="space-y-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>

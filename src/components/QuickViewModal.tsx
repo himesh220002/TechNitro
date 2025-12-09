@@ -127,16 +127,16 @@ export default function QuickViewModal({ product, isOpen, onClose }: QuickViewMo
                         <div className="flex gap-4 mt-auto pt-6 border-t border-gray-800">
                             <button
                                 onClick={() => router.push(`/products/${product.slug}`)}
-                                className="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 px-6 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98]"
+                                className="flex-1 bg-gray-50 hover:bg-blue-900 hover:text-blue-50 text-black font-semibold py-4 px-6 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
                             >
                                 View Details
                             </button>
                             <button
                                 onClick={handleAddToCart}
                                 disabled={isAdded}
-                                className={`flex-1 font-semibold py-4 px-6 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 ${isAdded
-                                        ? 'bg-green-600 text-white'
-                                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25'
+                                className={`flex-1 font-semibold py-4 px-6 rounded-xl transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer flex items-center justify-center gap-2 ${isAdded
+                                    ? 'bg-green-600 text-white'
+                                    : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white shadow-lg shadow-purple-500/25'
                                     }`}
                             >
                                 {isAdded ? (

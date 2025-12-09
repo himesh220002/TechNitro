@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         imageUrl: cover ?? null,
         images: imgs.length ? imgs : null,
         specs: specs ?? {},
-        rating: rating ? Number(rating) : null,
+        rating: rating ? Math.round(Number(rating) * 10) / 10 : null, // Round to 1 decimal place
         lastUpdated: new Date(),
       })
       .eq("id", id)

@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { toast } from 'react-hot-toast'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import CustomerOrdersModal from '@/components/dashboard/CustomerOrdersModal'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 interface Customer {
     id: string
@@ -57,6 +58,8 @@ export default function CustomersPage() {
 
     return (
         <DashboardWrapper>
+            <Breadcrumbs items={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Customers' }]} />
+
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-white">Customers</h1>
                 <p className="text-gray-400 mt-1">Manage your customer base</p>

@@ -10,6 +10,7 @@ import { Plus, Search, X } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function ProductsPageContent() {
     const supabase = createClientComponentClient()
@@ -142,6 +143,7 @@ export default function ProductsPageContent() {
 
     return (
         <DashboardWrapper>
+            <Breadcrumbs items={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Products' }]} />
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                 <div>
@@ -192,10 +194,25 @@ export default function ProductsPageContent() {
                         />
                         <input
                             type="number"
-                            placeholder="Rating (0-10)"
+                            placeholder="Rating (0-5)"
                             value={form.rating}
                             onChange={(e) => setForm({ ...form, rating: e.target.value })}
+                            onInput={(e) => {
+                                const input = e.currentTarget;
+                                const value = input.value;
+                                // Allow empty, numbers with max 1 decimal place
+                                if (value && !/^\d*\.?\d?$/.test(value)) {
+                                    input.value = value.slice(0, -1);
+                                }
+                                // Enforce max value of 5
+                                if (parseFloat(value) > 5) {
+                                    input.value = '5.0';
+                                }
+                            }}
                             className="px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 outline-none"
+                            min="0"
+                            max="5"
+                            step="0.1"
                         />
                         <div className="flex items-center gap-2">
                             <input

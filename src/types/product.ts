@@ -11,6 +11,7 @@ export interface Product {
   images?: string[]
   lastUpdated: string
 
+  /** Product rating on a scale of 0.0 to 5.0 with 1 decimal precision */
   rating?: number
   specs?: Record<string, string>
 

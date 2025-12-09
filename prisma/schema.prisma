@@ -19,7 +19,7 @@ model Product {
   lastUpdated DateTime  @default(now())
   imageUrl    String?
   images      Json?
-  rating      Int?
+  rating      Float?    @default(3.5)
   specs       Json?
   created_at  DateTime? @default(now()) @db.Timestamptz(6)
 

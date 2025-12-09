@@ -2,10 +2,12 @@
 
 import DashboardWrapper from '@/components/dashboard/DashboardWrapper'
 import { User, Bell, Shield, CreditCard, Globe, Moon } from 'lucide-react'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function SettingsPage() {
     return (
         <DashboardWrapper>
+            <Breadcrumbs items={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Settings' }]} />
             <div className="mb-8">
                 <h1 className="text-3xl font-bold text-white">Settings</h1>
                 <p className="text-gray-400 mt-1">Manage your account and preferences</p>

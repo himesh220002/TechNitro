@@ -146,7 +146,7 @@ export default function ProductGrid({ products, viewMode, loading }: ProductGrid
                                 {product.rating && (
                                     <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold bg-yellow-400/10 px-2 py-1 rounded-full">
                                         <Star size={12} className="fill-yellow-400" />
-                                        {product.rating}
+                                        {product.rating.toFixed(1)}
                                     </div>
                                 )}
                             </div>

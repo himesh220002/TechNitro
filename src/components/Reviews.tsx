@@ -24,7 +24,7 @@ export default function Reviews({ rating }: { rating: number }) {
                     <h2 className="text-2xl font-bold text-white group-hover:text-purple-400 transition-colors">Customer Reviews</h2>
                     <div className="flex items-center gap-1 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20">
                         <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                        <span className="text-yellow-500 font-bold">{rating}</span>
+                        <span className="text-yellow-500 font-bold">{Math.min(5, rating).toFixed(1)}</span>
                         <span className="text-gray-400 text-sm">({reviews.length} reviews)</span>
                     </div>
                 </div>

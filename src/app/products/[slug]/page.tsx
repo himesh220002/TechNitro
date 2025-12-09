@@ -116,7 +116,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
             <div className=" space-y-2 sm:space-y-6">
               <h1 className=" text-xl sm:text-4xl font-bold font-display text-white">{product.name}</h1>
               <p className="text-sm uppercase tracking-wide text-indigo-400 font-sans">{product.category}</p>
-              <Ratings rating={product.rating ?? 6} />
+              <Ratings rating={product.rating ?? 3.0} />
               <Highlights product={product} />
               <div className='flex justify-between'>
                 <div className="pt-2 space-y-1">

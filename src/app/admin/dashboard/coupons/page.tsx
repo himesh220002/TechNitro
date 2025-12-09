@@ -61,7 +61,7 @@ export default function CouponsPage() {
         <DashboardWrapper>
             <Breadcrumbs items={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Coupons' }]} />
 
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-[1600px] mx-auto">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>

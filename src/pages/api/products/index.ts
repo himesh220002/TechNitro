@@ -89,7 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   // POST FIXED ⚡
-   if (req.method === 'POST') {
+  if (req.method === 'POST') {
     try {
       const body = req.body
 
@@ -97,8 +97,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const images = Array.isArray(body.images)
         ? body.images
         : body.images
-        ? [body.images]
-        : []
+          ? [body.images]
+          : []
 
       const imageUrl = body.imageUrl || images[0] || null
 
@@ -117,7 +117,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         price: Number(body.price ?? 0),
         inventory: Number(body.inventory ?? 0),
-        rating: body.rating ? Number(body.rating) : null,
+        rating: body.rating ? Math.round(Number(body.rating) * 10) / 10 : null, // Round to 1 decimal place
 
         specs: safeSpecs,
         images,

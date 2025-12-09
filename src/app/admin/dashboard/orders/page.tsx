@@ -454,6 +454,18 @@ export default function AdminOrdersPage() {
           </div>
 
           <div className='flex flex-col gap-4'>
+
+            <div>
+              <label className="text-sm text-white mr-2">Search</label>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buyer, phone, product..."
+                className="bg-gradient-to-r from-purple-900/50 to-zinc-500/50 backdrop-blur-sm text-white px-2 py-1 rounded w-full sm:w-auto"
+              />
+            </div>
+
             <div>
               <label className="text-sm text-white mr-2">Filter by Status</label>
               <select
@@ -470,22 +482,13 @@ export default function AdminOrdersPage() {
               </select>
             </div>
 
-            <div>
-              <label className="text-sm text-white mr-2">Search</label>
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buyer, phone, product..."
-                className="bg-gray-800 text-white px-2 py-1 rounded w-full sm:w-auto"
-              />
-            </div>
+
           </div>
           <button
             onClick={() => {
               setShowRouteModal(true)
             }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/25 transition-all"
+            className="flex items-center gap-2 px-4 py-3 rounded-lg bg-purple-600 text-white hover:bg-purple-500 shadow-lg shadow-purple-500/25 transition-all"
           >
             Show Suggested Route
           </button>
