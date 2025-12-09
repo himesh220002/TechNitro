@@ -85,6 +85,36 @@ export async function POST(req: Request) {
       });
     }
 
+    // Create notification for order placed
+    try {
+      await supabaseAdmin
+        .from('Notification')
+        .insert({
+          userId: userId,
+          type: 'order_placed',
+          title: 'Order Placed Successfully',
+          message: `Your order #${body.id.slice(0, 8)} of ₹${body.payment.toLocaleString('en-IN')} has been placed successfully.`,
+          orderId: body.id,
+          metadata: {
+            orderTotal: body.payment,
+            itemCount: items.length
+          }
+        });
+
+      // Send email notification
+      const { sendNotificationEmail } = await import('@/lib/email-notifications');
+      await sendNotificationEmail(
+        userId,
+        'order_placed',
+        'Order Placed Successfully',
+        `Your order #${body.id.slice(0, 8)} of ₹${body.payment.toLocaleString('en-IN')} has been placed successfully.`,
+        body.id
+      );
+    } catch (notifError) {
+      // Don't fail the order if notification fails
+      console.error('Failed to create notification:', notifError);
+    }
+
     return NextResponse.json(order);
   } catch (error) {
     return NextResponse.json(
