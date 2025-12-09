@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import { Order, ProductInOrder } from '@/types/order'
 import OrderActions from './OrderActions'
-import { ChevronDown, ChevronUp, Package, Truck, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { ChevronDown, ChevronUp, Package, Truck, CheckCircle, XCircle, Clock, MapPinHouse, Ship } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface OrderRowProps {
@@ -37,9 +37,13 @@ export default function OrderRow({ order, onUpdate }: OrderRowProps) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
+            case 'Order Confirmed': return 'bg-blue-500/10 text-blue-400 border-green-500/20'
+            case 'Packed': return 'bg-blue-900/10 text-blue-400 border-blue-500/20'
+            case 'Out for Delivery': return 'bg-yellow-500/10 text-yellow-400 border-blue-500/20'
             case 'Delivered': return 'bg-green-500/10 text-green-400 border-green-500/20'
             case 'Cancelled': return 'bg-red-500/10 text-red-400 border-red-500/20'
-            case 'Shipped': return 'bg-blue-500/10 text-blue-400 border-blue-500/20'
+            case 'Shipping': return 'bg-blue-500/10 text-blue-200 border-blue-500/20'
+            case 'Shipped': return 'bg-blue-500/10 text-yellow-200 border-blue-500/20'
             case 'Order Placed': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'
             default: return 'bg-gray-500/10 text-gray-400 border-gray-500/20'
         }
@@ -47,10 +51,13 @@ export default function OrderRow({ order, onUpdate }: OrderRowProps) {
 
     const getStatusIcon = (status: string) => {
         switch (status) {
+            case 'Out for Delivery': return <MapPinHouse size={16} />
             case 'Delivered': return <CheckCircle size={16} />
             case 'Cancelled': return <XCircle size={16} />
+            case 'Shipping': return <Ship size={16} />
             case 'Shipped': return <Truck size={16} />
             case 'Order Placed': return <Package size={16} />
+            case 'Packed': return <Package size={16} />
             default: return <Clock size={16} />
         }
     }
@@ -124,14 +131,44 @@ export default function OrderRow({ order, onUpdate }: OrderRowProps) {
                             <div className="relative py-4">
                                 <div className="absolute left-0 top-1/2 w-full h-0.5 bg-gray-800 -translate-y-1/2" />
                                 <div className="relative flex justify-between">
-                                    {['Order Placed', 'Shipped', 'Out for Delivery', 'Delivered'].map((step, i) => {
-                                        const isCompleted = ['Order Placed', 'Shipped', 'Out for Delivery', 'Delivered'].indexOf(order.orderStatus) >= i
+                                    {['Packed', 'Shipped', 'Out for Delivery', 'Delivered'].map((step, i) => {
+                                        // Define progress levels
+                                        const statusLevels: Record<string, number> = {
+                                            'Order Placed': 0,
+                                            'Order Confirmed': 1,
+                                            'Packed': 2,
+                                            'Shipping': 2.5, // In progress
+                                            'Shipped': 3,    // Completed
+                                            'Out for Delivery': 4,
+                                            'Delivered': 5,
+                                            'Returned': 6,
+                                            'Cancelled': -1
+                                        }
+
+                                        const currentLevel = statusLevels[order.orderStatus] ?? 0
+                                        const stepLevel = i + 2 // Packed(2), Shipped(3), etc.
+
+                                        // Check if this step is fully completed
+                                        const isCompleted = currentLevel >= stepLevel
+
+                                        // Check if this step is currently in progress (specifically for Shipping)
+                                        const isCurrent = (step === 'Shipped' && currentLevel === 2.5)
+
+                                        let dotClass = 'bg-gray-800 border-gray-600'
+                                        let textClass = 'text-gray-600'
+
+                                        if (isCompleted) {
+                                            dotClass = 'bg-green-500 border-green-500'
+                                            textClass = 'text-green-400'
+                                        } else if (isCurrent) {
+                                            dotClass = 'bg-blue-500 border-blue-500 animate-pulse'
+                                            textClass = 'text-blue-400 font-medium'
+                                        }
+
                                         return (
-                                            <div key={step} className="flex flex-col items-center gap-2 bg-gray-900 px-2 z-10">
-                                                <div className={`w-3 h-3 rounded-full border-2 ${isCompleted ? 'bg-green-500 border-green-500' : 'bg-gray-800 border-gray-600'
-                                                    }`} />
-                                                <span className={`text-[10px] sm:text-xs ${isCompleted ? 'text-green-400' : 'text-gray-600'
-                                                    }`}>{step}</span>
+                                            <div key={step} className="flex flex-col items-center gap-2 bg-gray-900 px-2 py-1 z-10 rounded-lg">
+                                                <div className={`w-3 h-3 rounded-full border-2 transition-colors duration-300 ${dotClass}`} />
+                                                <span className={`text-[10px] sm:text-xs transition-colors duration-300 ${textClass}`}>{step}</span>
                                             </div>
                                         )
                                     })}

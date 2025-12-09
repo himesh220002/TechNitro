@@ -43,8 +43,10 @@ export default function OrderFilters({
                         className="w-full pl-9 pr-8 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white appearance-none focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer text-sm"
                     >
                         <option value="all">All Status</option>
-                        <option value="Order Placed">Placed</option>
+                        <option value="Order Confirmed">Confirmed</option>
+                        <option value="Packed">Packed</option>
                         <option value="Shipped">Shipped</option>
+                        <option value="Out for Delivery">Out for Delivery</option>
                         <option value="Delivered">Delivered</option>
                         <option value="Cancelled">Cancelled</option>
                     </select>
