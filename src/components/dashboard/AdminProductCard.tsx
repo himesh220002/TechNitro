@@ -7,6 +7,7 @@ import supabase from '@/lib/supabase'
 import React from 'react'
 import { Edit, Trash2, Save, X, Image as ImageIcon, Star, Package, Tag, DollarSign } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
+import SpecsModal from '@/components/SpecsModal'
 
 interface AdminProductCardProps {
   product: Product
@@ -15,6 +16,7 @@ interface AdminProductCardProps {
 
 export default function AdminProductCard({ product, highlighted = false }: AdminProductCardProps) {
   const [editing, setEditing] = useState(false)
+  const [showSpecsModal, setShowSpecsModal] = useState(false)
   const [form, setForm] = useState<Product>({
     ...product,
     rating: product.rating ?? 0,
@@ -89,7 +91,7 @@ export default function AdminProductCard({ product, highlighted = false }: Admin
         {(form.images && form.images.length > 0) || form.imageUrl ? (
           <>
             <Image
-              src={(form.images && form.images.length ? form.images[0] : form.imageUrl) as string}
+              src={(form.imageUrl || (form.images && form.images.length ? form.images[0] : '')) as string}
               alt={form.name}
               fill
               className="object-cover transition-transform duration-500 group-hover:scale-110"
@@ -266,6 +268,20 @@ export default function AdminProductCard({ product, highlighted = false }: Admin
                 />
               </div>
 
+              {/* Specs Editor */}
+              <div>
+                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 block">Specifications</label>
+                <button
+                  type="button"
+                  onClick={() => setShowSpecsModal(true)}
+                  className="w-full px-3 py-2 bg-gray-950/50 border border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-purple-500 transition-colors text-sm text-left"
+                >
+                  {Object.keys(form.specs ?? {}).length > 0
+                    ? `Edit Specifications (${Object.keys(form.specs ?? {}).length} items)`
+                    : 'Add Specifications'}
+                </button>
+              </div>
+
               {/* Image Upload */}
               <div>
                 <label className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1 block">Images</label>
@@ -274,37 +290,72 @@ export default function AdminProductCard({ product, highlighted = false }: Admin
                     <input
                       type="file"
                       accept="image/*"
+                      multiple
                       className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file) {
-                          const filePath = `product-images/${Date.now()}-${file.name}`
-                          supabase.storage
-                            .from('product-images')
-                            .upload(filePath, file)
-                            .then(({ error }) => {
-                              if (!error) {
-                                const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${filePath}`
-                                const imgs = Array.isArray(form.images) ? [...form.images, publicUrl] : [publicUrl]
-                                setForm({ ...form, images: imgs, imageUrl: imgs[0] })
-                              }
-                            })
+                      onChange={async (e) => {
+                        const files = e.target.files
+                        if (files && files.length > 0) {
+                          const uploadedUrls: string[] = []
+
+                          // Upload all selected files
+                          for (let i = 0; i < files.length; i++) {
+                            const file = files[i]
+                            const filePath = `product-images/${Date.now()}-${i}-${file.name}`
+                            const { error } = await supabase.storage
+                              .from('product-images')
+                              .upload(filePath, file)
+
+                            if (!error) {
+                              const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/product-images/${filePath}`
+                              uploadedUrls.push(publicUrl)
+                            }
+                          }
+
+                          // Add all uploaded images to the form
+                          if (uploadedUrls.length > 0) {
+                            const imgs = Array.isArray(form.images) ? [...form.images, ...uploadedUrls] : uploadedUrls
+                            setForm({ ...form, images: imgs, imageUrl: form.imageUrl || imgs[0] })
+                          }
+
+                          // Reset input so same files can be selected again if needed
+                          e.target.value = ''
                         }
                       }}
                     />
                     <PlusIcon />
                   </label>
                   {(form.images || []).map((img, idx) => (
-                    <div key={img} className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-gray-700 group/img">
+                    <div
+                      key={img}
+                      className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 group/img cursor-pointer transition-all ${form.imageUrl === img
+                        ? 'border-purple-500 ring-2 ring-purple-500/50'
+                        : 'border-gray-700 hover:border-purple-400'
+                        }`}
+                      onClick={() => setForm({ ...form, imageUrl: img })}
+                      title={form.imageUrl === img ? 'Cover Image' : 'Click to set as cover'}
+                    >
                       <Image src={img} alt="" fill className="object-cover" />
+
+                      {/* Cover Badge */}
+                      {form.imageUrl === img && (
+                        <div className="absolute top-0 left-0 right-0 bg-purple-500 text-white text-[8px] font-bold text-center py-0.5">
+                          COVER
+                        </div>
+                      )}
+
+                      {/* Delete Button - Bottom Right */}
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation()
                           const imgs = (form.images || []).filter((i) => i !== img)
-                          setForm({ ...form, images: imgs, imageUrl: imgs[0] ?? '' })
+                          // If deleting cover image, set first remaining image as cover
+                          const newCover = form.imageUrl === img ? (imgs[0] ?? '') : form.imageUrl
+                          setForm({ ...form, images: imgs, imageUrl: newCover })
                         }}
-                        className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover/img:opacity-100 transition-opacity text-red-400"
+                        className="absolute bottom-0 right-0 p-1 bg-red-500/90 hover:bg-red-600 text-white rounded-tl-lg opacity-0 group-hover/img:opacity-100 transition-opacity"
+                        title="Delete image"
                       >
-                        <X size={16} />
+                        <X size={12} />
                       </button>
                     </div>
                   ))}
@@ -334,6 +385,18 @@ export default function AdminProductCard({ product, highlighted = false }: Admin
           </div>
         )}
       </div>
+
+      {/* Specs Modal */}
+      {showSpecsModal && (
+        <SpecsModal
+          initialSpecs={form.specs ?? {}}
+          onSave={(updatedSpecs) => {
+            setForm({ ...form, specs: updatedSpecs })
+            setShowSpecsModal(false)
+          }}
+          onClose={() => setShowSpecsModal(false)}
+        />
+      )}
     </motion.div>
   )
 }

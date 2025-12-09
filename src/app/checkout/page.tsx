@@ -8,7 +8,7 @@ export default function CheckoutPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen p-6 max-w-[1600px] mx-auto">
+      <main className="min-h-screen p-0 sm:p-6 max-w-[1600px] mx-auto">
         <React.Suspense fallback={<div className="p-6">Loading checkout…</div>}>
           <CheckoutClient />
         </React.Suspense>

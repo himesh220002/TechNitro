@@ -66,9 +66,28 @@ export default function AddressForm({ form, setForm, isValid }: AddressFormProps
         if (saved) {
             try {
                 const parsed = JSON.parse(saved)
-                setSavedAddresses(parsed)
+                // Validate and filter out blank/invalid addresses
+                const validAddresses = Array.isArray(parsed)
+                    ? parsed.filter((addr: SavedAddress) =>
+                        addr &&
+                        addr.accountName?.trim() &&
+                        addr.phone?.trim() &&
+                        addr.address?.trim() &&
+                        addr.pin?.trim()
+                    )
+                    : []
+
+                setSavedAddresses(validAddresses)
+
+                // Update localStorage with cleaned data
+                if (validAddresses.length !== parsed.length) {
+                    localStorage.setItem('savedAddresses', JSON.stringify(validAddresses))
+                }
             } catch (e) {
                 console.error('Failed to parse saved addresses', e)
+                // Clear corrupted data
+                localStorage.removeItem('savedAddresses')
+                setSavedAddresses([])
             }
         }
     }, [])

@@ -25,7 +25,7 @@ export default function ProductSort({ totalProducts, sortBy, setSortBy, viewMode
     ]
 
     return (
-        <div className="relative z-50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-gray-900/40 p-4 rounded-2xl border border-gray-800 backdrop-blur-sm">
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-gray-900/40 p-4 rounded-2xl border border-gray-800 backdrop-blur-sm">
             <p className="text-gray-400 text-sm">
                 Showing <span className="text-white font-bold">{totalProducts}</span> results
             </p>
@@ -54,7 +54,7 @@ export default function ProductSort({ totalProducts, sortBy, setSortBy, viewMode
                 </div>
 
                 {/* Sort Dropdown */}
-                <div className="relative z-50">
+                <div className="relative z-20">
                     <button
                         onClick={() => setIsOpen(!isOpen)}
                         className="flex items-center gap-2 px-4 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-sm text-white hover:bg-gray-750 transition-colors min-w-[180px] justify-between"

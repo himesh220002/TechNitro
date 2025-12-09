@@ -62,7 +62,10 @@ export default function ProductCard({ product }: ProductCardProps) {
 
   return (
     <>
-      <div className="group relative rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-500/50 transition-all duration-300 overflow-hidden h-full flex flex-col">
+      <Link
+        href={`/products/${product.slug}`}
+        className="group relative rounded-xl bg-gray-900 border border-gray-800 hover:border-purple-500/50 transition-all duration-300 overflow-hidden h-full flex flex-col"
+      >
         {/* Image Container */}
         <div className="relative aspect-square bg-white overflow-hidden">
           {product.imageUrl ? (
@@ -88,8 +91,8 @@ export default function ProductCard({ product }: ProductCardProps) {
             <Heart size={18} className={isWishlisted ? 'fill-current' : ''} />
           </button>
 
-          {/* Overlay Actions */}
-          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
+          {/* Overlay Actions - Hidden on mobile/touch devices */}
+          <div className="hidden md:flex absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 items-center justify-center gap-3">
             <button
               onClick={handleQuickView}
               className="p-3 bg-white text-gray-900 rounded-full hover:bg-purple-500 hover:text-white transition-colors transform translate-y-4 group-hover:translate-y-0 duration-300 shadow-lg"
@@ -112,7 +115,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Content */}
-        <Link href={`/products/${product.slug}`} className="flex-1 p-4 flex flex-col">
+        <div className="flex-1 p-4 flex flex-col">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-purple-400 uppercase tracking-wider">
               {product.category}
@@ -138,8 +141,8 @@ export default function ProductCard({ product }: ProductCardProps) {
               {product.inventory > 0 ? 'In Stock' : 'Out of Stock'}
             </span>
           </div>
-        </Link>
-      </div>
+        </div>
+      </Link>
 
       <QuickViewModal
         product={product}
