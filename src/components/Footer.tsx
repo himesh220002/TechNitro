@@ -68,7 +68,7 @@ export default function Footer() {
                 alt="TechNitro Logo"
                 width={200}
                 height={70}
-                className="relative z-10 w-48"
+                className="relative z-10 w-38"
               />
             </motion.div>
           </Link>

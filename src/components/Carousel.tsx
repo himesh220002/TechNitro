@@ -6,6 +6,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import type { Product } from '@/types/product'
 
 type CarouselProps = {
@@ -34,8 +35,22 @@ export default function Carousel({ products, className = '' }: CarouselProps) {
     emblaApi.on('select', onSelect)
     onSelect()
 
+    // Add wheel event listener for horizontal scrolling
+    const onWheel = (e: WheelEvent) => {
+      // If shift key is pressed or it's a horizontal scroll
+      if (e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+        e.preventDefault()
+        if (e.deltaX > 0 || e.deltaY > 0) emblaApi.scrollNext()
+        else emblaApi.scrollPrev()
+      }
+    }
+
+    // Add listener to the container
+    emblaApi.containerNode().addEventListener('wheel', onWheel, { passive: false })
+
     return () => {
       emblaApi.off('select', onSelect)
+      emblaApi.containerNode().removeEventListener('wheel', onWheel)
     }
   }, [emblaApi])
 
@@ -110,15 +125,22 @@ export default function Carousel({ products, className = '' }: CarouselProps) {
                       <p className="text-md sm:text-2xl font-bold bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">
                         ₹{product.price.toLocaleString('en-IN')}
                       </p>
-                      <div className="flex items-center gap-1 text-yellow-400 text-xs">
-                        <span>★</span>
-                        <span>4.5</span>
+                      <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded backdrop-blur-sm">
+                        <Star className="w-3 h-3 text-yellow-500 fill-current" />
+                        <span className="text-xs font-bold text-yellow-500">
+                          {(product.rating || 0).toFixed(1)}
+                        </span>
                       </div>
                     </div>
-                    {product.inventory > 0 ? (
+                    {product.inventory > 5 ? (
                       <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
                         <span className="w-2 h-2 rounded-full bg-green-500" />
                         In Stock
+                      </p>
+                    ) : product.inventory > 0 ? (
+                      <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-yellow-500" />
+                        Low Stock
                       </p>
                     ) : (
                       <p className="text-sm text-gray-400 mt-1 flex items-center gap-1">

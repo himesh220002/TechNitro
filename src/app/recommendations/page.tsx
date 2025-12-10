@@ -29,7 +29,7 @@ export default async function RecommendationsPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
       <Navbar />
-      <main className="px-6 py-12 max-w-[1600px] mx-auto">
+      <main className="px-6 pb-12 pt-24 max-w-[1600px] mx-auto">
         <RecommendationsGrid initialProducts={products} />
       </main>
       <Footer />

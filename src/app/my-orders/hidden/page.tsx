@@ -45,7 +45,7 @@ export default function HiddenOrdersPage() {
     return (
         <>
             <Navbar />
-            <main className="max-w-6xl min-h-[500px] mx-auto p-3 sm:p-6">
+            <main className="max-w-6xl min-h-[500px] mx-auto p-3 sm:p-6 pt-24">
                 <div className='flex flex-col sm:flex-row gap-4 justify-between items-center mb-6'>
                     <div className="flex items-center gap-4">
                         <Link href="/my-orders" className="text-gray-400 hover:text-white">

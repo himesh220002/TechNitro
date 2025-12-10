@@ -121,9 +121,11 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="text-xs font-medium text-purple-400 uppercase tracking-wider">
               {product.category}
             </span>
-            <div className="flex items-center gap-1 text-yellow-400 text-xs">
-              <Star className="w-3 h-3 fill-yellow-400" />
-              <span>4.5</span>
+            <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded">
+              <Star className="w-3 h-3 text-yellow-500 fill-current" />
+              <span className="text-xs font-bold text-yellow-500">
+                {(product.rating || 0).toFixed(1)}
+              </span>
             </div>
           </div>
 
@@ -135,11 +137,13 @@ export default function ProductCard({ product }: ProductCardProps) {
             <p className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
               ₹{product.price.toLocaleString('en-IN')}
             </p>
-            <span className={`text-xs px-2 py-1 rounded-full self-start ${product.inventory > 0
+            <span className={`text-xs px-2 py-1 rounded-full self-start ${product.inventory > 5
               ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-              : 'bg-red-500/10 text-red-400 border border-red-500/20'
+              : product.inventory > 0
+                ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+                : 'bg-red-500/10 text-red-400 border border-red-500/20'
               }`}>
-              {product.inventory > 0 ? 'In Stock' : 'Out of Stock'}
+              {product.inventory > 5 ? 'In Stock' : product.inventory > 0 ? 'Low Stock' : 'Out of Stock'}
             </span>
           </div>
         </div>

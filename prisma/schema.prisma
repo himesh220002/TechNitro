@@ -1,3 +1,4 @@
+// important note:- already shifted everything form prisma to supabase this prisma is just for reference and if needed to use it later conside it not useful to change any prisma part or do not use prisma commands in anywhere for db changes!!!
 generator client {
   provider = "prisma-client-js"
 }
@@ -22,6 +23,21 @@ model Product {
   rating      Float?    @default(3.5)
   specs       Json?
   created_at  DateTime? @default(now()) @db.Timestamptz(6)
+
+  reviews     Review[]
+  
+  @@schema("public")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  userId    String   @db.Uuid
+  userName  String
+  rating    Float
+  comment   String
+  createdAt DateTime @default(now())
 
   @@schema("public")
 }

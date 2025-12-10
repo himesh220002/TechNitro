@@ -33,6 +33,8 @@ export default function Navbar() {
   // Check if user is admin based on role in user metadata
   const isAdmin = user?.user_metadata?.role === 'admin'
 
+  const [avatarUrl, setAvatarUrl] = useState<string>('/Avatarpic.png')
+
   useEffect(() => {
     let mounted = true
 
@@ -41,6 +43,10 @@ export default function Navbar() {
           const { data } = await supabase.auth.getUser()
           if (!mounted) return
           setUser(data?.user ?? null)
+
+          // Initialize avatar from user metadata (priority) or localStorage
+          const savedAvatar = localStorage.getItem('userAvatar')
+          setAvatarUrl(data?.user?.user_metadata?.avatar_url || savedAvatar || '/Avatarpic.png')
         } catch (err) {
           console.error('Navbar: failed to get user', err)
           if (mounted) setUser(null)
@@ -50,13 +56,25 @@ export default function Navbar() {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return
       setUser(session?.user ?? null)
+      // Update avatar on auth change
+      const savedAvatar = localStorage.getItem('userAvatar')
+      setAvatarUrl(session?.user?.user_metadata?.avatar_url || savedAvatar || '/Avatarpic.png')
     })
+
+    // Listen for custom avatar update event
+    const handleAvatarUpdate = (e: CustomEvent) => {
+      if (e.detail?.url) {
+        setAvatarUrl(e.detail.url)
+      }
+    }
+    window.addEventListener('avatarUpdated', handleAvatarUpdate as EventListener)
 
     const subscription = (listener as unknown as { subscription?: { unsubscribe?: () => void } })?.subscription
 
     return () => {
       mounted = false
       if (subscription && typeof subscription.unsubscribe === 'function') subscription.unsubscribe()
+      window.removeEventListener('avatarUpdated', handleAvatarUpdate as EventListener)
     }
   }, [supabase.auth])
 
@@ -123,32 +141,36 @@ export default function Navbar() {
 
   return (
     <header
-      className={`bg-gradient-to-br from-white via-white to-indigo-200 shadow-lg sticky top-0 z-50 mb-0 md:mb-10 transition-all duration-300 ${isScrolled ? 'shadow-xl' : ''
+      className={`fixed w-full top-0 z-50 transition-all duration-300 border-b ${isScrolled
+        ? 'bg-gray-900/80 backdrop-blur-md border-gray-800 shadow-xl'
+        : 'bg-transparent border-gray-600/50'
         }`}
     >
-      <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-12 sm:h-14' : 'h-12 sm:h-16'
+      <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-16' : 'h-20'
         }`}>
         {/* Logo */}
         <Link
           href="/"
-          className="group relative"
+          className="group relative flex items-center gap-3"
           aria-label="TechNitro Home"
         >
-          <Image
-            src="/LogoTechNitroFlat.png"
-            alt="TechNitro Logo"
-            width={80}
-            height={40}
-            className={`transition-all duration-300 group-hover:scale-105 ${isScrolled ? 'h-8 w-16' : 'h-10 w-20'
-              }`}
-          />
-          <span className="absolute -bottom-4 left-0 text-[10px] text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            Premium Tech Store
-          </span>
+          <div className="bg-white rounded-xl p-1.5 shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300">
+            <Image
+              src="/LogoTechNitroFlat.png"
+              alt="TechNitro Logo"
+              width={80}
+              height={40}
+              className={`transition-all duration-300 object-contain ${isScrolled ? 'h-8 w-16' : 'h-10 w-20'
+                }`}
+            />
+          </div>
+          {/* <span className={`font-bold text-xl tracking-tight transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
+            <span className="text-white">Tech</span><span className="text-purple-500">Nitro</span>
+          </span> */}
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex flex-1 items-center justify-center px-8">
+        <div className="hidden md:flex flex-1 items-center justify-center px-8 max-w-2xl mx-auto">
           <SearchBar />
         </div>
 
@@ -157,15 +179,19 @@ export default function Navbar() {
             <Link
               key={href}
               href={href}
-              className="relative flex flex-col items-center group p-3 bg-gradient-to-tr from-gray-700 to-black/50 rounded-full shadow shadow-black hover:shadow-lg hover:shadow-indigo-500/50 transition-all duration-300"
+              className="relative flex flex-col items-center group p-3 hover:bg-white/5 rounded-xl transition-all duration-300"
               aria-label={label}
             >
-              {icon}
-              <span className="absolute -bottom-8 text-center text-sm text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap px-2 py-1 bg-gray-900 rounded">
+              <div className="text-gray-400 group-hover:text-purple-400 transition-colors duration-300">
+                {icon}
+              </div>
+              <span className="absolute -bottom-10 text-center text-sm text-white opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 px-3 py-1 bg-gray-900 border border-gray-800 rounded-lg shadow-xl whitespace-nowrap z-50">
                 {label}
               </span>
             </Link>
           ))}
+
+          <div className="w-px h-8 bg-gray-800 mx-2" />
 
           {/* Notifications */}
           <NotificationsDropdown />
@@ -178,39 +204,40 @@ export default function Navbar() {
           >
             <Link
               href="/cart"
-              className="relative flex flex-col items-center p-3 bg-gradient-to-tr from-gray-700 to-black/50 rounded-full shadow shadow-black hover:shadow-lg hover:shadow-indigo-500/50 transition-all duration-300"
+              className="relative flex flex-col items-center p-3 hover:bg-white/5 rounded-xl transition-all duration-300"
               aria-label={`Shopping cart with ${itemCount} items`}
             >
-              <FaCartShopping className="text-2xl" />
+              <div className="text-gray-400 group-hover:text-purple-400 transition-colors duration-300">
+                <FaCartShopping className="text-2xl" />
+              </div>
               {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-purple-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute top-2 right-2 bg-purple-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-gray-900">
                   {itemCount}
                 </span>
               )}
-              <span className="absolute -bottom-8 text-center text-sm text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap px-2 py-1 bg-gray-900 rounded flex items-center gap-1">
-                Cart
-                <ShieldCheck size={12} className="text-green-400" />
-              </span>
             </Link>
             {showCartPreview && <CartPreview />}
           </div>
 
           {user ? (
-            <div className="relative" data-dropdown>
+            <div className="relative ml-2" data-dropdown>
               <button
                 onClick={() => setShowDropdown((prev) => !prev)}
-                className="flex items-center gap-2 bg-gray-800 px-3 py-2 rounded-full hover:bg-gray-700 cursor-pointer transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/30"
+                className="flex items-center gap-3 bg-gray-800/50 border border-gray-700/50 pl-2 pr-4 py-1.5 rounded-full hover:bg-gray-800 hover:border-purple-500/30 cursor-pointer transition-all duration-300 group"
                 aria-label="User menu"
                 aria-expanded={showDropdown}
               >
-                <Image
-                  src={user.user_metadata?.avatar_url || '/Avatarpic.png'}
-                  width={32}
-                  height={32}
-                  alt="User avatar"
-                  className="w-7 h-7 rounded-full"
-                />
-                <span className="text-sm text-white max-w-[80px] truncate">
+                <div className="relative">
+                  <Image
+                    src={avatarUrl}
+                    width={32}
+                    height={32}
+                    alt="User avatar"
+                    className="w-8 h-8 rounded-full ring-2 ring-transparent group-hover:ring-purple-500/50 transition-all"
+                  />
+                  <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-gray-900 rounded-full"></div>
+                </div>
+                <span className="text-sm font-medium text-gray-300 group-hover:text-white max-w-[80px] truncate transition-colors">
                   {user.user_metadata?.name?.split(' ')[0] || 'User'}
                 </span>
               </button>
@@ -218,58 +245,58 @@ export default function Navbar() {
               <AnimatePresence>
                 {showDropdown && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
                     transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-64 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden"
+                    className="absolute right-0 mt-4 w-72 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-50 ring-1 ring-white/10"
                   >
                     {/* User Info */}
-                    <div className="p-4 border-b border-gray-800 bg-gradient-to-br from-gray-800 to-gray-900">
-                      <div className="flex items-center gap-3">
+                    <div className="p-5 border-b border-gray-800 bg-gradient-to-br from-gray-800/50 to-gray-900/50">
+                      <div className="flex items-center gap-4">
                         <Image
-                          src={user.user_metadata?.avatar_url || '/Avatarpic.png'}
+                          src={avatarUrl}
                           width={48}
                           height={48}
                           alt="User avatar"
-                          className="w-12 h-12 rounded-full"
+                          className="w-12 h-12 rounded-full ring-2 ring-purple-500/20"
                         />
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-white truncate">
+                          <p className="font-semibold text-white truncate">
                             {user.user_metadata?.name || 'User'}
                           </p>
-                          <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                          <p className="text-xs text-gray-400 truncate mt-0.5">{user.email}</p>
                         </div>
                       </div>
                     </div>
 
                     {/* Menu Items */}
-                    <div className="py-2">
+                    <div className="p-2 space-y-1">
                       <Link
                         href="/profile"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all"
                         onClick={() => setShowDropdown(false)}
                       >
-                        <UserIcon size={16} />
+                        <UserIcon size={18} className="text-purple-400" />
                         <span>Profile</span>
                       </Link>
                       <Link
                         href="/settings"
-                        className="flex items-center gap-3 px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-white transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white rounded-xl transition-all"
                         onClick={() => setShowDropdown(false)}
                       >
-                        <Settings size={16} />
+                        <Settings size={18} className="text-blue-400" />
                         <span>Settings</span>
                       </Link>
                     </div>
 
                     {/* Logout */}
-                    <div className="border-t border-gray-800">
+                    <div className="p-2 border-t border-gray-800">
                       <button
                         onClick={handleLogout}
-                        className="flex items-center gap-3 w-full px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 rounded-xl transition-all"
                       >
-                        <LogOut size={16} />
+                        <LogOut size={18} />
                         <span>Logout</span>
                       </button>
                     </div>
@@ -278,23 +305,24 @@ export default function Navbar() {
               </AnimatePresence>
             </div>
           ) : (
-            (user === undefined) ? (
-              <div className="w-[110px] h-10 rounded-full bg-indigo-900/30 animate-pulse" />
-            ) : (
-              <a
-                href="/login"
-                className="flex items-center justify-center text-lg w-[110px] bg-indigo-900 px-4 py-2 rounded-full hover:bg-indigo-700 transition-colors"
-                aria-label="Login"
-              >
-                Login
-              </a>
-            )
+            <div className="ml-4">
+              {user === undefined ? (
+                <div className="w-24 h-10 rounded-full bg-gray-800 animate-pulse" />
+              ) : (
+                <Link
+                  href="/login"
+                  className="flex items-center justify-center px-6 py-2.5 text-sm font-semibold text-white bg-purple-600 hover:bg-purple-500 rounded-full shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 transition-all duration-300 transform hover:-translate-y-0.5"
+                >
+                  Login
+                </Link>
+              )}
+            </div>
           )}
         </nav>
 
         {/* Mobile Toggle */}
         <button
-          className="md:hidden text-gray-400 p-2"
+          className="md:hidden p-2 text-gray-400 hover:text-white transition-colors"
           onClick={() => setIsOpen(!isOpen)}
           aria-label="Toggle mobile menu"
           aria-expanded={isOpen}
@@ -310,104 +338,114 @@ export default function Navbar() {
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
-            transition={{ type: 'tween', duration: 0.3 }}
-            className="fixed inset-y-0 right-0 w-64 bg-gray-900/95 backdrop-blur-lg shadow-2xl md:hidden z-50"
+            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+            className="fixed inset-y-0 right-0 w-80 bg-gray-900/95 backdrop-blur-xl border-l border-gray-800 shadow-2xl md:hidden z-50 flex flex-col"
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
           >
-            {/* Close Button */}
-            <div className="flex justify-end p-4">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-800">
+              <span className="text-lg font-bold text-white">Menu</span>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-gray-400 hover:text-white p-2"
+                className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
                 aria-label="Close menu"
               >
-                <X size={24} />
+                <X size={20} />
               </button>
             </div>
 
-            <div className="flex flex-col px-4 pb-4 space-y-2">
-              {navLinks.map(({ href, label, icon }) => (
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* User Section (Mobile) */}
+              {user ? (
+                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-gray-800">
+                  <Image
+                    src={avatarUrl}
+                    width={48}
+                    height={48}
+                    alt="User avatar"
+                    className="w-12 h-12 rounded-full ring-2 ring-purple-500/20"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-white truncate">
+                      {user.user_metadata?.name || 'User'}
+                    </p>
+                    <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                  </div>
+                </div>
+              ) : (
                 <Link
-                  key={href}
-                  href={href}
+                  href="/login"
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3 bg-purple-900/50 hover:bg-purple-800/50 rounded-lg transition-colors text-white"
+                  className="flex items-center justify-center w-full py-4 text-sm font-bold text-white bg-purple-600 rounded-xl shadow-lg shadow-purple-500/20"
                 >
-                  {icon}
-                  <span>{label}</span>
+                  Login / Sign Up
                 </Link>
-              ))}
+              )}
 
+              {/* Navigation Links */}
+              <div className="space-y-2">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">Navigation</p>
+                {navLinks.map(({ href, label, icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-4 px-4 py-3.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group"
+                  >
+                    <div className="text-gray-400 group-hover:text-purple-400 transition-colors">
+                      {icon}
+                    </div>
+                    <span className="font-medium">{label}</span>
+                  </Link>
+                ))}
+              </div>
+
+              {/* Cart Link */}
               <Link
                 href="/cart"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 bg-purple-900/50 hover:bg-purple-800/50 rounded-lg transition-colors text-white"
+                className="flex items-center gap-4 px-4 py-3.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group"
               >
-                <IoMdCart className="text-2xl" />
-                <span>Cart</span>
-                {itemCount > 0 && (
-                  <span className="ml-auto bg-purple-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                    {itemCount}
-                  </span>
-                )}
+                <div className="relative text-gray-400 group-hover:text-purple-400 transition-colors">
+                  <IoMdCart className="text-2xl" />
+                  {itemCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-purple-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-gray-900">
+                      {itemCount}
+                    </span>
+                  )}
+                </div>
+                <span className="font-medium">Shopping Cart</span>
               </Link>
 
-              {user ? (
-                <div className="pt-4 border-t border-gray-800">
-                  <div className="flex items-center gap-3 px-4 py-3 mb-2">
-                    <Image
-                      src={user.user_metadata?.avatar_url || '/Avatarpic.png'}
-                      width={40}
-                      height={40}
-                      alt="User avatar"
-                      className="w-10 h-10 rounded-full"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-white truncate text-sm">
-                        {user.user_metadata?.name || 'User'}
-                      </p>
-                      <p className="text-xs text-gray-400 truncate">{user.email}</p>
-                    </div>
-                  </div>
-
+              {/* Account Links */}
+              {user && (
+                <div className="space-y-2 pt-6 border-t border-gray-800">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">Account</p>
                   <Link
                     href="/profile"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
+                    className="flex items-center gap-4 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
                   >
-                    <UserIcon size={16} />
+                    <UserIcon size={20} />
                     <span>Profile</span>
                   </Link>
-
                   <Link
                     href="/settings"
                     onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:bg-gray-800 rounded-lg transition-colors"
+                    className="flex items-center gap-4 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
                   >
-                    <Settings size={16} />
+                    <Settings size={20} />
                     <span>Settings</span>
                   </Link>
-
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-lg transition-colors mt-2"
+                    className="flex items-center gap-4 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all mt-2"
                   >
-                    <LogOut size={16} />
+                    <LogOut size={20} />
                     <span>Logout</span>
                   </button>
                 </div>
-              ) : (
-                (user === undefined) ? (
-                  <div className="w-full h-10 rounded-lg bg-indigo-900/30 animate-pulse" />
-                ) : (
-                  <a
-                    href="/login"
-                    className="flex items-center justify-center text-lg w-full bg-indigo-900 px-4 py-3 rounded-lg hover:bg-indigo-700 transition-colors"
-                  >
-                    Login
-                  </a>
-                )
               )}
             </div>
           </motion.div>
@@ -417,7 +455,7 @@ export default function Navbar() {
       {/* Mobile Menu Backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm md:hidden z-40"
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
           onClick={() => setIsOpen(false)}
         />
       )}

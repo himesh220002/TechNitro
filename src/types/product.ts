@@ -12,7 +12,8 @@ export interface Product {
   lastUpdated: string
 
   /** Product rating on a scale of 0.0 to 5.0 with 1 decimal precision */
-  rating?: number
+  rating?: number;
+  review_count?: number;
   specs?: Record<string, string>
 
 }

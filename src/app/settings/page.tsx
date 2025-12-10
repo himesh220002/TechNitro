@@ -56,7 +56,7 @@ export default function SettingsPage() {
         return (
             <GradientBackground>
                 <Navbar />
-                <div className="min-h-screen flex items-center justify-center">
+                <div className="min-h-screen flex items-center justify-center pt-24">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500" />
                 </div>
             </GradientBackground>
@@ -67,7 +67,7 @@ export default function SettingsPage() {
         return (
             <GradientBackground>
                 <Navbar />
-                <div className="min-h-screen flex items-center justify-center">
+                <div className="min-h-screen flex items-center justify-center pt-24">
                     <div className="text-center">
                         <h2 className="text-2xl font-bold text-white mb-4">Not Logged In</h2>
                         <a href="/login" className="text-purple-400 hover:text-purple-300">
@@ -82,7 +82,7 @@ export default function SettingsPage() {
     return (
         <GradientBackground>
             <Navbar />
-            <main className="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 py-12">
+            <main className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 pb-12 pt-24 mt-0 sm:mt-20">
                 <Breadcrumbs items={[{ label: 'Settings' }]} />
                 <h1 className="text-3xl font-bold text-white mb-8">Settings</h1>
 

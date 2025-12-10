@@ -65,7 +65,7 @@ export default function CartPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black">
       <Navbar />
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="max-w-4xl mx-auto px-6 py-12 pt-24">
         <div className="flex items-center justify-center sm:justify-start gap-3 mb-8">
           <span className="text-2xl sm:text-3xl">🛒</span>
           <h1 className="text-xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent">

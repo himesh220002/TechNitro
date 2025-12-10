@@ -16,6 +16,7 @@ import { baseUrl } from '@/lib/baseUrl'
 import Link from 'next/link'
 import { Metadata } from 'next'
 import { Suspense } from 'react'
+import { ArrowLeft, Share2, Star } from 'lucide-react'
 
 // const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
 // const baseUrl = 'http://localhost:3000';
@@ -72,7 +73,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
     <>
       <Navbar />
 
-      <main className="min-h-screen p-6 max-w-[1600px] mx-auto">
+      <main className="min-h-screen pt-24 p-6 max-w-[1600px] mx-auto">
         {/* Breadcrumbs */}
         <nav className="flex items-center text-sm text-gray-400 mb-6">
           <Link href="/" className="hover:text-white transition-colors">Home</Link>
@@ -124,10 +125,27 @@ export default async function ProductPage({ params }: { params: { slug: string }
                   <p className="text-xl sm:text-4xl font-extrabold font-display bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">₹{product.price.toLocaleString('en-IN')}</p>
                   <p className="text-sm text-gray-400 font-sans">EMI starts at ₹{Math.round(product.price / 12).toLocaleString('en-IN')}/mo</p>
                   <div className="flex items-center gap-2 mt-2 font-sans">
-                    <span className="px-2 py-1 bg-red-500/10 text-red-400 text-xs font-bold rounded border border-red-500/20 animate-pulse">
-                      Only {product.inventory} left!
-                    </span>
+                    {product.inventory > 5 ? (
+                      <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs font-bold rounded border border-green-500/20">
+                        In Stock
+                      </span>
+                    ) : product.inventory > 0 ? (
+                      <span className="px-2 py-1 bg-yellow-500/10 text-yellow-400 text-xs font-bold rounded border border-yellow-500/20 animate-pulse">
+                        Only {product.inventory} left!
+                      </span>
+                    ) : (
+                      <span className="px-2 py-1 bg-red-500/10 text-red-400 text-xs font-bold rounded border border-red-500/20">
+                        Out of Stock
+                      </span>
+                    )}
                     <span className="text-xs text-gray-500">Order in 2h 15m for delivery tomorrow</span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="flex items-center gap-1 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20">
+                    <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                    <span className="text-yellow-500 font-bold">{(product.rating || 0).toFixed(1)}</span>
+                    <span className="text-gray-400 text-sm">({product.review_count || 0} reviews)</span>
                   </div>
                 </div>
                 <div className="mt-4 md:hidden">
@@ -136,7 +154,11 @@ export default async function ProductPage({ params }: { params: { slug: string }
               </div>
               <Description text={product.description} />
               <DeliveryInfo />
-              <Reviews rating={product.rating ?? 4.5} />
+              <Reviews
+                rating={product.rating || 0}
+                reviewCount={product.review_count || 0}
+                productId={product.id}
+              />
               <FAQ />
             </div>
           </div>
