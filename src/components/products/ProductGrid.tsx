@@ -84,16 +84,18 @@ export default function ProductGrid({ products, viewMode, loading }: ProductGrid
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.3, delay: idx * 0.05 }}
-                            className="w-full h-full flex flex-col md:flex-row"
+                            className={`w-full h-full flex flex-col ${viewMode === 'list' ? 'md:flex-row' : ''}`}
                         >
                             {/* Image Section */}
                             <div className={`relative overflow-hidden bg-gray-800 ${viewMode === 'list' ? 'w-full md:w-64 shrink-0' : 'aspect-[4/3]'}`}>
                                 {product.imageUrl ? (
                                     <Image
-                                        src={product.imageUrl}
+                                        src={encodeURI(product.imageUrl)}
                                         alt={product.name}
                                         fill
                                         className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                        unoptimized={true}
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center text-gray-600">

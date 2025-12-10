@@ -25,7 +25,7 @@ export default function ProductSort({ totalProducts, sortBy, setSortBy, viewMode
     ]
 
     return (
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-gray-900/40 p-4 rounded-2xl border border-gray-800 backdrop-blur-sm">
+        <div className="relative z-20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-gray-900/40 p-4 rounded-2xl border border-gray-800 backdrop-blur-sm">
             <p className="text-gray-400 text-sm">
                 Showing <span className="text-white font-bold">{totalProducts}</span> results
             </p>

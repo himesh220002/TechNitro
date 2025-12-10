@@ -147,7 +147,7 @@ export default function ProductFilters({ filters, setFilters, minPrice, maxPrice
                                             <span>₹{filters.priceRange[0].toLocaleString()}</span>
                                             <span>₹{filters.priceRange[1].toLocaleString()}</span>
                                         </div>
-                                        <div className="relative h-1 bg-gray-700 rounded-full">
+                                        <div className="relative h-2 bg-gray-700 rounded-full">
                                             <div
                                                 className="absolute h-full bg-purple-500 rounded-full"
                                                 style={{
@@ -157,7 +157,7 @@ export default function ProductFilters({ filters, setFilters, minPrice, maxPrice
                                             />
                                         </div>
                                         <div className="flex gap-4">
-                                            <div className="relative w-full h-6 flex items-center">
+                                            <div className="relative -top-8 w-full h-6 flex items-center">
                                                 <input
                                                     type="range"
                                                     min={minPrice}

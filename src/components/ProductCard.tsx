@@ -70,11 +70,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         <div className="relative aspect-square bg-white overflow-hidden">
           {product.imageUrl ? (
             <Image
-              src={product.imageUrl}
+              src={encodeURI(product.imageUrl)}
               alt={product.name}
               fill
               className="object-contain p-4 transition-transform duration-500 group-hover:scale-110"
-              sizes="(max-width: 768px) 100vw, 33vw"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              unoptimized={true} // Fix for potential 304/loading issues on some devices
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100">
