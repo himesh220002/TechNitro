@@ -52,7 +52,7 @@ export default function PaymentForm({
     }
   }
 
-  
+
 
   return (
     <div className="space-y-4 mt-10">
@@ -69,11 +69,11 @@ export default function PaymentForm({
       <select
         value={paymentMethod}
         onChange={(e) => onChange({ accountName, accountNumber, paymentMethod: e.target.value })}
-        className="w-full px-4 py-2 rounded bg-gray-800 text-white"
+        className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl text-gray-200 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer"
       >
-        <option value="Bank">Bank Transfer</option>
-        <option value="UPI">UPI</option>
-        <option value="Wallet">Wallet</option>
+        <option value="Bank" className="bg-gray-800 text-gray-200">Bank Transfer</option>
+        <option value="UPI" className="bg-gray-800 text-gray-200">UPI</option>
+        <option value="Wallet" className="bg-gray-800 text-gray-200">Wallet</option>
       </select>
 
       <input

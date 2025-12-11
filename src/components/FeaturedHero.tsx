@@ -177,7 +177,7 @@ export default function FeaturedHero() {
   }, [])
 
   return (
-    <section id="torch-section1" className="relative bg-black rounded-3xl p-6 sm:p-12 mb-10 shadow-2xl overflow-hidden min-h-[600px] flex flex-col lg:flex-row justify-between items-center gap-10 border border-white/10 group" key={currentSlide}>
+    <section id="torch-section1" className="relative bg-black sm:rounded-3xl rounded-t-none  p-6 sm:p-12 mb-10 shadow-2xl overflow-hidden min-h-[600px] flex flex-col-reverse lg:flex-row justify-between items-center gap-10 border border-white/10 group" key={currentSlide}>
 
       {/* Animated Background */}
       <div className="absolute inset-0 bg-[url('/grid-pattern.svg')] opacity-20 z-0" />
@@ -202,7 +202,7 @@ export default function FeaturedHero() {
             <span className="text-xs font-medium text-gray-300 tracking-wide uppercase">New Arrival</span>
           </div>
 
-          <h1 className="text-5xl sm:text-7xl font-black tracking-tight text-white leading-tight">
+          <h1 className="text-4xl sm:text-7xl font-black tracking-tight text-white leading-tight">
             <span className="block drop-shadow-lg">
               {current.name.split(' ')[0]}{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">

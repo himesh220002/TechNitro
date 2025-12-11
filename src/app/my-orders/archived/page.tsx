@@ -7,6 +7,7 @@ import type { Order } from '@/types/order'
 import Footer from '@/components/Footer'
 import OrderList from '../components/OrderList'
 import Link from 'next/link'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function ArchivedOrdersPage() {
     const supabase = useMemo(() => createClientComponentClient(), [])
@@ -45,14 +46,13 @@ export default function ArchivedOrdersPage() {
     return (
         <>
             <Navbar />
-            <main className="max-w-6xl min-h-[500px] mx-auto p-3 sm:p-6 pt-24">
-                <div className='flex flex-col sm:flex-row gap-4 justify-between items-center mb-6'>
-                    <div className="flex items-center gap-4">
-                        <Link href="/my-orders" className="text-gray-400 hover:text-white">
-                            ← Back to Orders
-                        </Link>
-                        <h1 className="text-xl sm:text-3xl font-bold ">🗄️ Archived Orders</h1>
-                    </div>
+
+            <main className="max-w-6xl min-h-screen mt-0 sm:mt-24 mx-auto p-3 sm:p-6 pt-24">
+                <Breadcrumbs items={[{ label: 'Orders', href: '/my-orders' }, { label: 'Archived Orders' }]} />
+                <div className='flex mb-6'>
+
+                    <h1 className="text-xl sm:text-3xl font-bold ">🗄️ Archived Orders</h1>
+
                 </div>
 
                 <OrderList orders={orders} loading={loading} onUpdate={fetchOrders} />

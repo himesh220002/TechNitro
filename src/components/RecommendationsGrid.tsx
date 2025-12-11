@@ -101,8 +101,8 @@ export default function RecommendationsGrid({ initialProducts }: Recommendations
                             key={cat}
                             onClick={() => setCategory(cat)}
                             className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${category === cat
-                                    ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25'
-                                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+                                ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25'
+                                : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
                                 }`}
                         >
                             {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -118,10 +118,10 @@ export default function RecommendationsGrid({ initialProducts }: Recommendations
                             onChange={(e) => setSortBy(e.target.value)}
                             className="w-full md:w-48 pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-xl text-white appearance-none focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer text-sm"
                         >
-                            <option value="recommended">Recommended</option>
-                            <option value="newest">Newest Arrivals</option>
-                            <option value="price-asc">Price: Low to High</option>
-                            <option value="price-desc">Price: High to Low</option>
+                            <option value="recommended" className="bg-gray-800 text-gray-200">Recommended</option>
+                            <option value="newest" className="bg-gray-800 text-gray-200">Newest Arrivals</option>
+                            <option value="price-asc" className="bg-gray-800 text-gray-200">Price: Low to High</option>
+                            <option value="price-desc" className="bg-gray-800 text-gray-200">Price: High to Low</option>
                         </select>
                     </div>
                 </div>

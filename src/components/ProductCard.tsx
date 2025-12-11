@@ -83,6 +83,14 @@ export default function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
+          {/* Rating Badge */}
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-yellow-500/30">
+            <Star className="w-3 h-3 text-yellow-500 fill-current" />
+            <span className="text-xs font-bold text-yellow-500">
+              {(product.rating || 0).toFixed(1)}
+            </span>
+          </div>
+
           {/* Wishlist Button */}
           <button
             onClick={toggleWishlist}
@@ -117,35 +125,27 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Content */}
         <div className="flex-1 p-4 flex flex-col">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-purple-400 uppercase tracking-wider">
-              {product.category}
-            </span>
-            <div className="flex items-center gap-1 bg-yellow-500/10 px-2 py-1 rounded">
-              <Star className="w-3 h-3 text-yellow-500 fill-current" />
-              <span className="text-xs font-bold text-yellow-500">
-                {(product.rating || 0).toFixed(1)}
-              </span>
-            </div>
-          </div>
+          <span className="text-xs font-medium text-purple-400 uppercase tracking-wider">
+            {product.category}
+          </span>
+        </div>
 
-          <h3 className="text-base sm:text-lg font-semibold text-white mb-2 line-clamp-2 group-hover:text-purple-400 transition-colors">
-            {product.name}
-          </h3>
+        <h3 className="text-base sm:text-lg font-semibold text-white mx-4 mb-2 line-clamp-2 group-hover:text-purple-400 transition-colors">
+          {product.name}
+        </h3>
 
-          <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <p className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
-              ₹{product.price.toLocaleString('en-IN')}
-            </p>
-            <span className={`text-xs px-2 py-1 rounded-full self-start ${product.inventory > 5
-              ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-              : product.inventory > 0
-                ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
-                : 'bg-red-500/10 text-red-400 border border-red-500/20'
-              }`}>
-              {product.inventory > 5 ? 'In Stock' : product.inventory > 0 ? 'Low Stock' : 'Out of Stock'}
-            </span>
-          </div>
+        <div className="mt-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-2 sm:px-4">
+          <p className="text-lg sm:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-500">
+            ₹{product.price.toLocaleString('en-IN')}
+          </p>
+          <span className={`text-xs px-2 py-1 rounded-full self-start ${product.inventory > 5
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+            : product.inventory > 0
+              ? 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/20'
+              : 'bg-red-500/10 text-red-400 border border-red-500/20'
+            }`}>
+            {product.inventory > 5 ? 'In Stock' : product.inventory > 0 ? 'Low Stock' : 'Out of Stock'}
+          </span>
         </div>
       </Link>
 

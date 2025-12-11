@@ -48,7 +48,7 @@ export default function Footer() {
   return (
     <footer className="bg-[#0f0f0f] text-gray-300 border-t border-gray-800 relative overflow-hidden">
       {/* Decorative Gradients */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-500" />
+      <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-purple-600 via-pink-500 to-indigo-500" />
       <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-900/20 rounded-full blur-[100px] pointer-events-none" />
       <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-900/20 rounded-full blur-[100px] pointer-events-none" />
 

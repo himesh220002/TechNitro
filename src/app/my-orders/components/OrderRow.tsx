@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import { Order, ProductInOrder } from '@/types/order'
-import OrderActions from './OrderActions'
-import { ChevronDown, ChevronUp, Package, Truck, CheckCircle, XCircle, Clock, MapPinHouse, Ship } from 'lucide-react'
+// OrderActions intentionally not used here
+import { ChevronDown, ChevronUp, Package, Truck, CheckCircle, XCircle, Clock, MapPinHouse, Ship, Phone } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface OrderRowProps {
@@ -18,6 +18,35 @@ export default function OrderRow({ order, onUpdate }: OrderRowProps) {
     const router = useRouter()
     const [isExpanded, setIsExpanded] = useState(false)
     const [openCancelId, setOpenCancelId] = useState<string | null>(null)
+    const [hasNewAdminMessage, setHasNewAdminMessage] = useState(false)
+
+    // Check latest admin message timestamp vs last seen (stored in localStorage)
+    useEffect(() => {
+        let mounted = true
+        const checkLatestAdmin = async () => {
+            try {
+                const res = await fetch(`/api/support-messages?orderId=${order.id}`)
+                if (!res.ok) return
+                const messages = (await res.json()) as { is_admin_reply?: boolean; created_at?: string }[]
+                const lastAdmin = messages
+                    .filter((m) => m.is_admin_reply)
+                    .map((m) => m.created_at)
+                    .filter(Boolean) as string[]
+                const last = lastAdmin.sort().pop()
+
+                const seen = typeof window !== 'undefined' ? localStorage.getItem(`lastSeenAdminMsg:${order.id}`) : null
+                if (mounted) {
+                    setHasNewAdminMessage(Boolean(last && (!seen || new Date(last) > new Date(seen))))
+                }
+            } catch {
+                // ignore
+            }
+        }
+
+        checkLatestAdmin()
+
+        return () => { mounted = false }
+    }, [order.id])
 
     const cancelOrder = async (id: string) => {
         const res = await fetch('/api/update-order-status', {
@@ -222,6 +251,16 @@ export default function OrderRow({ order, onUpdate }: OrderRowProps) {
                                         className="px-4 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors"
                                     >
                                         View Invoice
+                                    </button>
+                                    <button
+                                        onClick={() => router.push(`/track-order?id=${order.id}&openChat=1`)}
+                                        className="relative px-3 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
+                                    >
+                                        <Phone size={14} />
+                                        Messages
+                                        {hasNewAdminMessage && (
+                                            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-semibold leading-none text-white bg-red-600 rounded-full">1</span>
+                                        )}
                                     </button>
                                 </div>
 

@@ -51,7 +51,7 @@ export default async function HomePage() {
   return (
     <GradientBackground>
       <Navbar />
-      <main className="min-h-screen pt-24">
+      <main className="min-h-screen pt-16 sm:pt-24">
         <section className='relative max-w-[1600px]  mx-auto'>
           <FeaturedHero />
         </section>

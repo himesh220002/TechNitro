@@ -9,7 +9,7 @@ type ProductInOrder = {
 
 export async function POST(req: Request) {
   try {
-    const { id, status } = await req.json();
+    const { id, status, tracking_link, delivery_agent_name, delivery_agent_phone } = await req.json();
 
     const { data: order, error: fetchErr } = await supabaseAdmin
       .from("orders")
@@ -21,6 +21,36 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
+    // Handle tracking link and agent info update
+    if (tracking_link !== undefined) {
+      const updateData: any = { tracking_link: tracking_link || null };
+
+      if (delivery_agent_name !== undefined) {
+        updateData.delivery_agent_name = delivery_agent_name || null;
+      }
+
+      if (delivery_agent_phone !== undefined) {
+        updateData.delivery_agent_phone = delivery_agent_phone || null;
+      }
+
+      const { data: updated, error: updateErr } = await supabaseAdmin
+        .from("orders")
+        .update(updateData)
+        .eq("id", id)
+        .select()
+        .single();
+
+      if (updateErr) {
+        return NextResponse.json(
+          { error: "Failed to update tracking info", details: updateErr.message },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json(updated);
+    }
+
+    // Handle status update
     const previousStatus = order.orderStatus;
     const products: ProductInOrder[] = order.products ?? [];
 
@@ -50,9 +80,17 @@ export async function POST(req: Request) {
       }
     }
 
+    // Auto-cleanup tracking links when delivered (keep agent name/phone for records)
+    const updateData: any = { orderStatus: status };
+    if (status === "Delivered") {
+      updateData.tracking_link = null;
+      updateData.customer_tracking_link = null;
+      // Keep delivery_agent_name and delivery_agent_phone in database
+    }
+
     const { data: updated, error: updateErr } = await supabaseAdmin
       .from("orders")
-      .update({ orderStatus: status })
+      .update(updateData)
       .eq("id", id)
       .select()
       .single();

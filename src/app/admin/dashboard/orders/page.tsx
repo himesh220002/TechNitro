@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import DashboardWrapper from '@/components/dashboard/DashboardWrapper'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -46,7 +46,12 @@ type Order = {
   created_at: string
   products: ProductInOrder[]
   shippingEvents?: ShippingEvent[]
+  tracking_link?: string
+  customer_tracking_link?: string
+  delivery_agent_name?: string
+  delivery_agent_phone?: string
 }
+
 
 type ShippingEvent = {
   location: string
@@ -54,6 +59,16 @@ type ShippingEvent = {
   visible: boolean
   timestamp: string
   mode?: 'train' | 'flight' | 'truck'
+}
+
+type SupportMessage = {
+  id?: string
+  orderId?: string
+  userId?: string
+  message: string
+  created_at?: string
+  read_by_admin?: boolean
+  is_admin_reply?: boolean
 }
 
 const statusOptions = [
@@ -111,6 +126,18 @@ export default function AdminOrdersPage() {
 
   const [visibleCount, setVisibleCount] = useState(20)
   const [activeTab, setActiveTab] = useState<'active' | 'archived' | 'hidden'>('active')
+  const [trackingLinkInput, setTrackingLinkInput] = useState<Record<string, string>>({})
+  const [agentNameInput, setAgentNameInput] = useState<Record<string, string>>({})
+  const [agentPhoneInput, setAgentPhoneInput] = useState<Record<string, string>>({})
+  const [unreadMessageCounts, setUnreadMessageCounts] = useState<Record<string, number>>({})
+
+  // Chat modal state
+  const [showChatModal, setShowChatModal] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<string>('')
+  const [chatMessages, setChatMessages] = useState<SupportMessage[]>([])
+  const [adminReply, setAdminReply] = useState('')
+
+
 
 
   useEffect(() => {
@@ -148,7 +175,31 @@ export default function AdminOrdersPage() {
 
 
 
-  const fetchOrders = async () => {
+
+
+  const fetchUnreadCounts = useCallback(async (orderIds: string[]) => {
+    try {
+      const counts: Record<string, number> = {}
+
+      // Fetch unread counts for each order
+      for (const orderId of orderIds) {
+        const res = await fetch(`/api/support-messages?orderId=${orderId}`)
+        if (res.ok) {
+          const messages = (await res.json()) as SupportMessage[]
+          const unreadCount = messages.filter((m) => !m.read_by_admin && !m.is_admin_reply).length
+          if (unreadCount > 0) {
+            counts[orderId] = unreadCount
+          }
+        }
+      }
+
+      setUnreadMessageCounts(counts)
+    } catch (error) {
+      console.error("Error fetching unread counts:", error)
+    }
+  }, [])
+
+  const fetchOrders = useCallback(async () => {
     setLoading(true)
 
     try {
@@ -184,21 +235,22 @@ export default function AdminOrdersPage() {
 
       if (Array.isArray(data)) {
         setOrders(data)
+        // Fetch unread message counts for all orders
+        fetchUnreadCounts((data as Order[]).map((o) => o.id))
       } else {
         console.error("Unexpected response:", data)
         setOrders([])
       }
-    } catch (err) {
-      console.error("Failed to fetch admin orders:", err)
-      setOrders([])
+    } catch (error) {
+      console.error("Error fetching orders:", error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [supabase.auth, activeTab, fetchUnreadCounts])
 
   useEffect(() => {
     fetchOrders()
-  }, [supabase.auth, activeTab])
+  }, [fetchOrders])
 
 
   const updateStatus = async (id: string, status: string) => {
@@ -219,6 +271,40 @@ export default function AdminOrdersPage() {
       alert('❌ Failed to update status')
     }
   }
+
+  const updateTrackingLink = async (id: string, trackingLink: string, agentName?: string, agentPhone?: string) => {
+    const res = await fetch('/api/update-order-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id,
+        tracking_link: trackingLink,
+        delivery_agent_name: agentName,
+        delivery_agent_phone: agentPhone
+      }),
+    })
+
+    if (res.ok) {
+      const updated = await res.json()
+      setOrders((prev) =>
+        prev.map((order) =>
+          order.id === id ? {
+            ...order,
+            tracking_link: updated.tracking_link,
+            delivery_agent_name: updated.delivery_agent_name,
+            delivery_agent_phone: updated.delivery_agent_phone
+          } : order
+        )
+      )
+      setTrackingLinkInput((prev) => ({ ...prev, [id]: '' }))
+      setAgentNameInput((prev) => ({ ...prev, [id]: '' }))
+      setAgentPhoneInput((prev) => ({ ...prev, [id]: '' }))
+      alert('✅ Tracking info updated successfully!')
+    } else {
+      alert('❌ Failed to update tracking link')
+    }
+  }
+
 
   const filteredOrders = orders
     .filter((order) => {
@@ -787,6 +873,154 @@ export default function AdminOrdersPage() {
 
                       </div>
 
+                      {/* Live Tracking Link */}
+                      <div className="mt-4">
+                        <label className="text-sm text-white block mb-2">🗺️ Live Tracking Link</label>
+                        {order.tracking_link ? (
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              <a
+                                href={order.tracking_link}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-purple-400 hover:text-purple-300 text-sm underline flex-1 truncate"
+                              >
+                                {order.tracking_link}
+                              </a>
+                              <button
+                                onClick={() => {
+                                  setOrders((prev) =>
+                                    prev.map((o) =>
+                                      o.id === order.id ? { ...o, tracking_link: undefined } : o
+                                    )
+                                  )
+                                  updateTrackingLink(order.id, '')
+                                }}
+                                className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white text-xs rounded"
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex flex-col gap-2">
+                            <input
+                              type="text"
+                              placeholder="Agent/Company name (e.g., Rajesh Kumar, BlueDart)"
+                              value={agentNameInput[order.id] || ''}
+                              onChange={(e) =>
+                                setAgentNameInput((prev) => ({
+                                  ...prev,
+                                  [order.id]: e.target.value,
+                                }))
+                              }
+                              className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm"
+                            />
+                            <input
+                              type="tel"
+                              placeholder="Agent/Company phone (e.g., +91 98765 43210)"
+                              value={agentPhoneInput[order.id] || ''}
+                              onChange={(e) =>
+                                setAgentPhoneInput((prev) => ({
+                                  ...prev,
+                                  [order.id]: e.target.value,
+                                }))
+                              }
+                              className="px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm"
+                            />
+                            <div className="flex gap-2">
+                              <input
+                                type="text"
+                                placeholder="Paste Google Maps share link..."
+                                value={trackingLinkInput[order.id] || ''}
+                                onChange={(e) =>
+                                  setTrackingLinkInput((prev) => ({
+                                    ...prev,
+                                    [order.id]: e.target.value,
+                                  }))
+                                }
+                                className="flex-1 px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white text-sm"
+                              />
+                              <button
+                                onClick={() => {
+                                  const link = trackingLinkInput[order.id]?.trim()
+                                  const name = agentNameInput[order.id]?.trim()
+                                  const phone = agentPhoneInput[order.id]?.trim()
+                                  if (link) {
+                                    updateTrackingLink(order.id, link, name, phone)
+                                  } else {
+                                    alert('Please enter a tracking link')
+                                  }
+                                }}
+                                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded font-semibold"
+                              >
+                                Add
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Customer Location (if shared) */}
+                      {order.customer_tracking_link && (
+                        <div className="mt-4">
+                          <label className="text-sm text-white block mb-2">📍 Customer&apos;s Live Location</label>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2 bg-green-900/20 border border-green-500/30 rounded px-3 py-2">
+                              <span className="text-green-400 text-xs font-medium">✓ Customer shared location</span>
+                            </div>
+                            <a
+                              href={order.customer_tracking_link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded font-semibold text-center transition-colors"
+                            >
+                              🗺️ Navigate to Customer
+                            </a>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Support Messages */}
+                      <div className="mt-4">
+                        <label className="text-sm text-white block mb-2">💬 Customer Support Messages</label>
+                        <button
+                          onClick={async () => {
+                            setSelectedOrderId(order.id)
+                            setShowChatModal(true)
+                            // Fetch messages for this order
+                            const res = await fetch(`/api/support-messages?orderId=${order.id}`)
+                            if (res.ok) {
+                              const messages = await res.json()
+                              setChatMessages(messages)
+                              // Mark as read
+                              await fetch('/api/support-messages', {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ orderId: order.id })
+                              })
+                              // Refresh unread counts
+                              fetchUnreadCounts(orders.map(o => o.id))
+                            }
+                          }}
+                          className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded font-semibold text-center transition-colors flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                          </svg>
+                          View Messages
+                          {unreadMessageCounts[order.id] && (
+                            <span className="px-2 py-0.5 bg-red-500 text-xs rounded-full">
+                              {unreadMessageCounts[order.id]}
+                            </span>
+                          )}
+                        </button>
+                        <p className="text-xs text-gray-400 mt-1">
+                          Customer can send support messages from tracking page
+                        </p>
+                      </div>
+
+
                     </div>
                   </div>
                 </div>
@@ -795,19 +1029,148 @@ export default function AdminOrdersPage() {
             )
           })}
 
-          {visibleCount < filteredOrders.length && (
-            <div className="flex justify-center mt-6">
+          {
+            visibleCount < filteredOrders.length && (
+              <div className="flex justify-center mt-6">
+                <button
+                  onClick={() => setVisibleCount((prev) => prev + 10)}
+                  className="px-6 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg"
+                >
+                  Load More Orders
+                </button>
+              </div>
+            )
+          }
+        </div>
+      )}
+
+      {/* Admin Chat Modal */}
+      {showChatModal && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-2xl w-full max-w-2xl border border-gray-800 flex flex-col max-h-[700px]">
+            {/* Chat Header */}
+            <div className="p-4 border-b border-gray-800 flex items-center justify-between bg-gradient-to-r from-indigo-900/30 to-purple-900/30">
+              <div>
+                <h3 className="text-white font-semibold">Customer Support Chat</h3>
+                <p className="text-xs text-gray-400">Order #{selectedOrderId.slice(0, 12)}...</p>
+              </div>
               <button
-                onClick={() => setVisibleCount((prev) => prev + 10)}
-                className="px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-600"
+                onClick={() => {
+                  setShowChatModal(false)
+                  setChatMessages([])
+                  setAdminReply('')
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
               >
-                Load More
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
-          )}
-        </div>
 
+            {/* Messages Area */}
+            <div className="flex-1 p-4 overflow-y-auto bg-gray-950/50">
+              <div className="space-y-4">
+                {chatMessages.length === 0 ? (
+                  <p className="text-center text-gray-400 text-sm">No messages yet</p>
+                ) : (
+                  chatMessages.map((msg, idx) => (
+                    <div key={msg.id || idx} className={`flex gap-3 ${msg.is_admin_reply ? 'justify-end' : ''}`}>
+                      {!msg.is_admin_reply && (
+                        <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs">👤</span>
+                        </div>
+                      )}
+                      <div className={`rounded-2xl p-3 max-w-[70%] ${msg.is_admin_reply
+                        ? 'bg-indigo-600/50 rounded-tr-none'
+                        : 'bg-gray-800 rounded-tl-none'
+                        }`}>
+                        <p className="text-sm text-white">{msg.message}</p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {msg.created_at ? new Date(msg.created_at).toLocaleString() : ''}
+                        </p>
+                      </div>
+                      {msg.is_admin_reply && (
+                        <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center flex-shrink-0">
+                          <span className="text-xs">🎧</span>
+                        </div>
+                      )}
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Reply Input */}
+            <div className="p-4 border-t border-gray-800">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Type your reply..."
+                  value={adminReply}
+                  onChange={(e) => setAdminReply(e.target.value)}
+                  onKeyPress={async (e) => {
+                    if (e.key === 'Enter' && adminReply.trim()) {
+                      const res = await fetch('/api/support-messages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          orderId: selectedOrderId,
+                          message: adminReply.trim(),
+                          userId: 'admin', // Admin user ID
+                          isAdminReply: true
+                        })
+                      })
+                      if (res.ok) {
+                        setAdminReply('')
+                        // Refresh messages
+                        const messagesRes = await fetch(`/api/support-messages?orderId=${selectedOrderId}`)
+                        if (messagesRes.ok) {
+                          const messages = await messagesRes.json()
+                          setChatMessages(messages)
+                        }
+                      }
+                    }
+                  }}
+                  className="flex-1 px-4 py-3 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                />
+                <button
+                  onClick={async () => {
+                    if (adminReply.trim()) {
+                      const res = await fetch('/api/support-messages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          orderId: selectedOrderId,
+                          message: adminReply.trim(),
+                          userId: 'admin',
+                          isAdminReply: true
+                        })
+                      })
+                      if (res.ok) {
+                        setAdminReply('')
+                        // Refresh messages
+                        const messagesRes = await fetch(`/api/support-messages?orderId=${selectedOrderId}`)
+                        if (messagesRes.ok) {
+                          const messages = await messagesRes.json()
+                          setChatMessages(messages)
+                        }
+                      }
+                    }
+                  }}
+                  className="px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
+
     </DashboardWrapper>
   )
+
 }

@@ -46,11 +46,11 @@ export default function DashboardFilters({
                         onChange={(e) => setCategory(e.target.value)}
                         className="w-full pl-10 pr-8 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm appearance-none focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer"
                     >
-                        <option value="all">All Categories</option>
-                        <option value="accessories">Accessories</option>
-                        <option value="laptops">Laptops</option>
-                        <option value="smartphones">Smartphones</option>
-                        <option value="tablets">Tablets</option>
+                        <option value="all" className="bg-gray-800 text-gray-200">All Categories</option>
+                        <option value="accessories" className="bg-gray-800 text-gray-200">Accessories</option>
+                        <option value="laptops" className="bg-gray-800 text-gray-200">Laptops</option>
+                        <option value="smartphones" className="bg-gray-800 text-gray-200">Smartphones</option>
+                        <option value="tablets" className="bg-gray-800 text-gray-200">Tablets</option>
                     </select>
                 </div>
 
@@ -62,10 +62,10 @@ export default function DashboardFilters({
                         onChange={(e) => setSortBy(e.target.value)}
                         className="w-full pl-10 pr-8 py-2.5 bg-gray-800 border border-gray-700 rounded-xl text-white text-sm appearance-none focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer"
                     >
-                        <option value="newest">Newest First</option>
-                        <option value="price-asc">Price: Low to High</option>
-                        <option value="price-desc">Price: High to Low</option>
-                        <option value="stock">Stock Level</option>
+                        <option value="newest" className="bg-gray-800 text-gray-200">Newest First</option>
+                        <option value="price-asc" className="bg-gray-800 text-gray-200">Price: Low to High</option>
+                        <option value="price-desc" className="bg-gray-800 text-gray-200">Price: High to Low</option>
+                        <option value="stock" className="bg-gray-800 text-gray-200">Stock Level</option>
                     </select>
                 </div>
 

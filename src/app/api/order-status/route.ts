@@ -17,7 +17,7 @@ export async function GET(req: Request) {
     // 🔥 Fetch ONLY required fields
     const { data, error } = await supabaseAdmin
       .from("orders")
-      .select("orderStatus, shippingEvents")
+      .select("orderStatus, shippingEvents, tracking_link, customer_tracking_link, delivery_agent_name, delivery_agent_phone, user_id")
       .eq("id", id)
       .single();
 
@@ -31,6 +31,11 @@ export async function GET(req: Request) {
     return NextResponse.json({
       orderStatus: data.orderStatus,
       shippingEvents: data.shippingEvents ?? [],
+      tracking_link: data.tracking_link,
+      customer_tracking_link: data.customer_tracking_link,
+      delivery_agent_name: data.delivery_agent_name,
+      delivery_agent_phone: data.delivery_agent_phone,
+      user_id: data.user_id,
     });
   } catch (err) {
     console.error("❌ order-status error:", err);

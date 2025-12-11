@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 export default function GradientBackground({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-900">
+    <div className="min-h-screen bg-gradient-to-r from-purple-900 via-black to-black">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

@@ -176,17 +176,17 @@ export default function ShippingLegManager({ orderId, shippingEvents = [], onRef
                       setCheckpoints(prev => [...prev, location])
                     }
                   }}
-                  className="bg-gray-800 text-white px-3 py-2 rounded w-full"
+                  className="bg-gray-800 border border-gray-700 rounded-xl text-gray-200 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer px-4 py-2 w-full"
                   disabled={isUpdating}
                 >
-                  <option value="">Select location...</option>
+                  <option value="" className="bg-gray-800 text-gray-200">Select location...</option>
                   {availableLocations
                     .filter(loc => !checkpoints.includes(loc))
                     .map(loc => (
-                      <option key={loc} value={loc}>{loc}</option>
+                      <option key={loc} value={loc} className="bg-gray-800 text-gray-200">{loc}</option>
                     ))
                   }
-                  <option value="Reached Nearest Hub">📍 Mark as Nearest Hub</option>
+                  <option value="Reached Nearest Hub" className="bg-gray-800 text-gray-200">📍 Mark as Nearest Hub</option>
                 </select>
               </div>
             </div>

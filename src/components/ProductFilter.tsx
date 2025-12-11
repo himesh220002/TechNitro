@@ -15,7 +15,7 @@ type SortOption = 'newest' | 'price-low' | 'price-high' | 'popular'
 export default function ProductFilter({ products }: Props) {
   const [query, setQuery] = useState('')
   const [sortBy, setSortBy] = useState<SortOption>('newest')
-  const [visibleCount, setVisibleCount] = useState(9)
+  const [visibleCount, setVisibleCount] = useState(10)
 
   const getSortedProducts = (items: Product[]) => {
     switch (sortBy) {
@@ -46,7 +46,7 @@ export default function ProductFilter({ products }: Props) {
 
   const handleLoadMore = () => {
     const remaining = sortedAndFiltered.length - visibleCount
-    const nextBatch = remaining >= 6 ? 6 : remaining
+    const nextBatch = remaining >= 5 ? 5 : remaining
     setVisibleCount(visibleCount + nextBatch)
   }
 
@@ -63,7 +63,7 @@ export default function ProductFilter({ products }: Props) {
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)
-              setVisibleCount(9)
+              setVisibleCount(10)
             }}
             className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-xl text-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
           />
@@ -77,10 +77,10 @@ export default function ProductFilter({ products }: Props) {
             onChange={(e) => setSortBy(e.target.value as SortOption)}
             className="w-full md:w-48 px-4 py-2 bg-gray-800 border border-gray-700 rounded-xl text-gray-200 focus:ring-2 focus:ring-purple-500 outline-none cursor-pointer"
           >
-            <option value="newest">Newest Arrivals</option>
-            <option value="price-low">Price: Low to High</option>
-            <option value="price-high">Price: High to Low</option>
-            <option value="popular">Most Popular</option>
+            <option value="newest" className="bg-gray-800 text-gray-200">Newest Arrivals</option>
+            <option value="price-low" className="bg-gray-800 text-gray-200">Price: Low to High</option>
+            <option value="price-high" className="bg-gray-800 text-gray-200">Price: High to Low</option>
+            <option value="popular" className="bg-gray-800 text-gray-200">Most Popular</option>
           </select>
         </div>
       </div>

@@ -28,7 +28,7 @@ export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false)
   const { itemCount } = useCart()
 
-  const [touchStartY, setTouchStartY] = useState<number | null>(null)
+
 
   // Check if user is admin based on role in user metadata
   const isAdmin = user?.user_metadata?.role === 'admin'
@@ -117,19 +117,7 @@ export default function Navbar() {
     window.location.href = '/login'
   }
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStartY(e.touches[0].clientY)
-  }
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (touchStartY !== null) {
-      const currentY = e.touches[0].clientY
-      if (touchStartY - currentY > 80) {
-        setIsOpen(false)
-        setTouchStartY(null)
-      }
-    }
-  }
 
   const navLinks = [
     { href: '/', label: 'Home', icon: <FaHome className="text-2xl" />, show: true },
@@ -143,10 +131,10 @@ export default function Navbar() {
     <header
       className={`fixed w-full top-0 z-50 transition-all duration-300 border-b ${isScrolled
         ? 'bg-gray-900/80 backdrop-blur-md border-gray-800 shadow-xl'
-        : 'bg-transparent border-gray-600/50'
+        : 'bg-gray-800/80 border-gray-600/50'
         }`}
     >
-      <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-16' : 'h-20'
+      <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-12 sm:h-16' : 'h-16 sm:h-20'
         }`}>
         {/* Logo */}
         <Link
@@ -154,7 +142,7 @@ export default function Navbar() {
           className="group relative flex items-center gap-3"
           aria-label="TechNitro Home"
         >
-          <div className="bg-white rounded-xl p-1.5 shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300">
+          <div className="bg-white rounded-lg p-1.5 shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-all duration-300">
             <Image
               src="/LogoTechNitroFlat.png"
               alt="TechNitro Logo"
@@ -340,8 +328,6 @@ export default function Navbar() {
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="fixed inset-y-0 right-0 w-80 bg-gray-900/95 backdrop-blur-xl border-l border-gray-800 shadow-2xl md:hidden z-50 flex flex-col"
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-gray-800">
@@ -453,12 +439,14 @@ export default function Navbar() {
       </AnimatePresence>
 
       {/* Mobile Menu Backdrop */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
-          onClick={() => setIsOpen(false)}
-        />
-      )}
-    </header>
+      {
+        isOpen && (
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
+            onClick={() => setIsOpen(false)}
+          />
+        )
+      }
+    </header >
   )
 }

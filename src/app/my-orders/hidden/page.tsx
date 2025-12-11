@@ -7,6 +7,7 @@ import type { Order } from '@/types/order'
 import Footer from '@/components/Footer'
 import OrderList from '../components/OrderList'
 import Link from 'next/link'
+import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function HiddenOrdersPage() {
     const supabase = useMemo(() => createClientComponentClient(), [])
@@ -45,14 +46,13 @@ export default function HiddenOrdersPage() {
     return (
         <>
             <Navbar />
-            <main className="max-w-6xl min-h-[500px] mx-auto p-3 sm:p-6 pt-24">
-                <div className='flex flex-col sm:flex-row gap-4 justify-between items-center mb-6'>
-                    <div className="flex items-center gap-4">
-                        <Link href="/my-orders" className="text-gray-400 hover:text-white">
-                            ← Back to Orders
-                        </Link>
-                        <h1 className="text-xl sm:text-3xl font-bold ">🙈 Hidden Orders</h1>
-                    </div>
+            <main className="max-w-6xl min-h-[500px] mt-0 sm:mt-20 mx-auto p-3 sm:p-6 pt-24">
+                <Breadcrumbs items={[
+                    { label: 'My Orders', href: '/my-orders' },
+                    { label: 'Hidden Orders', href: '/my-orders/hidden' },
+                ]} />
+                <div className='flex justify-start items-center m-6 mt-10'>
+                    <h1 className="text-xl sm:text-3xl font-bold ">🙈 Hidden Orders</h1>
                 </div>
 
                 <OrderList orders={orders} loading={loading} onUpdate={fetchOrders} />
