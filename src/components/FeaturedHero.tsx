@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation'
 //   'High-Res Audio by Dolby Atmos',
 // ]
 
+// slides store offsets (ms) from mount time to avoid server-side Date.now() usage
 const slides = [
   {
     name: 'NitroSound Pro',
@@ -25,7 +26,7 @@ const slides = [
     image: '/headphonepng.png',
     link: '/products',
     discount: 22,
-    endsIn: new Date(Date.now() + 1000 * 60 * 60 * 24 * 2), // 2 days from now
+    endsInOffset: 1000 * 60 * 60 * 24 * 2, // 2 days from mount
   },
   {
     name: 'RazorBass X',
@@ -38,7 +39,7 @@ const slides = [
     image: '/razorheadphone.png',
     link: '/products',
     discount: 25,
-    endsIn: new Date(Date.now() + 1000 * 60 * 60 * 5), // 5 hours
+    endsInOffset: 1000 * 60 * 60 * 5, // 5 hours from mount
   },
   {
     name: 'SonySoundAudio 100',
@@ -51,7 +52,7 @@ const slides = [
     image: '/sonyheadphone.png',
     link: '/products',
     discount: 20,
-    endsIn: new Date(Date.now() + 1000 * 60 * 60 * 12), // 12 hours
+    endsInOffset: 1000 * 60 * 60 * 12, // 12 hours from mount
   },
 ]
 
@@ -61,8 +62,8 @@ const images = ['/headphonepng.png', '/razorheadphone.png', '/sonyheadphone.png'
 export default function FeaturedHero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const current = slides[currentSlide]
-  const calculateTimeLeftFor = (endsIn: Date) => {
-    const difference = +endsIn - +new Date()
+  const calculateTimeLeftFor = (endsAt: number) => {
+    const difference = endsAt - Date.now()
     let tl = { hours: 0, minutes: 0, seconds: 0 }
 
     if (difference > 0) {
@@ -75,7 +76,8 @@ export default function FeaturedHero() {
     return tl
   }
 
-  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeftFor(slides[0].endsIn))
+  // initialize to zero to avoid SSR/CSR mismatch
+  const [timeLeft, setTimeLeft] = useState(() => ({ hours: 0, minutes: 0, seconds: 0 }))
 
 
   const router = useRouter();
@@ -83,12 +85,15 @@ export default function FeaturedHero() {
 
   useEffect(() => {
     // schedule an immediate update asynchronously to avoid calling setState synchronously in effect
+    // compute absolute end time on client and set timeLeft
+  // Type-safe access to endsInOffset
+  const endsAt = Date.now() + (current as { endsInOffset?: number }).endsInOffset!
     const updateNow = setTimeout(() => {
-      setTimeLeft(calculateTimeLeftFor(current.endsIn))
+      setTimeLeft(calculateTimeLeftFor(endsAt))
     }, 0)
 
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeftFor(current.endsIn))
+      setTimeLeft(calculateTimeLeftFor(endsAt))
     }, 1000)
 
     return () => {

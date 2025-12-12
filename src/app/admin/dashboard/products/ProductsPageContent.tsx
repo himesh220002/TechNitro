@@ -8,7 +8,6 @@ import AdminProductCard from '@/components/dashboard/AdminProductCard'
 import SpecsModal from '@/components/SpecsModal'
 import { Plus, Search, X } from 'lucide-react'
 import { toast } from 'react-hot-toast'
-import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
@@ -37,8 +36,27 @@ export default function ProductsPageContent() {
         specs: {} as Record<string, string>,
     })
 
+    // declare fetchProducts before using it in effects to satisfy react-hooks lint
+    const fetchProducts = async () => {
+        setLoading(true)
+        const res = await fetch('/api/products')
+        const data = await res.json()
+        if (Array.isArray(data)) {
+            setProducts(data)
+        } else if (data && Array.isArray((data as unknown as { products?: Product[] }).products)) {
+            setProducts((data as unknown as { products?: Product[] }).products || [])
+        } else {
+            console.error('Unexpected /api/products response:', data)
+            setProducts([])
+        }
+        setLoading(false)
+    }
+
     useEffect(() => {
-        fetchProducts()
+        // call async fetch from inside effect
+        ;(async () => {
+            await fetchProducts()
+        })()
     }, [])
 
     // Handle scroll to product when edit param is present
@@ -58,20 +76,7 @@ export default function ProductsPageContent() {
         }
     }, [searchParams, products])
 
-    const fetchProducts = async () => {
-        setLoading(true)
-        const res = await fetch('/api/products')
-        const data = await res.json()
-        if (Array.isArray(data)) {
-            setProducts(data)
-        } else if (data && Array.isArray((data as unknown as { products?: Product[] }).products)) {
-            setProducts((data as unknown as { products?: Product[] }).products || [])
-        } else {
-            console.error('Unexpected /api/products response:', data)
-            setProducts([])
-        }
-        setLoading(false)
-    }
+    
 
     const handleAddProduct = async () => {
         setStatus('loading')
