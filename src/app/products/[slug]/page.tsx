@@ -117,6 +117,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
             <div className=" space-y-2 sm:space-y-6">
               <h1 className=" text-xl sm:text-4xl font-bold font-display text-white">{product.name}</h1>
               <p className="text-sm uppercase tracking-wide text-indigo-400 font-sans">{product.category}</p>
+              
               <Ratings rating={product.rating ?? 3.0} />
               <Highlights product={product} />
               <div className='flex justify-between'>
@@ -124,7 +125,7 @@ export default async function ProductPage({ params }: { params: { slug: string }
 
                   <p className="text-xl sm:text-4xl font-extrabold font-display bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent">₹{product.price.toLocaleString('en-IN')}</p>
                   <p className="text-sm text-gray-400 font-sans">EMI starts at ₹{Math.round(product.price / 12).toLocaleString('en-IN')}/mo</p>
-                  <div className="flex items-center gap-2 mt-2 font-sans">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 mt-2 font-sans">
                     {product.inventory > 5 ? (
                       <span className="px-2 py-1 bg-green-500/10 text-green-400 text-xs font-bold rounded border border-green-500/20">
                         In Stock
@@ -141,14 +142,14 @@ export default async function ProductPage({ params }: { params: { slug: string }
                     <span className="text-xs text-gray-500">Order in 2h 15m for delivery tomorrow</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 mb-6">
+                {/* <div className="flex items-center gap-4 mb-6">
                   <div className="flex items-center gap-1 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20">
                     <Star className="w-4 h-4 text-yellow-500 fill-current" />
                     <span className="text-yellow-500 font-bold">{(product.rating || 0).toFixed(1)}</span>
                     <span className="text-gray-400 text-sm">({product.review_count || 0} reviews)</span>
                   </div>
-                </div>
-                <div className="mt-4 md:hidden">
+                </div> */}
+                <div className=" md:hidden">
                   <ProductActions product={product} />
                 </div>
               </div>

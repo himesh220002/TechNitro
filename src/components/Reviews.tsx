@@ -163,7 +163,7 @@ export default function Reviews({ rating, reviewCount, productId }: { rating: nu
                 className="w-full flex items-center justify-between py-4 text-left group"
             >
                 <div className="flex items-center gap-4">
-                    <h2 className="text-2xl font-bold text-white group-hover:text-purple-400 transition-colors">Customer Reviews</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-white group-hover:text-purple-400 transition-colors"><span className='hidden sm:inline'>Customer</span> Reviews</h2>
                     <div className="flex items-center gap-1 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/20">
                         <Star className="w-4 h-4 text-yellow-500 fill-current" />
                         <span className="text-yellow-500 font-bold">{Math.min(5, averageRating).toFixed(1)}</span>

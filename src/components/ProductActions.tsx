@@ -42,9 +42,9 @@ export default function ProductActions({ product }: { product: Product }) {
   }
 
   return (
-    <div className="mt-0 sm:mt-8 flex gap-2 sm:gap-4">
+    <div className="mt-0 md:mt-8 flex flex-col md:flex-row gap-2 sm:gap-4">
       <button
-        className={`relative flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-lg font-semibold rounded-xl transition-all duration-300 overflow-hidden ${product.inventory > 0
+        className={`relative flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3 text-sm sm:text-lg font-semibold rounded-xl transition-all duration-300 overflow-hidden ${product.inventory > 0
           ? isAdded
             ? 'bg-green-600 text-white'
             : 'bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-lg hover:shadow-indigo-500/30'
@@ -69,15 +69,15 @@ export default function ProductActions({ product }: { product: Product }) {
       </button>
 
       <button
-        className={`flex-1 flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-3 text-sm sm:text-lg font-semibold rounded-xl transition-all duration-300 ${product.inventory > 0
+        className={`flex-1 flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3 text-sm sm:text-lg font-semibold rounded-xl transition-all duration-300 ${product.inventory > 0
           ? 'bg-white text-black hover:bg-gray-100 hover:shadow-lg hover:shadow-white/10'
           : 'bg-gray-800 text-gray-500 cursor-not-allowed border border-gray-700'
           }`}
         onClick={handleBuyNow}
         disabled={product.inventory <= 0}
       >
-        <ShoppingCart className="w-5 h-5 sm:hidden" />
-        <span>{product.inventory > 0 ? 'Buy Now' : 'Out of stock'}</span>
+        {/* <ShoppingCart className="w-5 h-5 sm:hidden" /> */}
+        <span>{product.inventory > 0 ? 'Buy' : 'Out of stock'}</span>
       </button>
     </div>
   )
