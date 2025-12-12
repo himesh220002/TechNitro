@@ -61,6 +61,9 @@ export async function POST(req: Request) {
         pin: body.pin,
         paymentMethod: body.paymentMethod,
         payment: body.payment,
+        // coupon fields (if provided from client)
+        coupon_code: body.coupon_code ?? null,
+        discount: body.discount ?? 0,
         deliveryCharge: body.deliveryCharge,
         products: body.products,
         shippingEvents: [],

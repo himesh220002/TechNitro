@@ -44,9 +44,8 @@ export default function OrderConfirmationPage() {
 
   // Compute totals from product snapshots so we can show discount line clearly
   const itemsTotal = order.products.reduce((s, p) => s + p.price * p.quantity, 0)
-  const hasDiscount = (order.discount ?? 0) > 0 || !!order.coupon_code
-  const discountAmount = hasDiscount ? (order.discount ?? 0) : 0
-  const taxableIncluded = Math.max(0, itemsTotal - discountAmount) // tax-included amount (product prices include GST)
+  const discountAmount = order.discount ?? 0
+  const taxableIncluded = Math.max(0, itemsTotal - discountAmount) // tax-included amount (products prices include GST)
   const gstAmount = Math.round(taxableIncluded - taxableIncluded / (1 + gstRate))
 
   return (
@@ -103,7 +102,7 @@ export default function OrderConfirmationPage() {
         <div className="border-t border-gray-300 pt-4 text-right">
           <div className="text-right text-sm pt-4 text-gray-700 space-y-1">
             <p>Items Total: ₹{itemsTotal.toLocaleString('en-IN')}</p>
-            {hasDiscount && (
+            {discountAmount > 0 && (
               <p>Discount ({order.coupon_code ?? 'promo'}): -₹{discountAmount.toLocaleString('en-IN')}</p>
             )}
             <p>Included GST (approx.): ₹{gstAmount.toLocaleString('en-IN')}</p>
@@ -230,9 +229,9 @@ export default function OrderConfirmationPage() {
                         </tbody>
                         </table>
                         <p class="subtotal">Items Total: ₹${itemsTotal.toLocaleString('en-IN')}</p>
-                        ${hasDiscount ? `<p class="subtotal">Discount (${order.coupon_code ?? 'promo'}): -₹${discountAmount.toLocaleString('en-IN')}</p>` : ''}
+                        ${discountAmount > 0 ? `<p class="subtotal">Discount (${order.coupon_code ?? 'promo'}): -₹${discountAmount.toLocaleString('en-IN')}</p>` : ''}
                         <p class="subtotal">Included GST (approx.): ₹${gstAmount.toLocaleString('en-IN')}</p>
-                        <p class="subtotal">Delivery Charges: ₹${deliveryCharge.toLocaleString('en-IN')}</p>
+                        <p class="subtotal">Delivery Charges: ₹${order.deliveryCharge.toLocaleString('en-IN')}</p>
                         <p class="total">Total Paid: ₹${order.payment.toLocaleString('en-IN')}</p>
 
                         <p style="font-size: 12px; color: #666; margin-top: 2rem;">

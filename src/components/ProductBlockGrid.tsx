@@ -5,7 +5,7 @@ const blocks = [
     title: 'Catch Big <br><strong>Deals</strong> on the <br>Cameras',
     description: '',
     imageUrl: '/camerapng.png',
-    link: '/products/canon-eos-r5',
+    link: '/products/canon-eos-r50',
     discount: 20,
   },
   {
