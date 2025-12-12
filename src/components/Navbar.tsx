@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Menu, X, User as UserIcon, Settings, LogOut, ShieldCheck } from 'lucide-react'
+import { Menu, X, User as UserIcon, Settings, LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { FaCartShopping } from "react-icons/fa6"
 import { User } from '@supabase/supabase-js'
@@ -18,6 +18,7 @@ import CartPreview from './CartPreview'
 import NotificationsDropdown from './NotificationsDropdown'
 import { useCart } from '@/context/CartContext'
 import { motion, AnimatePresence } from 'framer-motion'
+import { createPortal } from 'react-dom'
 
 export default function Navbar() {
   const supabase = createClientComponentClient()
@@ -319,134 +320,137 @@ export default function Navbar() {
         </button>
       </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed inset-y-0 right-0 w-80 bg-gray-900/95 backdrop-blur-xl border-l border-gray-800 shadow-2xl md:hidden z-50 flex flex-col"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-800">
-              <span className="text-lg font-bold text-white">Menu</span>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
-                aria-label="Close menu"
+      {/* Mobile Menu (rendered in a portal so fixed positioning is viewport-relative) */}
+      {typeof window !== 'undefined' && createPortal(
+        <>
+          <AnimatePresence>
+            {isOpen && (
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="fixed inset-y-0 right-0 w-80 bg-gray-900/95 backdrop-blur-xl border-l border-gray-800 shadow-2xl md:hidden z-50 flex flex-col"
               >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              {/* User Section (Mobile) */}
-              {user ? (
-                <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-gray-800">
-                  <Image
-                    src={avatarUrl}
-                    width={48}
-                    height={48}
-                    alt="User avatar"
-                    className="w-12 h-12 rounded-full ring-2 ring-purple-500/20"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-white truncate">
-                      {user.user_metadata?.name || 'User'}
-                    </p>
-                    <p className="text-xs text-gray-400 truncate">{user.email}</p>
-                  </div>
+                {/* Header */}
+                <div className="flex items-center justify-between p-6 border-b border-gray-800">
+                  <span className="text-lg font-bold text-white">Menu</span>
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-full transition-all"
+                    aria-label="Close menu"
+                  >
+                    <X size={20} />
+                  </button>
                 </div>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center justify-center w-full py-4 text-sm font-bold text-white bg-purple-600 rounded-xl shadow-lg shadow-purple-500/20"
-                >
-                  Login / Sign Up
-                </Link>
-              )}
 
-              {/* Navigation Links */}
-              <div className="space-y-2">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">Navigation</p>
-                {navLinks.map(({ href, label, icon }) => (
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  {/* User Section (Mobile) */}
+                  {user ? (
+                    <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-gray-800">
+                      <Image
+                        src={avatarUrl}
+                        width={48}
+                        height={48}
+                        alt="User avatar"
+                        className="w-12 h-12 rounded-full ring-2 ring-purple-500/20"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-white truncate">
+                          {user.user_metadata?.name || 'User'}
+                        </p>
+                        <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <Link
+                      href="/login"
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center justify-center w-full py-4 text-sm font-bold text-white bg-purple-600 rounded-xl shadow-lg shadow-purple-500/20"
+                    >
+                      Login / Sign Up
+                    </Link>
+                  )}
+
+                  {/* Navigation Links */}
+                  <div className="space-y-2">
+                    <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">Navigation</p>
+                    {navLinks.map(({ href, label, icon }) => (
+                      <Link
+                        key={href}
+                        href={href}
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-4 px-4 py-3.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group"
+                      >
+                        <div className="text-gray-400 group-hover:text-purple-400 transition-colors">
+                          {icon}
+                        </div>
+                        <span className="font-medium">{label}</span>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Cart Link */}
                   <Link
-                    key={href}
-                    href={href}
+                    href="/cart"
                     onClick={() => setIsOpen(false)}
                     className="flex items-center gap-4 px-4 py-3.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group"
                   >
-                    <div className="text-gray-400 group-hover:text-purple-400 transition-colors">
-                      {icon}
+                    <div className="relative text-gray-400 group-hover:text-purple-400 transition-colors">
+                      <IoMdCart className="text-2xl" />
+                      {itemCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-purple-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-gray-900">
+                          {itemCount}
+                        </span>
+                      )}
                     </div>
-                    <span className="font-medium">{label}</span>
+                    <span className="font-medium">Shopping Cart</span>
                   </Link>
-                ))}
-              </div>
 
-              {/* Cart Link */}
-              <Link
-                href="/cart"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-4 px-4 py-3.5 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all group"
-              >
-                <div className="relative text-gray-400 group-hover:text-purple-400 transition-colors">
-                  <IoMdCart className="text-2xl" />
-                  {itemCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-purple-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center ring-2 ring-gray-900">
-                      {itemCount}
-                    </span>
+                  {/* Account Links */}
+                  {user && (
+                    <div className="space-y-2 pt-6 border-t border-gray-800">
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">Account</p>
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-4 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                      >
+                        <UserIcon size={20} />
+                        <span>Profile</span>
+                      </Link>
+                      <Link
+                        href="/settings"
+                        onClick={() => setIsOpen(false)}
+                        className="flex items-center gap-4 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                      >
+                        <Settings size={20} />
+                        <span>Settings</span>
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-4 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all mt-2"
+                      >
+                        <LogOut size={20} />
+                        <span>Logout</span>
+                      </button>
+                    </div>
                   )}
                 </div>
-                <span className="font-medium">Shopping Cart</span>
-              </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-              {/* Account Links */}
-              {user && (
-                <div className="space-y-2 pt-6 border-t border-gray-800">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 px-2">Account</p>
-                  <Link
-                    href="/profile"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-4 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                  >
-                    <UserIcon size={20} />
-                    <span>Profile</span>
-                  </Link>
-                  <Link
-                    href="/settings"
-                    onClick={() => setIsOpen(false)}
-                    className="flex items-center gap-4 px-4 py-3 text-gray-300 hover:text-white hover:bg-white/5 rounded-xl transition-all"
-                  >
-                    <Settings size={20} />
-                    <span>Settings</span>
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-4 w-full px-4 py-3 text-red-400 hover:bg-red-500/10 rounded-xl transition-all mt-2"
-                  >
-                    <LogOut size={20} />
-                    <span>Logout</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Mobile Menu Backdrop */}
-      {
-        isOpen && (
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
-            onClick={() => setIsOpen(false)}
-          />
-        )
-      }
+          {/* Mobile Menu Backdrop */}
+          {isOpen && (
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm md:hidden z-40"
+              onClick={() => setIsOpen(false)}
+            />
+          )}
+        </>,
+        document.body
+      )}
     </header >
   )
 }

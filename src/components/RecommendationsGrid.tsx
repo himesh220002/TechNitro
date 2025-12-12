@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import { Product } from '@/types/product'
 import ProductCard from '@/components/ProductCard'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -11,25 +11,25 @@ interface RecommendationsGridProps {
 }
 
 export default function RecommendationsGrid({ initialProducts }: RecommendationsGridProps) {
-    const [products, setProducts] = useState<Product[]>(initialProducts)
-    const [filteredProducts, setFilteredProducts] = useState<Product[]>(initialProducts)
+    // products are static for this component - use the prop directly
+    const products = initialProducts
     const [category, setCategory] = useState('all')
     const [sortBy, setSortBy] = useState('recommended')
     const [visibleCount, setVisibleCount] = useState(8)
     const [loading, setLoading] = useState(false)
 
     // Mock personalization - in a real app, this would come from user context/history
-    const [userInterests, setUserInterests] = useState<string[]>([])
-
-    useEffect(() => {
-        // Simulate checking local storage for viewed categories
-        const viewed = localStorage.getItem('viewedCategories')
-        if (viewed) {
-            setUserInterests(JSON.parse(viewed))
+    const [userInterests] = useState<string[]>(() => {
+        if (typeof window === 'undefined') return []
+        try {
+            const viewed = localStorage.getItem('viewedCategories')
+            return viewed ? JSON.parse(viewed) : []
+        } catch {
+            return []
         }
-    }, [])
+    })
 
-    useEffect(() => {
+    const filteredProducts = useMemo(() => {
         let result = [...products]
 
         // Filter
@@ -46,12 +46,10 @@ export default function RecommendationsGrid({ initialProducts }: Recommendations
                 result.sort((a, b) => b.price - a.price)
                 break
             case 'newest':
-                // Mock newest - using ID or random for now as we don't have created_at
                 result.sort((a, b) => b.id.localeCompare(a.id))
                 break
             case 'recommended':
             default:
-                // Mock recommendation logic: prioritize items matching user interests
                 if (userInterests.length > 0) {
                     result.sort((a, b) => {
                         const aMatch = userInterests.includes(a.category) ? 1 : 0
@@ -62,7 +60,7 @@ export default function RecommendationsGrid({ initialProducts }: Recommendations
                 break
         }
 
-        setFilteredProducts(result)
+        return result
     }, [products, category, sortBy, userInterests])
 
     const loadMore = () => {
@@ -88,7 +86,7 @@ export default function RecommendationsGrid({ initialProducts }: Recommendations
                         Hand-picked products based on your style
                     </h1>
                     <p className="text-gray-400 text-lg">
-                        We've analyzed your preferences to bring you the best tech gear that matches your needs.
+                        We&pos;ve analyzed your preferences to bring you the best tech gear that matches your needs.
                     </p>
                 </div>
             </div>

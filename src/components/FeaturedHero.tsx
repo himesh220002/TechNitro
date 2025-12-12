@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Timer } from 'lucide-react'
+// Timer icon not required here
 
 
 // const features = [
@@ -61,34 +61,40 @@ const images = ['/headphonepng.png', '/razorheadphone.png', '/sonyheadphone.png'
 export default function FeaturedHero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const current = slides[currentSlide]
-  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 })
+  const calculateTimeLeftFor = (endsIn: Date) => {
+    const difference = +endsIn - +new Date()
+    let tl = { hours: 0, minutes: 0, seconds: 0 }
+
+    if (difference > 0) {
+      tl = {
+        hours: Math.floor((difference / (1000 * 60 * 60))),
+        minutes: Math.floor((difference / 1000 / 60) % 60),
+        seconds: Math.floor((difference / 1000) % 60),
+      }
+    }
+    return tl
+  }
+
+  const [timeLeft, setTimeLeft] = useState(() => calculateTimeLeftFor(slides[0].endsIn))
 
 
   const router = useRouter();
   const rafRef = useRef<number | null>(null)
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
-      const difference = +current.endsIn - +new Date()
-      let timeLeft = { hours: 0, minutes: 0, seconds: 0 }
-
-      if (difference > 0) {
-        timeLeft = {
-          hours: Math.floor((difference / (1000 * 60 * 60))),
-          minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60),
-        }
-      }
-      return timeLeft
-    }
-
-    setTimeLeft(calculateTimeLeft())
+    // schedule an immediate update asynchronously to avoid calling setState synchronously in effect
+    const updateNow = setTimeout(() => {
+      setTimeLeft(calculateTimeLeftFor(current.endsIn))
+    }, 0)
 
     const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft())
+      setTimeLeft(calculateTimeLeftFor(current.endsIn))
     }, 1000)
 
-    return () => clearInterval(timer)
+    return () => {
+      clearTimeout(updateNow)
+      clearInterval(timer)
+    }
   }, [current])
 
   useEffect(() => {
