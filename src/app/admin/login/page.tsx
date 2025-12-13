@@ -5,8 +5,12 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 
+
+import { useSearchParams } from 'next/navigation'
+
 export default function AdminLoginPage() {
   const supabase = createClientComponentClient()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -38,14 +42,19 @@ export default function AdminLoginPage() {
       while (Date.now() - start < 3000) { // 3s timeout
         const s = await supabase.auth.getSession()
         session = s.data?.session
-        if (session) break
+        // Also verifying user to be extra sure
+        const u = await supabase.auth.getUser()
+        if (session && u.data.user) break
         await new Promise((r) => setTimeout(r, 200))
       }
 
       console.log('admin login: signIn result user=', user?.id, 'session=', !!session)
 
       // Proceed to admin dashboard — middleware should now see the session.
-      window.location.href = '/admin'
+      const returnTo = searchParams?.get('returnTo')
+      const target = returnTo && returnTo.startsWith('/admin') ? returnTo : '/admin/dashboard'
+      window.location.href = target
+
     } catch (err) {
       setError('An error occurred')
       console.error("new err : ", err)
@@ -56,7 +65,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md m-2 sm:m-0 p-4 sm:p-8 space-y-6 bg-gray-800/50 backdrop-blur-lg rounded-2xl shadow-xl border border-gray-700"
@@ -112,8 +121,8 @@ export default function AdminLoginPage() {
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
                 Signing in...
               </span>
@@ -130,11 +139,11 @@ export default function AdminLoginPage() {
           </div>
 
           <p className="text-center text-gray-500 text-sm">
-              Don&apos;t have an account?{' '}
-              <Link href="/admin/register" className="text-indigo-400 hover:text-indigo-300">
-                Register as Admin
-              </Link>
-            </p>
+            Don&apos;t have an account?{' '}
+            <Link href="/admin/register" className="text-indigo-400 hover:text-indigo-300">
+              Register as Admin
+            </Link>
+          </p>
         </form>
       </motion.div>
     </div>
