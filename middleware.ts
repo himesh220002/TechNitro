@@ -43,8 +43,8 @@ export async function middleware(req: NextRequest) {
   // expose whether middleware considered the request admin-authorized
   res.headers.set('x-admin-allowed', isAdmin ? '1' : '0')
 
-  // ✅ Only admins can access /admin/*
-  if (path.startsWith('/admin')) {
+  // ✅ Only admins can access /admin/* except the public login page
+  if (path.startsWith('/admin') && !path.startsWith('/admin/login')) {
     if (!user || role !== 'admin') {
       // preserve the original path so user can be returned after login
       const loginUrl = new URL('/admin/login', req.url)
