@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/admin-supabase-server'
 
 // PUT /api/admin/coupons/[id]
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const body = await req.json()
         const { id } = await params
@@ -24,7 +24,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 }
 
 // DELETE /api/admin/coupons/[id]
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const { id } = await params
 

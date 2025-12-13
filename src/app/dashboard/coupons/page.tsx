@@ -17,16 +17,16 @@ export default function CouponsPage() {
     const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null)
     const [search, setSearch] = useState('')
 
+    async function loadCoupons() {
+        initializeCoupons()
+        const allCoupons = await getCoupons()
+        setCoupons(allCoupons)
+        setStats(await getCouponStats())
+    }
+
     useEffect(() => {
         loadCoupons()
     }, [])
-
-    const loadCoupons = () => {
-        initializeCoupons()
-        const allCoupons = getCoupons()
-        setCoupons(allCoupons)
-        setStats(getCouponStats())
-    }
 
     const handleDelete = (id: string) => {
         if (confirm('Are you sure you want to delete this coupon?')) {
@@ -200,12 +200,13 @@ export default function CouponsPage() {
             </div>
 
             {/* Coupon Form Modal */}
-            {showForm && (
-                <CouponForm
-                    coupon={editingCoupon}
-                    onClose={handleFormClose}
-                />
-            )}
+                        {showForm && (
+                            <CouponForm
+                                coupon={editingCoupon}
+                                onClose={handleFormClose}
+                                onSuccess={loadCoupons}
+                            />
+                        )}
         </GradientBackground>
     )
 }
