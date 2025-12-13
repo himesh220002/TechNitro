@@ -9,7 +9,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     // Redirect to new dashboard location
-    router.replace('/admin/dashboard/products')
+    router.replace('/admin/dashboard')
   }, [router])
 
   return (

@@ -276,7 +276,7 @@ export default function CheckoutClient() {
             // Track coupon usage
             if (appliedCouponCode) {
               const userId = localStorage.getItem('userId') || ''
-              applyCouponToOrder(appliedCouponCode, userId, orderId)
+              await applyCouponToOrder(appliedCouponCode, userId, orderId)
             }
 
             router.push(`/orders/${orderId}/confirmation`)

@@ -12,9 +12,10 @@ import SpecsModal from '@/components/SpecsModal'
 interface AdminProductCardProps {
   product: Product
   highlighted?: boolean
+  isEditingEnabled?: boolean
 }
 
-export default function AdminProductCard({ product, highlighted = false }: AdminProductCardProps) {
+export default function AdminProductCard({ product, highlighted = false, isEditingEnabled = false }: AdminProductCardProps) {
   const [editing, setEditing] = useState(false)
   const [showSpecsModal, setShowSpecsModal] = useState(false)
   const [form, setForm] = useState<Product>({
@@ -170,15 +171,24 @@ export default function AdminProductCard({ product, highlighted = false }: Admin
             <div className="flex gap-2 pt-2 border-t border-gray-800/50">
               <button
                 onClick={() => setEditing(true)}
-                className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-gray-800 text-gray-300 transition-all text-sm font-medium group/btn lg:opacity-80 lg:hover:opacity-100 lg:hover:bg-purple-600/20 lg:hover:text-purple-400"
+                disabled={!isEditingEnabled}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg transition-all text-sm font-medium group/btn ${isEditingEnabled
+                  ? 'bg-gray-800 text-gray-300 lg:hover:bg-purple-600/20 lg:hover:text-purple-400 cursor-pointer lg:opacity-80 lg:hover:opacity-100'
+                  : 'bg-gray-800/50 text-gray-600 cursor-not-allowed'
+                  }`}
+                title={isEditingEnabled ? "Edit Product" : "Edits Locked"}
               >
-                <Edit size={16} className="group-hover/btn:scale-110 transition-transform" />
+                <Edit size={16} className={`transition-transform ${isEditingEnabled ? 'group-hover/btn:scale-110' : ''}`} />
                 Edit
               </button>
               <button
                 onClick={handleDelete}
-                className="flex items-center justify-center p-2 rounded-lg bg-gray-800 text-gray-300 transition-all lg:opacity-80 lg:hover:opacity-100 lg:hover:bg-red-500/20 lg:hover:text-red-400"
-                title="Delete Product"
+                disabled={!isEditingEnabled}
+                className={`flex items-center justify-center p-2 rounded-lg transition-all ${isEditingEnabled
+                  ? 'bg-gray-800 text-gray-300 lg:hover:bg-red-500/20 lg:hover:text-red-400 cursor-pointer lg:opacity-80 lg:hover:opacity-100'
+                  : 'bg-gray-800/50 text-gray-600 cursor-not-allowed'
+                  }`}
+                title={isEditingEnabled ? "Delete Product" : "Edits Locked"}
               >
                 <Trash2 size={16} />
               </button>

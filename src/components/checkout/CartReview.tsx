@@ -43,7 +43,7 @@ export default function CartReview({
         setUserId(uid)
     }, [])
 
-    const applyCoupon = () => {
+    const applyCoupon = async () => {
         if (!couponCode) {
             toast.error('Please enter a coupon code')
             return
@@ -51,8 +51,8 @@ export default function CartReview({
 
         setIsApplying(true)
 
-        setTimeout(() => {
-            const validation = validateCoupon(couponCode, userId)
+        try {
+            const validation = await validateCoupon(couponCode, userId)
 
             if (validation.valid && validation.coupon) {
                 const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
@@ -65,8 +65,12 @@ export default function CartReview({
                 setAppliedCouponCode('')
                 toast.error(validation.message)
             }
+        } catch (error) {
+            console.error(error)
+            toast.error('Failed to validate coupon')
+        } finally {
             setIsApplying(false)
-        }, 600)
+        }
     }
 
     return (

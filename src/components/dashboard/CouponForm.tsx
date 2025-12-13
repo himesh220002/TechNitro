@@ -9,9 +9,10 @@ import { toast } from 'react-hot-toast'
 interface CouponFormProps {
     coupon: Coupon | null
     onClose: () => void
+    onSuccess: () => void
 }
 
-export default function CouponForm({ coupon, onClose }: CouponFormProps) {
+export default function CouponForm({ coupon, onClose, onSuccess }: CouponFormProps) {
     const [formData, setFormData] = useState({
         code: '',
         discount: 5,
@@ -38,15 +39,17 @@ export default function CouponForm({ coupon, onClose }: CouponFormProps) {
         try {
             if (coupon) {
                 // Update existing coupon
-                updateCoupon(coupon.id, formData)
+                await updateCoupon(coupon.id, formData)
                 toast.success('Coupon updated successfully!')
             } else {
                 // Add new coupon
-                addCoupon(formData)
+                await addCoupon(formData)
                 toast.success('Coupon created successfully!')
             }
             onClose()
+            onSuccess()
         } catch (error: any) {
+            console.error(error)
             toast.error(error.message || 'Failed to save coupon')
         } finally {
             setSaving(false)
