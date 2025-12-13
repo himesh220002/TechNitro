@@ -1,16 +1,24 @@
 // src/app/admin/login/page.tsx
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 
 
-import { useSearchParams } from 'next/navigation'
 
 export default function AdminLoginPage() {
   const supabase = createClientComponentClient()
-  const searchParams = useSearchParams()
+  const [returnToParam, setReturnToParam] = useState<string | null>(null)
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      setReturnToParam(params.get('returnTo'))
+    } catch (e) {
+      // ignore in non-browser environments
+    }
+  }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -51,7 +59,7 @@ export default function AdminLoginPage() {
       console.log('admin login: signIn result user=', user?.id, 'session=', !!session)
 
       // Proceed to admin dashboard — middleware should now see the session.
-      const returnTo = searchParams?.get('returnTo')
+      const returnTo = returnToParam
       const target = returnTo && returnTo.startsWith('/admin') ? returnTo : '/admin/dashboard'
       window.location.href = target
 
