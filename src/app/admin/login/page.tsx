@@ -29,6 +29,22 @@ export default function AdminLoginPage() {
         return
       }
 
+      // Wait for the auth session/cookies to be available to the server.
+      // Sometimes the client-side sign in writes cookies asynchronously and
+      // an immediate redirect can arrive at the server before cookies are present,
+      // causing middleware to still see the user as unauthenticated.
+      const start = Date.now()
+      let session: unknown = null
+      while (Date.now() - start < 3000) { // 3s timeout
+        const s = await supabase.auth.getSession()
+        session = s.data?.session
+        if (session) break
+        await new Promise((r) => setTimeout(r, 200))
+      }
+
+      console.log('admin login: signIn result user=', user?.id, 'session=', !!session)
+
+      // Proceed to admin dashboard — middleware should now see the session.
       window.location.href = '/admin'
     } catch (err) {
       setError('An error occurred')
