@@ -488,7 +488,7 @@ export default function AdminOrdersPage() {
     <DashboardWrapper>
       <Breadcrumbs items={[{ label: 'Dashboard', href: '/admin/dashboard' }, { label: 'Orders' }]} />
 
-      <div className="w-full flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6 border border-gray-800 p-4 rounded-xl">
+      <div className="w-full flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6 border border-gray-800  p-4 rounded-xl">
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-white">Orders Management</h1>
           <div className="flex gap-2">
@@ -500,7 +500,7 @@ export default function AdminOrdersPage() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.key
+                className={`flex items-center gap-2 px-3 sm:px-4 py-1 sm:py-2 rounded-lg text-sm font-medium transition-all ${activeTab === tab.key
                   ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/25'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-300'
                   }`}
@@ -707,7 +707,7 @@ export default function AdminOrdersPage() {
 
             return (
 
-              <div key={order.id} className="flex flex-col sm:flex-row gap-5 justify-between  items-start border border-gray-500 p-4 rounded bg-gradient-to-br from-cyan-500/40 via-black/30 to-black/50 shadow-sm">
+              <div key={order.id} className="flex flex-col md:flex-row gap-5 justify-between  items-start border border-gray-500 p-3 sm:p-4 rounded bg-gradient-to-br from-cyan-500/40 via-black/30 to-black/50 shadow-sm">
                 <div>
                   <div className=" flex gap-2 text-xl font-semibold text-white">
                     <span className="text-green-500">Order#</span><span>{order.id}</span>
@@ -803,7 +803,7 @@ export default function AdminOrdersPage() {
                         </div>
                       ))}
                     </div>
-                    <div className="mt-2 flex items-center justify-between text-sm">
+                    <div className="mt-2 flex flex-col sm:flex-row items-start sm:items-center sm:justify-between text-sm">
                       <p className="text-indigo-400">Subtotal: ₹{(order.payment - order.deliveryCharge).toLocaleString('en-IN')}</p>
                       <p className="text-gray-400">Delivery: ₹{order.deliveryCharge}</p>
                       <p className="font-bold text-indigo-300">Total: ₹{order.payment.toLocaleString('en-IN')}</p>
@@ -813,9 +813,9 @@ export default function AdminOrdersPage() {
 
 
 
-                <div className=" flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className=" flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
 
-                  <div className="flex items-start gap-2">
+                  <div className="flex flex-col xl:flex-row items-start gap-2">
                     <div className='flex flex-col gap-2'>
 
 
@@ -1003,7 +1003,7 @@ export default function AdminOrdersPage() {
                               fetchUnreadCounts(orders.map(o => o.id))
                             }
                           }}
-                          className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm rounded font-semibold text-center transition-colors flex items-center justify-center gap-2"
+                          className="w-full px-4 py-2 bg-indigo-600/50 backdrop-blur-sm hover:bg-indigo-700 text-white text-sm rounded font-semibold text-center transition-colors flex items-center justify-center gap-2"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
@@ -1015,9 +1015,7 @@ export default function AdminOrdersPage() {
                             </span>
                           )}
                         </button>
-                        <p className="text-xs text-gray-400 mt-1">
-                          Customer can send support messages from tracking page
-                        </p>
+
                       </div>
 
 

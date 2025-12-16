@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
 import { Order, ProductInOrder } from '@/types/order'
 // OrderActions intentionally not used here
-import { ChevronDown, ChevronUp, Package, Truck, CheckCircle, XCircle, Clock, MapPinHouse, Ship, Phone } from 'lucide-react'
+import { ChevronDown, ChevronUp, Package, Truck, CheckCircle, XCircle, Clock, MapPinHouse, Ship, Phone, MessageCircle, MessageCircleMore } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface OrderRowProps {
@@ -108,6 +108,16 @@ export default function OrderRow({ order, onUpdate }: OrderRowProps) {
                                 })}
                             </p>
                         </div>
+                        <button
+                            onClick={() => router.push(`/track-order?id=${order.id}&openChat=1`)}
+                            className="relative px-3 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
+                        >
+                            <MessageCircleMore size={14} />
+                            Chat
+                            {hasNewAdminMessage && (
+                                <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-semibold leading-none text-white bg-red-600 rounded-full">1</span>
+                            )}
+                        </button>
                     </div>
 
                     <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
@@ -252,16 +262,7 @@ export default function OrderRow({ order, onUpdate }: OrderRowProps) {
                                     >
                                         View Invoice
                                     </button>
-                                    <button
-                                        onClick={() => router.push(`/track-order?id=${order.id}&openChat=1`)}
-                                        className="relative px-3 py-2 text-sm font-medium text-gray-300 bg-gray-800 hover:bg-gray-700 rounded-lg transition-colors flex items-center gap-2"
-                                    >
-                                        <Phone size={14} />
-                                        Messages
-                                        {hasNewAdminMessage && (
-                                            <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-semibold leading-none text-white bg-red-600 rounded-full">1</span>
-                                        )}
-                                    </button>
+
                                 </div>
 
                                 {['Order Placed', 'Order Confirmed', 'Packed'].includes(order.orderStatus) && (
