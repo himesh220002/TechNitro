@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import {
     LayoutDashboard,
@@ -13,6 +14,7 @@ import {
     ShoppingBag,
     X
 } from 'lucide-react'
+import { createBrowserClient } from '@/lib/supabase/client'
 
 const navItems = [
     { icon: LayoutDashboard, label: 'Overview', href: '/admin/dashboard' },
@@ -31,6 +33,40 @@ interface DashboardSidebarProps {
 
 export default function DashboardSidebar({ isOpen = false, onClose }: DashboardSidebarProps) {
     const pathname = usePathname()
+    const supabase = createBrowserClient()
+    const [showAuthWarning, setShowAuthWarning] = useState(false)
+
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout
+
+        const checkUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            const role = user?.user_metadata?.role
+
+
+
+            if (role !== 'admin') {
+                // Delay showing the warning to prevent flickering on navigation
+                timeoutId = setTimeout(() => {
+                    setShowAuthWarning(true)
+                }, 2000)
+            } else {
+                setShowAuthWarning(false)
+            }
+        }
+
+        checkUser()
+
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId)
+        }
+    }, [supabase])
+
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut()
+        window.location.href = '/admin/login'
+    }
 
     return (
         <>
@@ -45,11 +81,11 @@ export default function DashboardSidebar({ isOpen = false, onClose }: DashboardS
             {/* Sidebar */}
             <aside className={`
                 fixed top-0 left-0 z-50 h-screen w-64 bg-gray-900 border-r border-gray-800 
-                transition-transform duration-300 ease-in-out
+                transition-transform duration-300 ease-in-out flex flex-col
                 lg:translate-x-0
                 ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
             `}>
-                <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+                <div className="p-6 border-b border-gray-800 flex items-center justify-between shrink-0">
                     <Link href="/" className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center font-bold text-white">
                             TN
@@ -66,7 +102,7 @@ export default function DashboardSidebar({ isOpen = false, onClose }: DashboardS
                     </button>
                 </div>
 
-                <nav className="flex-1 p-4 space-y-2 overflow-y-auto h-[calc(100vh-140px)]">
+                <nav className="flex-1 p-4 space-y-2 overflow-y-auto min-h-0">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href
                         return (
@@ -86,8 +122,25 @@ export default function DashboardSidebar({ isOpen = false, onClose }: DashboardS
                     })}
                 </nav>
 
-                <div className="p-4 border-t border-gray-800">
-                    <button className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors">
+                <div className="p-4 border-t border-gray-800 space-y-3 shrink-0">
+                    {showAuthWarning && (
+                        <div className="p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl mb-3 animate-in fade-in duration-500">
+                            <p className="text-xs text-yellow-400 mb-2">
+                                Not logged in as Admin? View is restricted.
+                            </p>
+                            <Link
+                                href="/admin/login"
+                                className="block w-full text-center py-2 px-3 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold rounded-lg transition-colors"
+                            >
+                                Login as Admin
+                            </Link>
+                        </div>
+                    )}
+
+                    <button
+                        onClick={handleLogout}
+                        className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-gray-400 hover:bg-red-500/10 hover:text-red-400 transition-colors"
+                    >
                         <LogOut size={20} />
                         <span className="font-medium">Logout</span>
                     </button>

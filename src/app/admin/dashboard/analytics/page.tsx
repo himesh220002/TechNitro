@@ -6,7 +6,7 @@ import {
     BarChart, Bar, Legend, LineChart, Line, PieChart, Pie, Cell, ComposedChart
 } from 'recharts'
 import { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import { Loader2, TrendingUp, Users, Package, CreditCard, Truck, AlertCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import Breadcrumbs from '@/components/Breadcrumbs'
@@ -17,7 +17,7 @@ export default function AnalyticsPage() {
     const [data, setData] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [period, setPeriod] = useState('6months')
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient()
 
     useEffect(() => {
         fetchAnalytics()

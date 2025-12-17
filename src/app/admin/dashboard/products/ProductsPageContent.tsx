@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import { Product } from '@/types/product'
 import DashboardWrapper from '@/components/dashboard/DashboardWrapper'
 import AdminProductCard from '@/components/dashboard/AdminProductCard'
@@ -11,9 +11,10 @@ import { toast } from 'react-hot-toast'
 import { useSearchParams } from 'next/navigation'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useBudgetLock } from '@/hooks/useBudgetLock'
 
 export default function ProductsPageContent() {
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient()
     const searchParams = useSearchParams()
     const [products, setProducts] = useState<Product[]>([])
     const [loading, setLoading] = useState(true)
@@ -26,18 +27,10 @@ export default function ProductsPageContent() {
     const fileInputRef = useRef<HTMLInputElement | null>(null)
     const [imageFiles, setImageFiles] = useState<File[]>([])
 
-    // Edit Lock State
-    const [isEditingEnabled, setIsEditingEnabled] = useState(false)
+    // Edit Lock State (Hook)
     const [showPasswordModal, setShowPasswordModal] = useState(false)
     const [passwordInput, setPasswordInput] = useState('')
-    const timerRef = useRef<NodeJS.Timeout | null>(null)
-
-    // Clear timer on unmount
-    useEffect(() => {
-        return () => {
-            if (timerRef.current) clearTimeout(timerRef.current)
-        }
-    }, [])
+    const { isEditingEnabled, formatTime, lock, unlock, awayBudget } = useBudgetLock('admin_products_unlock_expiry')
 
     const handleUnlockClick = () => {
         setShowPasswordModal(true)
@@ -45,27 +38,16 @@ export default function ProductsPageContent() {
     }
 
     const handleLockClick = () => {
-        setIsEditingEnabled(false)
-        if (timerRef.current) clearTimeout(timerRef.current)
-        toast.success('Edits locked')
-        // Also close add product form if open
+        lock()
         setOpenAddProduct(false)
     }
 
     const verifyPassword = (e: React.FormEvent) => {
         e.preventDefault()
-        const validPassword = process.env.NEXT_PUBLIC_ADMIN_EDIT_PASSWORD
+        const validPassword = process.env.NEXT_PUBLIC_ADMIN_EDIT_PASSWORD || 'admin123'
         if (passwordInput === validPassword) {
-            setIsEditingEnabled(true)
+            unlock()
             setShowPasswordModal(false)
-            toast.success('Edits enabled for 30 minutes')
-
-            if (timerRef.current) clearTimeout(timerRef.current)
-            timerRef.current = setTimeout(() => {
-                setIsEditingEnabled(false)
-                setOpenAddProduct(false)
-                toast('Edit session expired. Edits locked.', { icon: '🔒' })
-            }, 30 * 60 * 1000)
         } else {
             toast.error('Incorrect password')
         }
@@ -211,13 +193,24 @@ export default function ProductsPageContent() {
                             Enable Edits
                         </button>
                     ) : (
-                        <button
-                            onClick={handleLockClick}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20"
-                        >
-                            <Unlock size={16} />
-                            Lock Edits
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                                <span className="text-xs font-medium text-purple-200">
+                                    Active
+                                </span>
+                                <span className="text-xs text-gray-500 border-l border-gray-700 pl-2 ml-1 font-mono min-w-[40px]">
+                                    {formatTime()}
+                                </span>
+                            </div>
+                            <button
+                                onClick={handleLockClick}
+                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20"
+                            >
+                                <Unlock size={16} />
+                                Lock Edits
+                            </button>
+                        </div>
                     )}
                     <button
                         onClick={() => setOpenAddProduct(!openAddProduct)}
@@ -417,7 +410,7 @@ export default function ProductsPageContent() {
                                         className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:ring-2 focus:ring-purple-500 outline-none"
                                         placeholder="Enter password..."
                                     />
-                                    <p className="text-xs text-gray-500 mt-2">Entering correct password unlocks edits for 30 minutes.</p>
+                                    <p className="text-xs text-gray-500 mt-2">Entering correct password unlocks edits (session stays active while on this page).</p>
                                 </div>
                                 <div className="flex gap-3">
                                     <button

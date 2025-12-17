@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import DashboardWrapper from '@/components/dashboard/DashboardWrapper'
 import Breadcrumbs from '@/components/Breadcrumbs'
 import Image from 'next/image'
@@ -112,7 +112,7 @@ const getStatusBadge = (status: string) => {
 }
 
 export default function AdminOrdersPage() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient()
   const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [startDate, setStartDate] = useState(() => {

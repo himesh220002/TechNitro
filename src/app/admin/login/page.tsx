@@ -1,14 +1,14 @@
 // src/app/admin/login/page.tsx
 'use client'
 import { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 
 
 
 export default function AdminLoginPage() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient()
   const [returnToParam, setReturnToParam] = useState<string | null>(null)
 
   useEffect(() => {

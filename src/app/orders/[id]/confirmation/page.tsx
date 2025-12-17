@@ -3,12 +3,12 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import type { Order, ProductInOrder } from '@/types/order'
 import Image from 'next/image'
 
 export default function OrderConfirmationPage() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient()
   const router = useRouter()
   const searchParams = useParams()
   const orderId = searchParams?.id as string

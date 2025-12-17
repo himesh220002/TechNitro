@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Bell, Package, Truck, CheckCircle, X, AlertCircle, RefreshCw, RotateCcw, Settings, Trash2, Filter } from 'lucide-react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import { toast } from 'react-hot-toast'
 
 interface Notification {
@@ -30,7 +30,7 @@ export default function NotificationsDropdown() {
     const [loading, setLoading] = useState(false)
     const [activeFilter, setActiveFilter] = useState<FilterTab>('all')
 
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient()
 
     // Fetch notifications
     const fetchNotifications = useCallback(async () => {

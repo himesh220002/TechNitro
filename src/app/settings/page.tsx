@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import { Bell, Lock, Globe, Moon, Sun, Shield, Mail, Smartphone } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import GradientBackground from '@/components/GradientBackground'
@@ -9,7 +9,7 @@ import Navbar from '@/components/Navbar'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function SettingsPage() {
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient()
     const [user, setUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
 

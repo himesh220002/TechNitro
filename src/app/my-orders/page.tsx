@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState, useCallback } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import Navbar from '@/components/Navbar'
 import type { Order } from '@/types/order'
 import Footer from '@/components/Footer'
@@ -13,7 +13,7 @@ import Link from 'next/link'
 import { Package } from 'lucide-react'
 
 export default function MyOrdersPage() {
-  const supabase = useMemo(() => createClientComponentClient(), [])
+  const supabase = createBrowserClient()
   const router = useRouter()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState<boolean>(true)

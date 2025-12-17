@@ -3,7 +3,7 @@
 import { useEffect, useState, startTransition, useMemo } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { v4 as uuid } from 'uuid'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import type { Product } from '@/types/product'
 import { motion, AnimatePresence } from 'framer-motion'
 import CheckoutSteps from './checkout/CheckoutSteps'
@@ -15,7 +15,7 @@ import { toast } from 'react-hot-toast'
 import { applyCouponToOrder } from '@/lib/coupons'
 import { useCart } from '@/context/CartContext'
 
-const supabase = createClientComponentClient()
+const supabase = createBrowserClient()
 
 type RazorpayHandlerResponse = {
   razorpay_payment_id: string

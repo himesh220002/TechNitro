@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import type { Order } from '@/types/order'
 
 type InvoiceContextType = {
@@ -20,7 +20,7 @@ export function useInvoiceContext() {
 
 export function InvoiceProvider({ children }: { children: ReactNode }) {
   const [orders, setOrders] = useState<Order[]>([])
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient()
 
   const fetchOrders = async () => {
     try {

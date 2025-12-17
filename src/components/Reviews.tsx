@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Star, ChevronDown, ChevronUp, User, Send } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import { toast } from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
@@ -23,7 +23,7 @@ export default function Reviews({ rating, reviewCount, productId }: { rating: nu
     const [submitting, setSubmitting] = useState(false)
     const [user, setUser] = useState<any>(null)
     const [newReview, setNewReview] = useState({ rating: 5, comment: '' })
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient()
     const router = useRouter()
 
     const [editingReview, setEditingReview] = useState<Review | null>(null)

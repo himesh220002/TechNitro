@@ -1,5 +1,7 @@
 'use client'
 
+import { useBudgetLock } from '@/hooks/useBudgetLock'
+
 import { useState, useEffect, useRef } from 'react'
 import { Coupon } from '@/types/coupon'
 import { getCoupons, deleteCoupon, updateCoupon, getCouponStats, initializeCoupons } from '@/lib/coupons'
@@ -18,16 +20,19 @@ export default function CouponsPage() {
     const [search, setSearch] = useState('')
 
     // Edit Lock State
-    const [isEditingEnabled, setIsEditingEnabled] = useState(false)
     const [showPasswordModal, setShowPasswordModal] = useState(false)
     const [passwordInput, setPasswordInput] = useState('')
-    const timerRef = useRef<NodeJS.Timeout | null>(null)
 
-    // Clear timer on unmount
+    // Use the new hook
+    const { isEditingEnabled, formatTime, lock, unlock, awayBudget } = useBudgetLock('admin_coupon_unlock_expiry')
+
     useEffect(() => {
-        return () => {
-            if (timerRef.current) clearTimeout(timerRef.current)
-        }
+        loadCoupons()
+    }, [])
+
+    // Mount logic: Check validity and restore remaining budget
+    useEffect(() => {
+        loadCoupons()
     }, [])
 
     const handleUnlockClick = () => {
@@ -36,9 +41,7 @@ export default function CouponsPage() {
     }
 
     const handleLockClick = () => {
-        setIsEditingEnabled(false)
-        if (timerRef.current) clearTimeout(timerRef.current)
-        toast.success('Edits locked')
+        lock()
         setShowForm(false)
     }
 
@@ -46,24 +49,12 @@ export default function CouponsPage() {
         e.preventDefault()
         const validPassword = process.env.NEXT_PUBLIC_ADMIN_EDIT_PASSWORD || 'admin123'
         if (passwordInput === validPassword) {
-            setIsEditingEnabled(true)
+            unlock()
             setShowPasswordModal(false)
-            toast.success('Edits enabled for 30 minutes')
-
-            if (timerRef.current) clearTimeout(timerRef.current)
-            timerRef.current = setTimeout(() => {
-                setIsEditingEnabled(false)
-                setShowForm(false)
-                toast('Edit session expired. Edits locked.', { icon: '🔒' })
-            }, 30 * 60 * 1000)
         } else {
             toast.error('Incorrect password')
         }
     }
-
-    useEffect(() => {
-        loadCoupons()
-    }, [])
 
     const loadCoupons = async () => {
         try {
@@ -138,13 +129,24 @@ export default function CouponsPage() {
                                 Unlock Coupons
                             </button>
                         ) : (
-                            <button
-                                onClick={handleLockClick}
-                                className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20"
-                            >
-                                <Unlock size={16} />
-                                Lock Coupons
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <div className="hidden sm:flex items-center gap-2 px-3 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_8px_rgba(34,197,94,0.5)]" />
+                                    <span className="text-xs font-medium text-purple-200">
+                                        Active
+                                    </span>
+                                    <span className="text-xs text-gray-500 border-l border-gray-700 pl-2 ml-1 font-mono min-w-[40px]">
+                                        {formatTime()}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={handleLockClick}
+                                    className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors text-sm font-medium border border-red-500/20"
+                                >
+                                    <Unlock size={16} />
+                                    Lock Coupons
+                                </button>
+                            </div>
                         )}
 
                         {isEditingEnabled && (

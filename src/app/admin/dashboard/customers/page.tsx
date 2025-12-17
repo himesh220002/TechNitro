@@ -4,7 +4,7 @@ import DashboardWrapper from '@/components/dashboard/DashboardWrapper'
 import { Mail, Phone, MapPin, Users, Loader2, Eye, Send } from 'lucide-react'
 import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'react-hot-toast'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import CustomerOrdersModal from '@/components/dashboard/CustomerOrdersModal'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
@@ -24,7 +24,7 @@ export default function CustomersPage() {
     const [totalUsers, setTotalUsers] = useState(0)
     const [loading, setLoading] = useState(true)
     const [selectedCustomer, setSelectedCustomer] = useState<{ id: string, name: string } | null>(null)
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient()
 
     const fetchCustomers = useCallback(async () => {
         try {

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import { Menu, X, User as UserIcon, Settings, LogOut } from 'lucide-react'
 import Image from 'next/image'
 import { FaCartShopping } from "react-icons/fa6"
@@ -21,9 +21,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 
 export default function Navbar() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient()
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<User | null | undefined>(undefined)
+  const [showLoginButton, setShowLoginButton] = useState(false)
   const [showDropdown, setShowDropdown] = useState(false)
   const [showCartPreview, setShowCartPreview] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -36,33 +37,58 @@ export default function Navbar() {
 
   const [avatarUrl, setAvatarUrl] = useState<string>('/Avatarpic.png')
 
+  /* Auth & Avatar Logic */
   useEffect(() => {
     let mounted = true
+    let loginTimeout: NodeJS.Timeout
 
       ; (async () => {
         try {
           const { data } = await supabase.auth.getUser()
           if (!mounted) return
-          setUser(data?.user ?? null)
 
-          // Initialize avatar from user metadata (priority) or localStorage
-          const savedAvatar = localStorage.getItem('userAvatar')
-          setAvatarUrl(data?.user?.user_metadata?.avatar_url || savedAvatar || '/Avatarpic.png')
+          if (data?.user) {
+            setUser(data.user)
+            // Initialize avatar
+            const savedAvatar = localStorage.getItem('userAvatar')
+            setAvatarUrl(data.user.user_metadata?.avatar_url || savedAvatar || '/Avatarpic.png')
+            setShowLoginButton(false) // User found, ensure login button is hidden
+          } else {
+            setUser(null)
+            // Delay showing login button to prevent flash if checking
+            loginTimeout = setTimeout(() => {
+              if (mounted) setShowLoginButton(true)
+            }, 1000)
+          }
         } catch (err) {
           console.error('Navbar: failed to get user', err)
-          if (mounted) setUser(null)
+          if (mounted) {
+            setUser(null)
+            // Even on error, delay showing login
+            loginTimeout = setTimeout(() => {
+              if (mounted) setShowLoginButton(true)
+            }, 1000)
+          }
         }
       })()
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return
       setUser(session?.user ?? null)
-      // Update avatar on auth change
-      const savedAvatar = localStorage.getItem('userAvatar')
-      setAvatarUrl(session?.user?.user_metadata?.avatar_url || savedAvatar || '/Avatarpic.png')
+
+      if (session?.user) {
+        setShowLoginButton(false)
+        const savedAvatar = localStorage.getItem('userAvatar')
+        setAvatarUrl(session.user.user_metadata?.avatar_url || savedAvatar || '/Avatarpic.png')
+      } else {
+        // If explicit logout/auth change to null, we can show login immediately or delay it
+        // Usually on explicit logout we want immediate feedback, but for initial load consistency:
+        loginTimeout = setTimeout(() => {
+          if (mounted) setShowLoginButton(true)
+        }, 500)
+      }
     })
 
-    // Listen for custom avatar update event
     const handleAvatarUpdate = (e: CustomEvent) => {
       if (e.detail?.url) {
         setAvatarUrl(e.detail.url)
@@ -74,6 +100,7 @@ export default function Navbar() {
 
     return () => {
       mounted = false
+      if (loginTimeout) clearTimeout(loginTimeout)
       if (subscription && typeof subscription.unsubscribe === 'function') subscription.unsubscribe()
       window.removeEventListener('avatarUpdated', handleAvatarUpdate as EventListener)
     }
@@ -135,7 +162,7 @@ export default function Navbar() {
         : 'bg-gray-800/80 border-gray-600/50'
         }`}
     >
-      <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300 ${isScrolled ? 'h-12 sm:h-16' : 'h-16 sm:h-20'
+      <div className={`max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300 relative ${isScrolled ? 'h-12 sm:h-16' : 'h-16 sm:h-20'
         }`}>
         {/* Logo */}
         <Link
@@ -153,13 +180,10 @@ export default function Navbar() {
                 }`}
             />
           </div>
-          {/* <span className={`font-bold text-xl tracking-tight transition-opacity duration-300 ${isScrolled ? 'opacity-100' : 'opacity-0 md:opacity-100'}`}>
-            <span className="text-white">Tech</span><span className="text-purple-500">Nitro</span>
-          </span> */}
         </Link>
 
-        {/* Desktop Nav */}
-        <div className="hidden md:flex flex-1 items-center justify-center px-8 max-w-2xl mx-auto">
+        {/* Desktop Nav (Absolute Center to prevent layout shift) */}
+        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full justify-center px-8 max-w-2xl">
           <SearchBar />
         </div>
 
@@ -295,8 +319,12 @@ export default function Navbar() {
             </div>
           ) : (
             <div className="ml-4">
-              {user === undefined ? (
-                <div className="w-24 h-10 rounded-full bg-gray-800 animate-pulse" />
+              {!showLoginButton ? (
+                // Skeleton matching User Profile shape to prevent layout shift
+                <div className="flex items-center gap-3 bg-gray-800/50 border border-gray-700/50 pl-2 pr-4 py-1.5 rounded-full animate-pulse">
+                  <div className="w-8 h-8 rounded-full bg-gray-700" />
+                  <div className="w-[40px] h-5 bg-gray-700 rounded" />
+                </div>
               ) : (
                 <Link
                   href="/login"

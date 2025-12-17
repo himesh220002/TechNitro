@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import { User, Mail, Phone, MapPin, Calendar, Edit2, Save, Camera } from 'lucide-react'
 import Image from 'next/image'
 import { toast } from 'react-hot-toast'
@@ -10,7 +10,7 @@ import Navbar from '@/components/Navbar'
 import Breadcrumbs from '@/components/Breadcrumbs'
 
 export default function ProfilePage() {
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient()
     const [user, setUser] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [editing, setEditing] = useState(false)

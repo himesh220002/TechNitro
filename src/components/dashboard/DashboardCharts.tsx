@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import {
     AreaChart,
     Area,
@@ -29,7 +29,7 @@ interface DashboardChartsProps {
 type TimePeriod = 'week' | 'month' | 'year' | 'last-year'
 
 export default function DashboardCharts({ products }: DashboardChartsProps) {
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient()
     const [isLargeScreen, setIsLargeScreen] = useState(false)
     const [orders, setOrders] = useState<any[]>([])
     const [loading, setLoading] = useState(true)

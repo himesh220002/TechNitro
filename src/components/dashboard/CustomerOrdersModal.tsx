@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { X, Package, Calendar, CreditCard, ExternalLink, Loader2, AlertCircle } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@/lib/supabase/client'
 import { Order } from '@/types/order'
 
 interface CustomerOrdersModalProps {
@@ -17,7 +17,7 @@ export default function CustomerOrdersModal({ customerId, customerName, isOpen, 
     const [orders, setOrders] = useState<Order[]>([])
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
-    const supabase = createClientComponentClient()
+    const supabase = createBrowserClient()
 
     useEffect(() => {
         if (isOpen && customerId) {
@@ -124,13 +124,13 @@ export default function CustomerOrdersModal({ customerId, customerName, isOpen, 
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
                                             <div className="flex items-center gap-3">
                                                 <div className={`w-2 h-2 rounded-full ${order.orderStatus === 'Delivered' ? 'bg-green-500' :
-                                                        order.orderStatus === 'Cancelled' ? 'bg-red-500' :
-                                                            'bg-yellow-500'
+                                                    order.orderStatus === 'Cancelled' ? 'bg-red-500' :
+                                                        'bg-yellow-500'
                                                     }`} />
                                                 <span className="font-mono text-sm text-gray-400">#{order.id.slice(0, 8)}</span>
                                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${order.orderStatus === 'Delivered' ? 'bg-green-500/10 text-green-400' :
-                                                        order.orderStatus === 'Cancelled' ? 'bg-red-500/10 text-red-400' :
-                                                            'bg-yellow-500/10 text-yellow-400'
+                                                    order.orderStatus === 'Cancelled' ? 'bg-red-500/10 text-red-400' :
+                                                        'bg-yellow-500/10 text-yellow-400'
                                                     }`}>
                                                     {order.orderStatus}
                                                 </span>
