@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createBrowserClient } from '@/lib/supabase/client'
 import { Menu, X, User as UserIcon, Settings, LogOut } from 'lucide-react'
 import Image from 'next/image'
@@ -21,7 +21,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { createPortal } from 'react-dom'
 
 export default function Navbar() {
-  const supabase = createBrowserClient()
+  const supabase = useMemo(() => createBrowserClient(), [])
   const [isOpen, setIsOpen] = useState(false)
   const [user, setUser] = useState<User | null | undefined>(undefined)
   const [showLoginButton, setShowLoginButton] = useState(false)
@@ -58,7 +58,7 @@ export default function Navbar() {
             // Delay showing login button to prevent flash if checking
             loginTimeout = setTimeout(() => {
               if (mounted) setShowLoginButton(true)
-            }, 1000)
+            }, 800) // Slightly faster transition
           }
         } catch (err) {
           console.error('Navbar: failed to get user', err)
